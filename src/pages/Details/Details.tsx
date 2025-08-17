@@ -1,9 +1,9 @@
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Text,View } from "react-native";
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Text, View } from 'react-native';
 
-import type { RootStackParamList } from "@/types/navigation.types";
+import type { RootStackParamList } from '@/types/navigation.types';
 
-type Props = NativeStackScreenProps<RootStackParamList, "Details">;
+type Props = NativeStackScreenProps<RootStackParamList, 'Details'>;
 
 export default function Details({ route, navigation }: Props) {
   return (

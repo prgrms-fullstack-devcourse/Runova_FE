@@ -1,10 +1,10 @@
-import styled from "@emotion/native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useState } from "react";
+import styled from '@emotion/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useState } from 'react';
 
-import type { RootStackParamList } from "@/types/navigation.types";
+import type { RootStackParamList } from '@/types/navigation.types';
 
-type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const Screen = styled.View(({ theme }) => ({
   flex: 1,
@@ -36,13 +36,13 @@ const Button = styled.TouchableOpacity(({ theme }) => ({
   marginTop: theme.spacing[4],
   paddingVertical: theme.spacing[3],
   borderRadius: theme.radius.md,
-  alignItems: "center",
+  alignItems: 'center',
   backgroundColor: theme.colors.primary[600],
 }));
 
 const ButtonLabel = styled.Text(({ theme }) => ({
   color: theme.colors.gray[50],
-  fontWeight: "700",
+  fontWeight: '700',
 }));
 
 export default function Home({ navigation }: Props) {
@@ -59,7 +59,7 @@ export default function Home({ navigation }: Props) {
       <Button onPress={() => setCount((c) => c + 1)}>
         <ButtonLabel>+1</ButtonLabel>
       </Button>
-      <Button onPress={() => navigation.navigate("Details", { id: "42" })}>
+      <Button onPress={() => navigation.navigate('Details', { id: '42' })}>
         <ButtonLabel>Go to Details</ButtonLabel>
       </Button>
     </Screen>

@@ -1,4 +1,4 @@
-name: "Auto Label PR by Commit Type"
+name: 'Auto Label PR by Commit Type'
 
 on:
   pull_request:
