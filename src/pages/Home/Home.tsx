@@ -62,6 +62,9 @@ export default function Home({ navigation }: Props) {
       <Button onPress={() => navigation.navigate('Details', { id: '42' })}>
         <ButtonLabel>Go to Details</ButtonLabel>
       </Button>
+      <Button onPress={() => navigation.navigate('CommunityList')}>
+        <ButtonLabel>커뮤니티 목록 열기</ButtonLabel>
+      </Button>
     </Screen>
   );
 }
