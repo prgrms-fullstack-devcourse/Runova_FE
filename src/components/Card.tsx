@@ -49,8 +49,6 @@ export default function Card({
           {imageSource && (
             <CardImage
               source={imageSource}
-              width={100}
-              height={100}
               mode={finalMode}
               resizeMode="cover"
             />
@@ -79,10 +77,9 @@ export default function Card({
           {imageSource && (
             <CardImage
               source={imageSource}
-              width={imageSize}
-              height={imageSize}
               mode={finalMode}
               resizeMode="cover"
+              style={{ width: imageSize, height: imageSize }}
             />
           )}
           {content && (
@@ -149,15 +146,15 @@ const ContentRow = styled.View({
 const ImageContainer = styled.View({
   width: '100%',
   height: '100%',
+  position: 'relative',
+  overflow: 'hidden',
 });
 
 const CardImage = styled(Image)<{
-  width: number | string;
-  height: number | string;
   mode: CardMode;
-}>(({ width, height, mode }) => ({
-  width,
-  height,
+}>(({ mode }) => ({
+  width: mode === 'only-image' ? '100%' : 100,
+  height: mode === 'only-image' ? '100%' : 100,
   borderRadius: mode === 'only-image' ? 12 : 8,
   marginRight: mode === 'image-with-text' ? 12 : 0,
 }));
