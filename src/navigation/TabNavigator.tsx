@@ -7,7 +7,7 @@ import {
   Settings,
 } from 'lucide-react-native';
 
-import Community from '@/pages/Community/Community';
+import CommunityList from '@/pages/CommunityList';
 import Home from '@/pages/Home/Home';
 import Route from '@/pages/Route/Route';
 import Run from '@/pages/Run/Run';
@@ -66,7 +66,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Community"
-        component={Community}
+        component={CommunityList}
         options={{
           tabBarIcon: ({ color, size }) => <Laugh color={color} size={size} />,
         }}

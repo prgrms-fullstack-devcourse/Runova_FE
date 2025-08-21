@@ -1,4 +1,6 @@
 import styled from '@emotion/native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import { FlatList, View } from 'react-native';
@@ -6,13 +8,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { samplePosts } from '@/store/community.mock';
 import type { CategoryKey } from '@/types/community';
-import type { RootStackParamList } from '@/types/navigation.types';
+import type {
+  RootStackParamList,
+  TabParamList,
+} from '@/types/navigation.types';
 
 import CategoryTabs from './_components/CategoryTabs';
 import FloatingActionButton from './_components/FloatingActionButton';
 import PostItem from './_components/PostItem';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'CommunityList'>;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Community'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 export default function CommunityList({ navigation }: Props) {
   const [category, setCategory] = useState<CategoryKey>('all');

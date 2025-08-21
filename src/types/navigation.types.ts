@@ -3,7 +3,6 @@ export type RootStackParamList = {
   Details: {
     id: string;
   };
-  CommunityList: undefined;
   CommunityDetail: { postId: string };
   CommunityEdit: { postId: string } | undefined;
 };
