@@ -1,67 +1,67 @@
 import styled from '@emotion/native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Bell } from 'lucide-react-native';
+import Header from '@/components/Header';
+import FloatingImageContainer from './_components/FloatingImageContainer';
+import CardContainer from './_components/CardContainer';
 
-import type { RootStackParamList } from '@/types/navigation.types';
+export default function Home() {
+  const handleLocationPress = () => {
+    console.log('위치 버튼 클릭');
+  };
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+  const handleNotificationPress = () => {
+    console.log('알림 버튼 클릭');
+  };
 
-const Screen = styled.View(({ theme }) => ({
-  flex: 1,
-  padding: theme.spacing[4],
-  backgroundColor: theme.colors.gray[50],
-}));
-
-const Title = styled.Text(({ theme }) => ({
-  color: theme.colors.primary[700],
-  fontSize: theme.typography.heading.fontSize,
-  fontWeight: theme.typography.heading.fontWeight,
-}));
-
-const Card = styled.View(({ theme }) => ({
-  marginTop: theme.spacing[3],
-  padding: theme.spacing[4],
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.primary[50],
-  borderWidth: 1,
-  borderColor: theme.colors.primary[300],
-}));
-
-const Body = styled.Text(({ theme }) => ({
-  color: theme.colors.gray[900],
-  fontSize: theme.typography.body.fontSize,
-}));
-
-const Button = styled.TouchableOpacity(({ theme }) => ({
-  marginTop: theme.spacing[4],
-  paddingVertical: theme.spacing[3],
-  borderRadius: theme.radius.md,
-  alignItems: 'center',
-  backgroundColor: theme.colors.primary[600],
-}));
-
-const ButtonLabel = styled.Text(({ theme }) => ({
-  color: theme.colors.gray[50],
-  fontWeight: '700',
-}));
-
-export default function Home({ navigation }: Props) {
-  const [count, setCount] = useState(0);
+  const handleRecommendationPress = (item: RecommendationData) => {
+    console.log('추천 경로 클릭:', item.title);
+  };
 
   return (
     <Screen>
-      <Title>Emotion Theme Test</Title>
+      <GradientBackground
+        colors={['#181820', '#242431', '#38384A', '#555571', '#646486']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
+        <Header
+          isHome
+          locationText="서울시 노원구 덕릉로 123"
+          onLocationPress={handleLocationPress}
+          rightIcon={Bell}
+          onRightPress={handleNotificationPress}
+        />
 
-      <Card>
-        <Body>Count: {count}</Body>
-      </Card>
+        <FloatingImageContainer />
 
-      <Button onPress={() => setCount((c) => c + 1)}>
-        <ButtonLabel>+1</ButtonLabel>
-      </Button>
-      <Button onPress={() => navigation.navigate('Details', { id: '42' })}>
-        <ButtonLabel>Go to Details</ButtonLabel>
-      </Button>
+        <ScrollContainer>
+          <ContentContainer>
+            <CardContainer onRecommendationPress={handleRecommendationPress} />
+          </ContentContainer>
+        </ScrollContainer>
+      </GradientBackground>
     </Screen>
   );
 }
+
+import type { RecommendationData } from '@/types/card.types';
+
+const Screen = styled.View({
+  flex: 1,
+});
+
+const GradientBackground = styled(LinearGradient)({
+  flex: 1,
+});
+
+const ScrollContainer = styled.View({
+  flex: 1,
+  padding: 16,
+  paddingBottom: 80,
+});
+
+const ContentContainer = styled.View({
+  paddingTop: 300,
+  paddingBottom: 50,
+});
