@@ -2,7 +2,7 @@ import styled from '@emotion/native';
 import { FlatList, Dimensions } from 'react-native';
 import Card from '@/components/Card';
 import type { RecommendationData } from '@/types/card.types';
-import { recommendationData } from '@/data/mock';
+import { recommendationData } from '@/data/routeInfo.mock';
 const { width: screenWidth } = Dimensions.get('window');
 
 interface CardContainerProps {
