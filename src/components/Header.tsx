@@ -1,5 +1,6 @@
 import styled from '@emotion/native';
 import { LucideIcon, MapPin, Bell } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderProps {
   leftIcon?: LucideIcon;
@@ -25,9 +26,11 @@ export default function Header({
   onLocationPress,
   title,
 }: HeaderProps) {
+  const insets = useSafeAreaInsets();
+
   if (isHome) {
     return (
-      <HeaderContainer isHome={true}>
+      <HeaderContainer isHome={true} safeAreaTop={insets.top}>
         <LeftSection>
           <LocationContainer onPress={onLocationPress}>
             <MapPin color="#ffffff" size={16} />
@@ -44,7 +47,7 @@ export default function Header({
   }
 
   return (
-    <HeaderContainer isHome={false}>
+    <HeaderContainer isHome={false} safeAreaTop={insets.top}>
       <LeftSection>
         {LeftIcon && (
           <IconButton onPress={onLeftPress}>
@@ -66,23 +69,24 @@ export default function Header({
   );
 }
 
-const HeaderContainer = styled.View<{ isHome: boolean }>(({ isHome }) => ({
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  paddingTop: 32,
-  paddingBottom: 8,
-  paddingVertical: 16,
-  backgroundColor: 'transparent',
-  borderBottomWidth: 1,
-  borderBottomColor: isHome ? '#242431' : '#e0e0e0',
-}));
+const HeaderContainer = styled.View<{ isHome: boolean; safeAreaTop: number }>(
+  ({ isHome, safeAreaTop }) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: safeAreaTop,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: isHome ? '#242431' : '#e0e0e0',
+  }),
+);
 
 const LeftSection = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
   flex: 1,
-  paddingLeft: 16,
 });
 
 const CenterSection = styled.View({
@@ -93,7 +97,6 @@ const CenterSection = styled.View({
 const RightSection = styled.View({
   flex: 1,
   alignItems: 'flex-end',
-  paddingRight: 16,
 });
 
 const LocationContainer = styled.TouchableOpacity({
