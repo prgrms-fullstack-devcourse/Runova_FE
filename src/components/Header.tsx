@@ -48,7 +48,7 @@ export default function Header({
       <LeftSection>
         {LeftIcon && (
           <IconButton onPress={onLeftPress}>
-            <LeftIcon color="#000000" size={16} />
+            <LeftIcon color="#000000" size={20} />
           </IconButton>
         )}
       </LeftSection>
@@ -58,7 +58,7 @@ export default function Header({
       <RightSection>
         {RightIcon && (
           <IconButton onPress={onRightPress}>
-            <RightIcon color="#000000" size={16} />
+            <RightIcon color="#000000" size={20} />
           </IconButton>
         )}
       </RightSection>
@@ -70,8 +70,9 @@ const HeaderContainer = styled.View<{ isHome: boolean }>(({ isHome }) => ({
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
-  paddingHorizontal: 16,
-  paddingVertical: 12,
+  paddingTop: 32,
+  paddingBottom: 8,
+  paddingVertical: 16,
   backgroundColor: 'transparent',
   borderBottomWidth: 1,
   borderBottomColor: isHome ? '#242431' : '#e0e0e0',
@@ -81,6 +82,7 @@ const LeftSection = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
   flex: 1,
+  paddingLeft: 16,
 });
 
 const CenterSection = styled.View({
@@ -91,6 +93,7 @@ const CenterSection = styled.View({
 const RightSection = styled.View({
   flex: 1,
   alignItems: 'flex-end',
+  paddingRight: 16,
 });
 
 const LocationContainer = styled.TouchableOpacity({

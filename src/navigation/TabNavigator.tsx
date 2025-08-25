@@ -28,7 +28,7 @@ export default function TabNavigator() {
           elevation: 0,
           shadowOpacity: 0,
           position: 'absolute',
-          bottom: 0,
+          bottom: 20,
           left: 0,
           right: 0,
           height: 60,
