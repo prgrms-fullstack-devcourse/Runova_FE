@@ -2,9 +2,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import CommunityDetail from '@/pages/CommunityDetail';
 import CommunityEdit from '@/pages/CommunityEdit';
-import CommunityList from '@/pages/CommunityList';
 import Details from '@/pages/Details/Details';
-import Home from '@/pages/Home/Home';
+import TabNavigator from './TabNavigator';
 import WebCommunity from '@/pages/WebCommunity/WebCommunity';
 
 import type { RootStackParamList } from '../types/navigation.types';
@@ -15,9 +14,13 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShadowVisible: false, headerShown: false }}
-      initialRouteName="Home"
+      initialRouteName="TabNavigator"
     >
-      <Stack.Screen name="Home" component={Home} options={{ title: 'Home' }} />
+      <Stack.Screen
+        name="TabNavigator"
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Details"
         component={Details}
