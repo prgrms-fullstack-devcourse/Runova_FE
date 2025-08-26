@@ -12,7 +12,7 @@ const List = styled.div`
 const Fab = styled.button`
   position: fixed;
   right: 24px;
-  bottom: 48px;
+  bottom: 120px;
   width: 56px;
   height: 56px;
   border-radius: 100%;
