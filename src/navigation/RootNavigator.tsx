@@ -33,23 +33,6 @@ export default function RootNavigator() {
         component={WebCommunity}
         options={{ title: '커뮤니티' }}
       />
-      <Stack.Screen
-        name="CommunityList"
-        component={CommunityList}
-        options={{ title: '커뮤니티' }}
-      />
-      <Stack.Screen
-        name="CommunityDetail"
-        component={CommunityDetail}
-        options={{ title: '게시글' }}
-      />
-      <Stack.Screen
-        name="CommunityEdit"
-        component={CommunityEdit}
-        options={({ route }) => ({
-          title: route.params?.postId ? '게시글 수정' : '글 작성',
-        })}
-      />
     </Stack.Navigator>
   );
 }

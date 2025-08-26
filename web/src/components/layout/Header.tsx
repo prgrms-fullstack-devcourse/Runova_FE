@@ -7,7 +7,6 @@ const Bar = styled.header`
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 390px;
   background: ${({ theme }) => theme.colors.surface};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   z-index: ${({ theme }) => theme.zIndex.header};
@@ -16,12 +15,12 @@ const Bar = styled.header`
 const Row = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 좌/중앙/우 영역 분리 */
+  justify-content: space-between;
   padding: 12px 16px;
 `;
 
 const Side = styled.div`
-  width: 24px; /* 버튼 크기 고려, 없을 땐 빈칸 유지 */
+  width: 24px;
   display: flex;
   align-items: center;
   justify-content: center;

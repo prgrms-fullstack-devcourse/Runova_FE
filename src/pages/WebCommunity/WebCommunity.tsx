@@ -1,12 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 import WebView from 'react-native-webview';
 
-const ORIGIN = process.env.EXPO_PUBLIC_WEB_ORIGIN ?? 'http://localhost:5173';
+const ORIGIN = process.env.EXPO_PUBLIC_WEB_ORIGIN ?? 'http://192.168.0.2:5173/';
 
 export default function WebCommunity() {
   return (
     <View style={styles.container}>
-      <WebView source={{ uri: `${ORIGIN}/community` }} />
+      <WebView source={{ uri: `${ORIGIN}/community` }} style={{ flex: 1 }} />
     </View>
   );
 }

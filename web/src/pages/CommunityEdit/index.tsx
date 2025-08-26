@@ -7,7 +7,7 @@ import { useCommunityStore } from '@/stores/communityStore';
 import { useBack } from '@/hooks/useBack';
 
 export default function CommunityEdit() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const { posts, addPost, updatePost } = useCommunityStore();
   const goBack = useBack();
@@ -24,19 +24,18 @@ export default function CommunityEdit() {
   useEffect(() => {
     if (editing && !target) {
       alert('존재하지 않는 게시글입니다.');
-      nav('/community', { replace: true });
+      navigate('/community', { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editing, target]);
+  }, [editing, target, navigate]);
 
   const submit = () => {
     if (!title.trim()) return alert('제목을 입력하세요.');
     if (editing && id) {
       updatePost(id, { title, category, content });
-      nav(`/community/${id}`, { replace: true });
+      navigate(`/community/${id}`, { replace: true });
     } else {
       const newId = addPost({ title, category, content });
-      nav(`/community/${newId}`, { replace: true });
+      navigate(`/community/${newId}`, { replace: true });
     }
   };
 
@@ -51,7 +50,8 @@ export default function CommunityEdit() {
         title={title}
         content={content}
         onChange={(patch) => {
-          if (patch.category) setCategory(patch.category);
+          if (patch.category && patch.category !== 'all')
+            setCategory(patch.category);
           if (typeof patch.title === 'string') setTitle(patch.title);
           if (typeof patch.content === 'string') setContent(patch.content);
         }}

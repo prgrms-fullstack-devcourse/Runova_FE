@@ -9,7 +9,6 @@ const Frame = styled.div`
 
 const Container = styled.div`
   width: 100%;
-  max-width: 390px;
   margin: 0 auto;
   background: ${({ theme }) => theme.colors.surface};
 `;
