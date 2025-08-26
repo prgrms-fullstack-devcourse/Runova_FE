@@ -5,6 +5,7 @@ import CommunityEdit from '@/pages/CommunityEdit';
 import CommunityList from '@/pages/CommunityList';
 import Details from '@/pages/Details/Details';
 import Home from '@/pages/Home/Home';
+import WebCommunity from '@/pages/WebCommunity/WebCommunity';
 
 import type { RootStackParamList } from '../types/navigation.types';
 
@@ -24,6 +25,11 @@ export default function RootNavigator() {
       />
 
       {/* Community */}
+      <Stack.Screen
+        name="WebCommunity"
+        component={WebCommunity}
+        options={{ title: '커뮤니티' }}
+      />
       <Stack.Screen
         name="CommunityList"
         component={CommunityList}

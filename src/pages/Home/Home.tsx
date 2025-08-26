@@ -65,6 +65,9 @@ export default function Home({ navigation }: Props) {
       <Button onPress={() => navigation.navigate('CommunityList')}>
         <ButtonLabel>커뮤니티 목록 열기</ButtonLabel>
       </Button>
+      <Button onPress={() => navigation.navigate('WebCommunity')}>
+        <ButtonLabel>웹뷰 커뮤니티 열기</ButtonLabel>
+      </Button>
     </Screen>
   );
 }

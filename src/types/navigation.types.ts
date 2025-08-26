@@ -5,4 +5,6 @@ export type RootStackParamList = {
   CommunityList: undefined;
   CommunityDetail: { postId: string };
   CommunityEdit: { postId: string } | undefined;
+
+  WebCommunity: undefined;
 };
