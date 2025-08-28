@@ -15,10 +15,17 @@
     "@emotion/native": "^11.11.0",
     "@emotion/react": "^11.14.0",
     "@expo/metro-runtime": "~5.0.4",
+    "@react-native-google-signin/google-signin": "^15.0.0",
     "@react-navigation/bottom-tabs": "^7.4.6",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/native-stack": "^7.3.25",
+    "axios": "^1.11.0",
     "expo": "~53.0.20",
+    "expo-build-properties": "~0.14.8",
+    "expo-constants": "~17.1.7",
+    "expo-dev-client": "~5.2.4",
+    "expo-linear-gradient": "~14.1.5",
+    "expo-random": "^14.0.1",
     "expo-status-bar": "~2.2.3",
     "lucide-react-native": "^0.540.0",
     "react": "19.0.0",
@@ -27,7 +34,7 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-web": "^0.20.0",
-    "expo-linear-gradient": "~14.1.5"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
