@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
+import Toast from 'react-native-toast-message';
 import api from '@/lib/api';
 import FloatingImageContainer from '@/pages/Home/_components/FloatingImageContainer';
 import useAuthStore, { type AuthState } from '@/store/auth';
@@ -44,17 +45,19 @@ export default function Auth() {
       setAuth(data.accessToken, data.user);
       navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
     } catch (error) {
+      let errorMessage = '로그인 중 오류가 발생했습니다. 다시 시도해주세요.';
+
       if (isErrorWithCode(error)) {
         switch (error.code) {
           case statusCodes.SIGN_IN_CANCELLED:
             console.log('사용자가 로그인을 취소했습니다.');
-            break;
+            return;
           case statusCodes.IN_PROGRESS:
-            break;
+            return;
           case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            console.error(
-              '구글 플레이 서비스를 사용할 수 없거나 버전이 오래되었습니다.',
-            );
+            errorMessage =
+              '구글 플레이 서비스를 사용할 수 없거나 버전이 오래되었습니다.';
+            console.error(errorMessage);
             break;
           default:
             console.error('구글 로그인 오류:', error);
@@ -62,6 +65,12 @@ export default function Auth() {
       } else {
         console.error('인증 오류:', error);
       }
+
+      Toast.show({
+        type: 'error',
+        text1: '로그인 실패',
+        text2: errorMessage,
+      });
     } finally {
       setIsSubmitting(false);
     }
