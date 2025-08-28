@@ -1,7 +1,7 @@
 import styled from '@emotion/native';
 import React from 'react';
 
-import type { Comment } from '@/types/community';
+import type { Comment } from '@/types/community.type';
 
 interface Props {
   comments: Comment[];

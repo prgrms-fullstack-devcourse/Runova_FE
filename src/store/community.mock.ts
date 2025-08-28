@@ -1,4 +1,4 @@
-import type { Comment, Post } from '@/types/community';
+import type { Comment, Post } from '@/types/community.type';
 
 export const CATEGORY_LABEL: Record<
   Post['category'],
