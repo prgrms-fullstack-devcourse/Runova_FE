@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import Auth from '@/pages/Auth';
 import CommunityDetail from '@/pages/CommunityDetail';
 import CommunityEdit from '@/pages/CommunityEdit';
 import Details from '@/pages/Details/Details';
@@ -13,8 +14,13 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShadowVisible: false, headerShown: false }}
-      initialRouteName="TabNavigator"
+      initialRouteName="Auth"
     >
+      <Stack.Screen
+        name="Auth"
+        component={Auth}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="TabNavigator"
         component={TabNavigator}
@@ -25,7 +31,6 @@ export default function RootNavigator() {
         component={Details}
         options={{ title: 'Details' }}
       />
-
       <Stack.Screen
         name="CommunityDetail"
         component={CommunityDetail}
