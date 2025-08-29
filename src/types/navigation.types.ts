@@ -6,6 +6,8 @@ export type RootStackParamList = {
   };
   CommunityDetail: { postId: string };
   CommunityEdit: { postId: string } | undefined;
+
+  WebCommunity: undefined;
 };
 
 export type TabParamList = {

@@ -9,12 +9,13 @@ import {
 } from 'lucide-react-native';
 
 import CommunityList from '@/pages/CommunityList';
+import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home/Home';
 import Route from '@/pages/Route/Route';
 import Run from '@/pages/Run/Run';
-import SettingsPage from '@/pages/Settings/Settings';
 
 import type { TabParamList } from '@/types/navigation.types';
+import WebMyPage from '@/pages/WebMyPage';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -72,14 +73,14 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Community"
-        component={CommunityList}
+        component={WebCommunity}
         options={{
           tabBarIcon: ({ color, size }) => <Laugh color={color} size={size} />,
         }}
       />
       <Tab.Screen
         name="Settings"
-        component={SettingsPage}
+        component={WebMyPage}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Settings color={color} size={size} />
