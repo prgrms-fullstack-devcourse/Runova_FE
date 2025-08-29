@@ -1,20 +1,7 @@
-import styled from '@emotion/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import WebView from 'react-native-webview';
+import WebScreen from '@/components/WebScreen';
 
-const ORIGIN = process.env.EXPO_PUBLIC_WEB_ORIGIN ?? 'http://192.168.0.2:5173';
+const ORIGIN = process.env.EXPO_PUBLIC_WEB_ORIGIN;
 
 export default function WebCommunity() {
-  const insets = useSafeAreaInsets();
-
-  return (
-    <Container safeAreaTop={insets.top}>
-      <WebView source={{ uri: `${ORIGIN}/community` }} style={{ flex: 1 }} />
-    </Container>
-  );
+  return <WebScreen origin={ORIGIN} path="/community" />;
 }
-
-const Container = styled.View<{ safeAreaTop: number }>(({ safeAreaTop }) => ({
-  flex: 1,
-  paddingTop: safeAreaTop,
-}));
