@@ -6,11 +6,14 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] },
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": ["vite/client"],
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts", "src/styles/emotion.d.ts"] // ✅ 여기가 중요
+  "include": ["src", "vite.config.ts", "src/styles/emotion.d.ts"],
+  "extends": "expo/tsconfig.base"
 }
