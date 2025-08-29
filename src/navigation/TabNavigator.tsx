@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Star,
   AudioWaveform,
@@ -17,7 +18,11 @@ import type { TabParamList } from '@/types/navigation.types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
+const TAB_BAR_HEIGHT = 60;
+
 export default function TabNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -31,7 +36,8 @@ export default function TabNavigator() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 60,
+          height: TAB_BAR_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom,
         },
         tabBarBackground: () => null,
         tabBarActiveTintColor: route.name === 'Home' ? '#ffffff' : '#000000',
