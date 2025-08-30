@@ -1,4 +1,5 @@
 export type RootStackParamList = {
+  Auth: undefined;
   TabNavigator: Record<string, never>;
   Details: {
     id: string;

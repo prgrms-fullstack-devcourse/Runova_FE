@@ -1,7 +1,7 @@
 import styled from '@emotion/native';
 import React from 'react';
 
-import type { CategoryKey } from '@/types/community';
+import type { CategoryKey } from '@/types/community.type';
 
 export default function CategoryTabs({ value, onChange }: Props) {
   return (
