@@ -8,7 +8,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import api from '@/lib/api';
 import FloatingImageContainer from '@/pages/Home/_components/FloatingImageContainer';
@@ -29,7 +29,7 @@ export default function Auth() {
     });
   }, []);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = useCallback(async () => {
     if (isSubmitting) return;
     try {
       setIsSubmitting(true);
@@ -74,7 +74,7 @@ export default function Auth() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isSubmitting, setAuth, navigation]);
 
   return (
     <Screen>
