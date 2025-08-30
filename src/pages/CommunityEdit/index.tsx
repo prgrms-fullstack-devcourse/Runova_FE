@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { samplePosts } from '@/store/community.mock';
-import type { CategoryKey } from '@/types/community';
+import type { CategoryKey } from '@/types/community.type';
 import type { RootStackParamList } from '@/types/navigation.types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CommunityEdit'>;

@@ -1,10 +1,13 @@
 export type RootStackParamList = {
+  Auth: undefined;
   TabNavigator: Record<string, never>;
   Details: {
     id: string;
   };
   CommunityDetail: { postId: string };
   CommunityEdit: { postId: string } | undefined;
+
+  WebCommunity: undefined;
 };
 
 export type TabParamList = {
