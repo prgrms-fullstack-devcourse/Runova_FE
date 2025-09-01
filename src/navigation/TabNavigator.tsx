@@ -19,6 +19,8 @@ import WebMyPage from '@/pages/WebMyPage';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
+const TAB_BAR_HEIGHT = 60;
+
 export default function TabNavigator() {
   const insets = useSafeAreaInsets();
 
@@ -35,7 +37,7 @@ export default function TabNavigator() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 60 + insets.bottom,
+          height: TAB_BAR_HEIGHT + insets.bottom,
           paddingBottom: insets.bottom,
         },
         tabBarBackground: () => null,

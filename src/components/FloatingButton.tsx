@@ -7,6 +7,8 @@ interface FloatingButtonProps {
   onPress: () => void;
 }
 
+const FLOATING_BUTTON_BOTTOM_OFFSET = 80;
+
 export default function FloatingButton({
   icon: Icon,
   onPress,
@@ -17,7 +19,7 @@ export default function FloatingButton({
     <ButtonContainer
       onPress={onPress}
       activeOpacity={0.8}
-      style={{ bottom: insets.bottom + 80 }}
+      style={{ bottom: insets.bottom + FLOATING_BUTTON_BOTTOM_OFFSET }}
     >
       <Icon color="#ffffff" size={24} />
     </ButtonContainer>

@@ -41,7 +41,7 @@ export default function CardContainer({
             mode="image-with-text"
             onPress={() => onRecommendationPress(item)}
             fullWidth={true}
-            style={{ width: screenWidth - 32, marginRight: 16 }}
+            style={{ width: screenWidth - 32, marginRight: 32 }}
           />
         )}
         keyExtractor={(item) => item.id.toString()}
