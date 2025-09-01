@@ -33,8 +33,7 @@ const Center = styled.div`
 
 const H1 = styled.h1`
   margin: 0;
-  font-size: ${({ theme }) => theme.typography.title.fontSize}px;
-  font-weight: ${({ theme }) => theme.typography.title.fontWeight};
+  ${({ theme }) => theme.typography.title}
   color: ${({ theme }) => theme.colors.text};
 `;
 

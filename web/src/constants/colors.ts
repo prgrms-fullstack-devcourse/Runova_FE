@@ -26,7 +26,7 @@ export const COLOR_TOKENS_LIGHT = {
   surface: GRAY[0],
   surfaceAlt: GRAY[100],
   text: GRAY[900],
-  subtext: GRAY[600],
+  subtext: GRAY[400],
   border: GRAY[200],
 
   primary: BRAND.primary,
