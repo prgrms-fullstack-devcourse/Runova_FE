@@ -1,6 +1,13 @@
 import styled from '@emotion/styled';
 import type { Post } from '@/types/community';
 
+const CATEGORY_LABEL_MAP: Record<Post['category'], string> = {
+  free: '자유',
+  auth: '인증',
+  share: '공유',
+  mate: '메이트',
+};
+
 export default function PostHeader({
   post,
   onEdit,
@@ -14,15 +21,7 @@ export default function PostHeader({
     <Container>
       <Row>
         <div>
-          <Pill>
-            {post.category === 'free'
-              ? '자유'
-              : post.category === 'auth'
-                ? '인증'
-                : post.category === 'share'
-                  ? '공유'
-                  : '메이트'}
-          </Pill>
+          <Pill>{CATEGORY_LABEL_MAP[post.category]}</Pill>
         </div>
         <ButtonContainer>
           <EditButton onClick={onEdit}>수정</EditButton>
