@@ -53,8 +53,8 @@ export default function CommentList({ comments }: { comments: Comment[] }) {
 }
 
 const Comment = styled.div`
-  fontsize: 14;
-  color: '#334155';
+  ${({ theme }) => theme.typography.small};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Section = styled.div`

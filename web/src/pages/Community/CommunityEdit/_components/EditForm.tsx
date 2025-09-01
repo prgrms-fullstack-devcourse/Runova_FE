@@ -143,7 +143,7 @@ const PickerItem = styled.button<{ $active?: boolean }>`
     ${({ theme, $active }) =>
       $active ? theme.colors.primary : theme.colors.border};
   background: ${({ theme, $active }) =>
-    $active ? theme.colors.primary : theme.colors.bg};
+    $active ? theme.colors.border : theme.colors.surface};
   border-radius: 10px;
   padding: 8px;
   cursor: pointer;

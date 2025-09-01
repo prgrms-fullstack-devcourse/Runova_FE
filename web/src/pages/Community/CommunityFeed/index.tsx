@@ -84,8 +84,7 @@ export default function CommunityFeed() {
 
   useEffect(() => {
     if (items.length === 0) loadMore();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [items.length, loadMore]);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
