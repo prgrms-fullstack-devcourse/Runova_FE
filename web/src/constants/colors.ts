@@ -16,6 +16,7 @@ export const GRAY = {
 export const BRAND = {
   primary: GRAY[900],
   primaryHover: GRAY[800],
+  secondary: `#2A1D74`,
   success: '#22C55E',
   warning: '#F59E0B',
   danger: '#EF4444',
@@ -31,6 +32,7 @@ export const COLOR_TOKENS_LIGHT = {
 
   primary: BRAND.primary,
   primaryHover: BRAND.primaryHover,
+  secondary: BRAND.secondary,
   success: BRAND.success,
   warning: BRAND.warning,
   danger: BRAND.danger,

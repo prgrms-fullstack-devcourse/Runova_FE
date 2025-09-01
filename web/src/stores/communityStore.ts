@@ -1,37 +1,5 @@
 import { create } from 'zustand';
-import type { Category, Post, Comment } from '@/types/community';
-
-// TODO: API 연결(현재는 AI생성 더미 컨텐츠)
-const initialPosts: Post[] = [
-  {
-    id: 'p1',
-    category: 'auth',
-    title: '한강에서 하트 완성!',
-    author: '러닝마니아',
-    commentsCount: 24,
-  },
-  {
-    id: 'p2',
-    category: 'share',
-    title: '여의도 벚꽃길 경로 공유',
-    author: '벚꽃러너',
-    commentsCount: 18,
-  },
-  {
-    id: 'p3',
-    category: 'mate',
-    title: '올림픽공원 러닝 메이트 구해요',
-    author: '주말러너',
-    commentsCount: 12,
-  },
-  {
-    id: 'p4',
-    category: 'free',
-    title: '초보자 추천 코스 문의',
-    author: '초보러너',
-    commentsCount: 31,
-  },
-];
+import type { Category, Post, Comment, NavKey } from '@/types/community';
 
 const initialComments: Comment[] = [
   {
@@ -54,13 +22,18 @@ const initialComments: Comment[] = [
   },
 ];
 
-type State = {
+type ActiveState = {
+  activeNav: NavKey;
+};
+
+type State = ActiveState & {
   posts: Post[];
   comments: Comment[];
   filter: Category;
 };
 
 type Actions = {
+  setActiveNav: (k: NavKey) => void;
   setFilter: (c: Category) => void;
   addPost: (data: {
     category: Exclude<Category, 'all'>;
@@ -74,9 +47,13 @@ type Actions = {
 };
 
 export const useCommunityStore = create<State & Actions>()((set) => ({
-  posts: initialPosts.map((p) => ({ ...p, liked: false, likeCount: 0 })),
+  activeNav: 'home',
+
+  posts: [],
   comments: initialComments,
   filter: 'all',
+
+  setActiveNav: (k) => set({ activeNav: k }),
 
   setFilter: (c) => set({ filter: c }),
 

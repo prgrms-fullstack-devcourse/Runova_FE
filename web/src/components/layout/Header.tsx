@@ -1,6 +1,35 @@
 import styled from '@emotion/styled';
 import { ReactNode } from 'react';
 
+export default function Header({
+  title,
+  onBack,
+  tabs,
+}: {
+  title: string;
+  onBack?: () => void;
+  tabs?: ReactNode;
+}) {
+  return (
+    <Bar>
+      <Row>
+        <Side>
+          {onBack && (
+            <button onClick={onBack}>
+              <i className="ri-arrow-left-line" />
+            </button>
+          )}
+        </Side>
+        <Center>
+          <H1>{title}</H1>
+        </Center>
+        <Side></Side>
+      </Row>
+      {tabs}
+    </Bar>
+  );
+}
+
 const Bar = styled.header`
   position: fixed;
   top: 0;
@@ -33,35 +62,6 @@ const Center = styled.div`
 
 const H1 = styled.h1`
   margin: 0;
-  ${({ theme }) => theme.typography.title}
+  ${({ theme }) => theme.typography.heading}
   color: ${({ theme }) => theme.colors.text};
 `;
-
-export default function Header({
-  title,
-  onBack,
-  tabs,
-}: {
-  title: string;
-  onBack?: () => void;
-  tabs?: ReactNode;
-}) {
-  return (
-    <Bar>
-      <Row>
-        <Side>
-          {onBack && (
-            <button onClick={onBack}>
-              <i className="ri-arrow-left-line" />
-            </button>
-          )}
-        </Side>
-        <Center>
-          <H1>{title}</H1>
-        </Center>
-        <Side></Side>
-      </Row>
-      {tabs}
-    </Bar>
-  );
-}

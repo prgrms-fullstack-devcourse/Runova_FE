@@ -8,12 +8,12 @@ export const theme = {
   typography: {
     small: css({ fontSize: 14, fontWeight: '400' as const, lineHeight: 1.5 }),
     body: css({ fontSize: 16, fontWeight: '400' as const, lineHeight: 1.5 }),
-    title: css({ fontSize: 18, fontWeight: '600' as const, lineHeight: 1.4 }),
-    heading: css({ fontSize: 22, fontWeight: '700' as const, lineHeight: 1.4 }),
+    title: css({ fontSize: 18, fontWeight: '400' as const, lineHeight: 1.4 }),
+    heading: css({ fontSize: 24, fontWeight: '600' as const, lineHeight: 1.4 }),
   },
   mode: 'light' as const,
   breakpoints: { sm: '390px', md: '768px', lg: '1024px' },
-  zIndex: { header: 50, modal: 60, fab: 50 },
+  zIndex: { header: 50, modal: 60, fab: 70 },
   transition: { fast: '120ms ease', normal: '200ms ease', slow: '320ms ease' },
 };
 

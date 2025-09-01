@@ -9,6 +9,7 @@ export interface Post {
   content?: string;
   liked?: boolean;
   likeCount?: number;
+  postImageUrl?: string;
 }
 
 export interface Comment {
@@ -17,3 +18,5 @@ export interface Comment {
   author: string;
   content: string;
 }
+
+export type NavKey = 'home' | 'photo' | 'route' | 'run';

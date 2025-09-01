@@ -1,48 +1,52 @@
 import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
+import type { Post } from '@/types/community';
 import ProfileHeader from './ProfileHeader';
 
 type PostCardProps = {
-  userName: string;
-  postDate: string;
-  profileImageUrl: string; // 프로필 이미지
-  postImageUrl?: string; // 본문 이미지 (옵션)
-  contents: string;
-  likes: number;
-  isLiked: boolean;
-  comments: number;
+  post: Post;
 };
 
-export default function PostCard({
-  userName,
-  postDate,
-  profileImageUrl,
-  postImageUrl,
-  contents,
-  likes,
-  isLiked,
-  comments,
-}: PostCardProps) {
+export default function PostCard({ post }: PostCardProps) {
+  const navigate = useNavigate();
+
+  const { id, author, content, liked, likeCount, commentsCount, postImageUrl } =
+    post;
+
   return (
-    <Container>
+    <Container
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(`/community/${id}`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/community/detail/${id}`);
+        }
+      }}
+    >
       <ProfileHeader
-        userName={userName}
-        postDate={postDate}
-        imageUrl={profileImageUrl}
+        userName={author}
+        postDate={'2025-09-01'}
+        imageUrl={`https://picsum.photos/48?random=${id}`}
       />
+
       {postImageUrl && (
         <PostImageContainer>
           <PostImage src={postImageUrl} alt="post image" />
         </PostImageContainer>
       )}
-      <Contents>{contents}</Contents>
+
+      <Contents>{content ?? ''}</Contents>
+
       <BottomContainer>
-        <IconAndNumber isActive={isLiked}>
+        <IconAndNumber isActive={!!liked}>
           <i className="ri-thumb-up-fill" />
-          <span>{likes}</span>
+          <span>{likeCount ?? 0}</span>
         </IconAndNumber>
-        <IconAndNumber isActive={true}>
+        <IconAndNumber isActive>
           <i className="ri-chat-1-fill" />
-          <span>{comments}</span>
+          <span>{commentsCount}</span>
         </IconAndNumber>
       </BottomContainer>
     </Container>
@@ -54,6 +58,12 @@ const Container = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surface ?? 'transparent'};
+  }
 `;
 
 const PostImageContainer = styled.div`
@@ -71,7 +81,6 @@ const PostImage = styled.img`
 
 const Contents = styled.span`
   ${({ theme }) => theme.typography.small};
-
   display: -webkit-box;
   -webkit-line-clamp: 3; /* 최대 3줄 */
   -webkit-box-orient: vertical;
