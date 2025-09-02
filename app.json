@@ -2,7 +2,7 @@
   "expo": {
     "name": "Runova_FE",
     "slug": "Runova_FE",
-    "owner": "runova",
+    "owner": "monicx",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -31,11 +31,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "283351db-1496-4db2-b305-7bdc74af3aa5"
-      }
-    },
     "plugins": [
       [
         "@react-native-google-signin/google-signin",
@@ -43,6 +38,11 @@
           "iosUrlScheme": "com.googleusercontent.apps.1002214636409-e1ofh8ju0ku0jkps7mc5i7l2hiehk6uj"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "283351db-1496-4db2-b305-7bdc74af3aa5"
+      }
+    }
   }
 }
