@@ -37,6 +37,13 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.1002214636409-e1ofh8ju0ku0jkps7mc5i7l2hiehk6uj"
         }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "${MAPBOX_SK_TOKEN}",
+          "RNMapboxMapsAccessToken": "${MAPBOX_PK_TOKEN}"
+        }
       ]
     ],
     "extra": {
