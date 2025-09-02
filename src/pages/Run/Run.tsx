@@ -8,6 +8,30 @@ import type { Position, Feature, LineString } from 'geojson';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { TabParamList } from '@/types/navigation.types';
 
+const haversineDistance = (coords1: Position, coords2: Position): number => {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+
+  const lon1 = coords1[0];
+  const lat1 = coords1[1];
+  const lon2 = coords2[0];
+  const lat2 = coords2[1];
+
+  const R = 6371e3; // 지구 반지름 (미터)
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c;
+
+  return d;
+};
+
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
 export default function Run({ navigation }: Props) {
@@ -60,10 +84,21 @@ export default function Run({ navigation }: Props) {
         (newLocation) => {
           const { latitude, longitude } = newLocation.coords;
           setLocation(newLocation);
-          setRouteCoordinates((prevCoords) => [
-            ...prevCoords,
-            [longitude, latitude],
-          ]);
+
+          const newCoordinate: Position = [longitude, latitude];
+          setRouteCoordinates((prevCoords) => {
+            if (prevCoords.length > 0) {
+              const lastCoord = prevCoords[prevCoords.length - 1];
+              const distance = haversineDistance(lastCoord, newCoordinate);
+
+              if (distance > 5) {
+                return [...prevCoords, newCoordinate];
+              }
+            } else {
+              return [...prevCoords, newCoordinate];
+            }
+            return prevCoords;
+          });
         },
       );
     };
