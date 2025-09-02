@@ -1,28 +1,147 @@
-import styled from '@emotion/native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import Mapbox from '@rnmapbox/maps';
+import * as Location from 'expo-location';
+import { theme } from '@/styles/theme';
+import type { Position, Feature, LineString } from 'geojson';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { TabParamList } from '@/types/navigation.types';
 
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
-const Screen = styled.View(({ theme }) => ({
-  flex: 1,
-  padding: theme.spacing[4],
-  backgroundColor: theme.colors.gray[50],
-  justifyContent: 'center',
-  alignItems: 'center',
-}));
+export default function Run({ navigation }: Props) {
+  const [routeCoordinates, setRouteCoordinates] = useState<Position[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null,
+  );
+  const [isMapReady, setIsMapReady] = useState(false);
 
-const Title = styled.Text(({ theme }) => ({
-  color: theme.colors.primary[700],
-  fontSize: theme.typography.heading.fontSize,
-  fontWeight: theme.typography.heading.fontWeight,
-}));
+  const handleUserLocationUpdate = (newLocation: Mapbox.Location) => {
+    if (!isMapReady) {
+      setIsMapReady(true);
+    }
+  };
 
-export default function Run() {
+  useFocusEffect(
+    useCallback(() => {
+      //TODO: 화면이 포커스될 때의 로직
+      return () => {
+        // 화면이 포커스를 잃을 때 isMapReady 상태를 초기화
+        setIsMapReady(false);
+      };
+    }, []),
+  );
+
+  useEffect(() => {
+    let subscriber: { remove: () => void } | undefined;
+
+    const startWatching = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      const lastKnownPosition = await Location.getLastKnownPositionAsync();
+      if (lastKnownPosition) {
+        setLocation(lastKnownPosition);
+        const { latitude, longitude } = lastKnownPosition.coords;
+        setRouteCoordinates([[longitude, latitude]]);
+      }
+
+      subscriber = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          timeInterval: 1000,
+          distanceInterval: 10,
+        },
+        (newLocation) => {
+          const { latitude, longitude } = newLocation.coords;
+          setLocation(newLocation);
+          setRouteCoordinates((prevCoords) => [
+            ...prevCoords,
+            [longitude, latitude],
+          ]);
+        },
+      );
+    };
+
+    startWatching();
+
+    return () => {
+      subscriber?.remove();
+    };
+  }, []);
+
+  const routeGeoJSON: Feature<LineString> = {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'LineString',
+      coordinates: routeCoordinates,
+    },
+  };
+
   return (
-    <Screen>
-      <Title>Run Page</Title>
-    </Screen>
+    <View style={styles.page}>
+      <View style={styles.container}>
+        {errorMsg ? (
+          <Text>{errorMsg}</Text>
+        ) : location ? (
+          <Mapbox.MapView style={styles.map} styleURL={Mapbox.StyleURL.Street}>
+            <Mapbox.UserLocation onUpdate={handleUserLocationUpdate} />
+            {isMapReady && (
+              <>
+                <Mapbox.Camera
+                  defaultSettings={{
+                    centerCoordinate: [
+                      location.coords.longitude,
+                      location.coords.latitude,
+                    ],
+                    zoomLevel: 14,
+                  }}
+                />
+                {routeCoordinates.length > 1 && (
+                  <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
+                    <Mapbox.LineLayer
+                      id="routeLayer"
+                      style={{
+                        lineColor: theme.colors.primary[500],
+                        lineWidth: 5,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                      }}
+                    />
+                  </Mapbox.ShapeSource>
+                )}
+              </>
+            )}
+          </Mapbox.MapView>
+        ) : (
+          <Text>Getting location...</Text>
+        )}
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.gray[100],
+  },
+  container: {
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  map: {
+    flex: 1,
+    width: '100%',
+  },
+});
