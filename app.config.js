@@ -43,8 +43,8 @@ export default {
       [
         '@rnmapbox/maps',
         {
-          RNMapboxMapsDownloadToken: process.env.MAPBOX_SK_TOKEN,
-          RNMapboxMapsAccessToken: process.env.MAPBOX_PK_TOKEN,
+          RNMapboxMapsDownloadToken: credentials.MAPBOX_SK_TOKEN,
+          RNMapboxMapsAccessToken: credentials.MAPBOX_PK_TOKEN,
         },
       ],
     ],
