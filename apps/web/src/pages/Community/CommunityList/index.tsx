@@ -5,11 +5,15 @@ import SectionCarousel from './_components/SectionCarousel';
 import PostCard from '../_components/Postcard';
 import CommunityAppLayout from '../_components/CommunityAppLayout';
 import Fab from '../_components/Fab';
+import { useLogNativeToken } from '@/hooks/useLogNativeToken';
 import type { Post } from '@/types/community';
 
 export default function CommunityList() {
   const navigate = useNavigate();
 
+  const { token, init } = useLogNativeToken('Community');
+
+  console.log(token, init);
   const mkPost = (
     seed: number,
     category: Post['category'],
