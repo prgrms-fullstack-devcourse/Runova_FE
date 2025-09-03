@@ -1,3 +1,4 @@
+const credentials = require('./credentials');
 export default {
   expo: {
     name: 'Runova_FE',
@@ -48,6 +49,7 @@ export default {
       ],
     ],
     extra: {
+      MAPBOX_PK_TOKEN: credentials.MAPBOX_PK_TOKEN,
       eas: {
         projectId: '283351db-1496-4db2-b305-7bdc74af3aa5',
       },

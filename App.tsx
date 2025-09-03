@@ -7,11 +7,10 @@ import Constants from 'expo-constants';
 import RootNavigator from '@/navigation/RootNavigator';
 import { theme } from '@/styles/theme';
 
-Mapbox.setAccessToken(
-  Constants.expoConfig?.plugins?.find(
-    (plugin) => Array.isArray(plugin) && plugin[0] === '@rnmapbox/maps',
-  )?.[1]?.RNMapboxMapsAccessToken || '',
-);
+const mapboxToken = Constants.expoConfig?.extra?.MAPBOX_PK_TOKEN;
+
+console.log('읽어온 Mapbox 토큰:', mapboxToken); // 3. 이제 여기에 토큰 값이 찍힙니다.
+Mapbox.setAccessToken(mapboxToken || '');
 
 export default function App() {
   return (
