@@ -10,9 +10,9 @@ import {
 
 import CommunityList from '@/pages/CommunityList';
 import WebCommunity from '@/pages/WebCommunity';
-import Home from '@/pages/Home/Home';
-import Route from '@/pages/Route/Route';
-import Run from '@/pages/Run/Run';
+import Home from '@/pages/Home';
+import Route from '@/pages/Route';
+import Run from '@/pages/Run';
 
 import type { TabParamList } from '@/types/navigation.types';
 import WebMyPage from '@/pages/WebMyPage';
