@@ -1,4 +1,3 @@
-const credentials = require('./credentials');
 export default {
   expo: {
     name: 'Runova_FE',
@@ -43,13 +42,13 @@ export default {
       [
         '@rnmapbox/maps',
         {
-          RNMapboxMapsDownloadToken: credentials.MAPBOX_SK_TOKEN,
-          RNMapboxMapsAccessToken: credentials.MAPBOX_PK_TOKEN,
+          RNMapboxMapsDownloadToken: process.env.MAPBOX_DOWNLOADS_TOKEN,
+          RNMapboxMapsAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
         },
       ],
     ],
     extra: {
-      MAPBOX_PK_TOKEN: credentials.MAPBOX_PK_TOKEN,
+      MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
       eas: {
         projectId: '283351db-1496-4db2-b305-7bdc74af3aa5',
       },
