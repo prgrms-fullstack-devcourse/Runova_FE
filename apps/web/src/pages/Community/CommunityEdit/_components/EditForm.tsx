@@ -1,12 +1,20 @@
 import styled from '@emotion/styled';
 import type { Category } from '@/types/community';
 
-type SelectableItem = {
+export type SelectableItem = {
   id: string;
   imageUrl: string;
   title: string;
   date: string;
 };
+
+export type EditPatch = Partial<{
+  category: Category;
+  title: string;
+  content: string;
+  imageUrls: string[];
+  routeId: number | undefined;
+}>;
 
 export default function EditForm({
   category,
@@ -17,6 +25,8 @@ export default function EditForm({
   onSelectItem,
   onChange,
   onSubmit,
+  submitting = false,
+  submitLabel = '작성하기',
 }: {
   category: Category;
   title: string;
@@ -24,36 +34,45 @@ export default function EditForm({
   items?: SelectableItem[];
   selectedItemId?: string | null;
   onSelectItem?: (id: string) => void;
-  onChange: (
-    patch: Partial<{
-      category: Category;
-      title: string;
-      content: string;
-    }>,
-  ) => void;
-  onSubmit: () => void;
+  onChange: (patch: EditPatch) => void;
+  onSubmit: () => void | Promise<void>;
+  /** 버튼/입력 비활성화 여부 */
+  submitting?: boolean;
+  /** 버튼 라벨 (예: '수정하기' / '작성하기') */
+  submitLabel?: string;
 }) {
-  const showPicker = category === 'share' || category === 'auth';
+  const showPicker = category === 'SHARE' || category === 'PROOF';
 
   return (
-    <Body>
+    <Body aria-busy={submitting}>
       <Field>
         <Label>카테고리</Label>
         <Select
           value={category}
           onChange={(e) => onChange({ category: e.target.value as Category })}
+          disabled={submitting}
         >
-          <option value="free">자유</option>
-          <option value="auth">인증</option>
-          <option value="share">공유</option>
-          <option value="mate">메이트</option>
+          <option value="FREE">자유</option>
+          <option value="PROOF">인증</option>
+          <option value="SHARE">공유</option>
+          <option value="MATE">메이트</option>
         </Select>
+      </Field>
+
+      <Field>
+        <Label>제목</Label>
+        <Input
+          value={title}
+          onChange={(e) => onChange({ title: e.target.value })}
+          placeholder="제목을 입력하세요"
+          disabled={submitting}
+        />
       </Field>
 
       {showPicker && (
         <Field>
           <Label>
-            {category === 'auth' ? '인증샷 선택' : '공유할 항목 선택'}
+            {category === 'PROOF' ? '인증샷 선택' : '공유할 항목 선택'}
           </Label>
           <Picker role="listbox" aria-label="선택 리스트">
             {items.length === 0 ? (
@@ -67,7 +86,8 @@ export default function EditForm({
                     role="option"
                     aria-selected={active}
                     $active={active}
-                    onClick={() => onSelectItem?.(it.id)}
+                    onClick={() => !submitting && onSelectItem?.(it.id)}
+                    disabled={submitting}
                   >
                     <Thumb>
                       <img src={it.imageUrl} alt={it.title} />
@@ -91,10 +111,18 @@ export default function EditForm({
           value={content}
           onChange={(e) => onChange({ content: e.target.value })}
           placeholder="내용을 입력하세요"
+          disabled={submitting}
         />
       </Field>
 
-      <Submit onClick={onSubmit}>작성하기</Submit>
+      <Submit
+        onClick={onSubmit}
+        disabled={submitting}
+        aria-busy={submitting}
+        aria-disabled={submitting}
+      >
+        {submitting ? '저장 중…' : submitLabel}
+      </Submit>
     </Body>
   );
 }
@@ -122,12 +150,19 @@ const Select = styled.select`
   border-radius: 12px;
 `;
 
+const Input = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+`;
+
 const Picker = styled.div`
-  max-height: 240px; /* 스크롤 영역 높이 */
-  overflow-y: auto; /* 세로 스크롤 */
+  max-height: 240px;
+  overflow-y: auto;
   display: grid;
   gap: 8px;
-  padding-right: 4px; /* 스크롤 여백 */
+  padding-right: 4px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   background: ${({ theme }) => theme.colors.surfaceAlt ?? theme.colors.surface};
@@ -201,4 +236,8 @@ const Submit = styled.button`
   color: ${({ theme }) => theme.colors.surface};
   font-weight: 700;
   border: 1px solid ${({ theme }) => theme.colors.border};
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
 `;

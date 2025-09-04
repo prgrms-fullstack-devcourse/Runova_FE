@@ -1,112 +1,128 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-
-import type { Post } from '@/types/community';
+import { useNavigate, useParams } from 'react-router-dom';
+import CommunityAppLayout from '../_components/CommunityAppLayout';
 import PostCard from '../_components/Postcard';
 import Fab from '../_components/Fab';
-import CommunityAppLayout from '../_components/CommunityAppLayout';
+import type { Post, Category } from '@/types/community';
+import { getPostsCursor } from '@/api/posts';
 
-type FeedType = 'run' | 'photo' | 'route' | 'latest';
+type RouteType = 'all' | 'free' | 'proof' | 'share' | 'mate';
 
-const TITLE_MAP: Record<FeedType, string> = {
-  run: '러닝메이트 구해요!',
-  photo: '인증샷',
-  route: '경로 공유',
-  latest: '최신 포스트',
+const TITLE_MAP: Record<RouteType, string> = {
+  all: '전체',
+  free: '자유',
+  proof: '인증샷',
+  share: '경로 공유',
+  mate: '러닝메이트 구해요!',
 };
 
-async function fetchPosts(
-  cursor: number | null,
-  limit = 10,
-  feedType?: FeedType,
-): Promise<{
-  data: Post[];
-  nextCursor: number | null;
-}> {
-  await new Promise((r) => setTimeout(r, 400));
-  const start = cursor ?? 0;
-  const end = start + limit;
-
-  const data: Post[] = Array.from({ length: limit }).map((_, idx) => {
-    const n = start + idx + 1;
-    return {
-      id: String(n),
-      // 필요하면 feedType을 Category로 매핑해서 채워도 됨
-      // category: 'mate' | 'auth' | 'share' | 'free' 중 선택
-      category:
-        feedType === 'run'
-          ? 'mate'
-          : feedType === 'photo'
-            ? 'auth'
-            : feedType === 'route'
-              ? 'share'
-              : 'free',
-      title: `샘플 제목 ${n}`,
-      author: '홍길동',
-      commentsCount: (n * 3) % 17,
-      content:
-        n % 3 === 0
-          ? '오늘은 날씨가 좋아서 산책을 다녀왔습니다. '.repeat(8)
-          : '오늘은 날씨가 좋아서 산책을 다녀왔습니다.',
-      liked: n % 2 === 0,
-      likeCount: (n * 7) % 53,
-      postImageUrl:
-        n % 2 === 0 ? `https://picsum.photos/600/300?random=${n}` : undefined,
-    };
-  });
-
-  const nextCursor = end >= 50 ? null : end;
-  return { data, nextCursor };
-}
+const ROUTE_TO_CATEGORY: Record<RouteType, Category> = {
+  all: 'ALL',
+  free: 'FREE',
+  proof: 'PROOF',
+  share: 'SHARE',
+  mate: 'MATE',
+};
 
 export default function CommunityFeed() {
   const navigate = useNavigate();
-  const { type = 'latest' } = useParams<{ type: FeedType }>();
-  const title = TITLE_MAP[type as FeedType] ?? TITLE_MAP.latest;
-  const [items, setItems] = useState<Post[]>([]);
-  const [cursor, setCursor] = useState<number | null>(0);
-  const [loading, setLoading] = useState(false);
+  const { type: rawType } = useParams<{ type?: string }>();
 
-  const canLoadMore = useMemo(() => cursor !== null, [cursor]);
+  const routeType: RouteType =
+    rawType === 'free' ||
+    rawType === 'proof' ||
+    rawType === 'share' ||
+    rawType === 'mate'
+      ? rawType
+      : 'all';
+
+  const title = TITLE_MAP[routeType];
+  const category = ROUTE_TO_CATEGORY[routeType];
+
+  const [items, setItems] = useState<Post[]>([]);
+  // undefined: 아직 로드 전 / number: 다음 커서 / null: 더 없음
+  const [cursor, setCursor] = useState<number | null | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // StrictMode 중복호출/동시호출 방지
+  const inFlightRef = useRef(false);
+  const initialLoadRef = useRef(false);
+
+  // 첫 로드 전에 옵저버 붙어서 중복 호출되는 것 방지
+  const canLoadMore = useMemo(
+    () => cursor !== null && cursor !== undefined,
+    [cursor],
+  );
 
   const loadMore = useCallback(async () => {
-    if (loading || !canLoadMore) return;
+    // 더 없음 + 이미 아이템 있으면 차단
+    if (cursor === null && items.length > 0) return;
+    // 동시 호출 가드
+    if (inFlightRef.current) return;
+
+    inFlightRef.current = true;
     setLoading(true);
+    setError(null);
+
     try {
-      const res = await fetchPosts(cursor, 10);
-      setItems((prev) => [...prev, ...res.data]);
-      setCursor(res.nextCursor);
+      const { items: page, nextCursor } = await getPostsCursor({
+        type: category !== 'ALL' ? category : undefined,
+        sort: 'recent',
+        limit: 10,
+        cursor, // undefined면 첫 페이지
+      });
+
+      setItems((prev) => [...prev, ...page]);
+      setCursor(nextCursor ?? null);
+    } catch {
+      setError('목록을 불러오지 못했습니다.');
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
-  }, [cursor, loading, canLoadMore]);
+  }, [category, cursor, items.length]);
 
+  // 카테고리 변경 시 완전 초기화
   useEffect(() => {
-    if (items.length === 0) loadMore();
-  }, [items.length, loadMore]);
+    setItems([]);
+    setCursor(undefined);
+    initialLoadRef.current = false;
+  }, [category]);
 
+  // 첫 로드 1회만
+  useEffect(() => {
+    if (cursor === undefined && !initialLoadRef.current && !loading) {
+      initialLoadRef.current = true;
+      void loadMore();
+    }
+  }, [cursor, loading, loadMore]);
+
+  // 무한스크롤
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el) return;
+    if (!el || !canLoadMore) return;
 
     const io = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (entry.isIntersecting) loadMore();
+        if (entry.isIntersecting && !loading) void loadMore();
       },
       { root: null, rootMargin: '200px 0px', threshold: 0 },
     );
 
     io.observe(el);
     return () => io.disconnect();
-  }, [loadMore]);
+  }, [canLoadMore, loading, loadMore]);
 
   return (
     <CommunityAppLayout title={title} onBack={() => window.history.back()}>
       <Page>
         <List>
+          {error && <ErrorText>{error}</ErrorText>}
+
           {items.map((p) => (
             <CardWrap key={p.id}>
               <PostCard post={p} />
@@ -114,9 +130,9 @@ export default function CommunityFeed() {
           ))}
 
           {loading && <Loading>불러오는 중…</Loading>}
-
           {canLoadMore && <Sentinel ref={sentinelRef} />}
         </List>
+
         <Fab
           icon={<i className="ri-edit-2-fill" />}
           onClick={() => navigate('/community/edit')}
@@ -126,7 +142,7 @@ export default function CommunityFeed() {
   );
 }
 
-const PAGE_TOP_OFFSET = 72;
+const PAGE_TOP_OFFSET = 0;
 
 const Page = styled.main`
   padding-top: ${PAGE_TOP_OFFSET}px;
@@ -149,6 +165,13 @@ const CardWrap = styled.article`
 const Loading = styled.div`
   ${({ theme }) => theme.typography.small};
   color: ${({ theme }) => theme.colors.subtext};
+  text-align: center;
+  padding: 12px 0;
+`;
+
+const ErrorText = styled.div`
+  ${({ theme }) => theme.typography.small};
+  color: ${({ theme }) => theme.colors.danger};
   text-align: center;
   padding: 12px 0;
 `;

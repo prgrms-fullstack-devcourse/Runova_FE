@@ -10,8 +10,7 @@ type PostCardProps = {
 export default function PostCard({ post }: PostCardProps) {
   const navigate = useNavigate();
 
-  const { id, author, content, liked, likeCount, commentsCount, postImageUrl } =
-    post;
+  const { id, author, content, liked, likeCount, commentsCount } = post;
 
   return (
     <Container
@@ -25,11 +24,11 @@ export default function PostCard({ post }: PostCardProps) {
         imageUrl={`https://picsum.photos/48?random=${id}`}
       />
 
-      {postImageUrl && (
+      {/* {imageUrls && (
         <PostImageContainer>
-          <PostImage src={postImageUrl} alt="post image" />
+          <PostImage src={imageUrls[0]} alt="post image" />
         </PostImageContainer>
-      )}
+      )} */}
 
       <Contents>{content ?? ''}</Contents>
 
@@ -60,18 +59,18 @@ const Container = styled.div`
   }
 `;
 
-const PostImageContainer = styled.div`
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-`;
+// const PostImageContainer = styled.div`
+//   width: 100%;
+//   border-radius: 8px;
+//   overflow: hidden;
+// `;
 
-const PostImage = styled.img`
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  display: block;
-`;
+// const PostImage = styled.img`
+//   width: 100%;
+//   aspect-ratio: 1 / 1;
+//   object-fit: cover;
+//   display: block;
+// `;
 
 const Contents = styled.span`
   ${({ theme }) => theme.typography.small};

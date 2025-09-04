@@ -2,14 +2,23 @@ import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 import { useCommunityStore } from '@/stores/communityStore';
 
+const PATH_BY_KEY = {
+  home: '/community',
+  photo: '/community/feed/proof', // ✅ photo -> proof
+  route: '/community/feed/share', // ✅ route -> share
+  run: '/community/feed/mate', // ✅ run   -> mate
+} as const;
+
+type NavKey = keyof typeof PATH_BY_KEY;
+
 export default function CommunityNavigator() {
   const navigate = useNavigate();
   const active = useCommunityStore((s) => s.activeNav);
   const setActiveNav = useCommunityStore((s) => s.setActiveNav);
 
-  const go = (key: Parameters<typeof setActiveNav>[0], path: string) => () => {
+  const go = (key: NavKey) => () => {
     if (active !== key) setActiveNav(key);
-    navigate(path);
+    navigate(PATH_BY_KEY[key]);
   };
 
   return (
@@ -17,7 +26,7 @@ export default function CommunityNavigator() {
       <NavItem
         active={active === 'home'}
         aria-current={active === 'home' ? 'page' : undefined}
-        onClick={go('home', '/community')}
+        onClick={go('home')}
       >
         <i className="ri-home-4-fill" />
         <span>홈</span>
@@ -26,7 +35,7 @@ export default function CommunityNavigator() {
       <NavItem
         active={active === 'photo'}
         aria-current={active === 'photo' ? 'page' : undefined}
-        onClick={go('photo', '/community/feed/photo')}
+        onClick={go('photo')}
       >
         <i className="ri-camera-2-fill" />
         <span>인증샷</span>
@@ -35,7 +44,7 @@ export default function CommunityNavigator() {
       <NavItem
         active={active === 'route'}
         aria-current={active === 'route' ? 'page' : undefined}
-        onClick={go('route', '/community/feed/route')}
+        onClick={go('route')}
       >
         <i className="ri-route-line" />
         <span>경로</span>
@@ -44,7 +53,7 @@ export default function CommunityNavigator() {
       <NavItem
         active={active === 'run'}
         aria-current={active === 'run' ? 'page' : undefined}
-        onClick={go('run', '/community/feed/run')}
+        onClick={go('run')}
       >
         <i className="ri-run-fill" />
         <span>메이트</span>
@@ -76,7 +85,6 @@ const NavItem = styled.button<{ active?: boolean }>`
   ${({ theme }) => theme.typography.small};
   color: ${({ theme, active }) =>
     active ? theme.colors.primary : theme.colors.subtext};
-
   i {
     font-size: 20px;
     line-height: 1;
