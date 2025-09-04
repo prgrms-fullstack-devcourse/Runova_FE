@@ -142,7 +142,7 @@ export default function CommunityFeed() {
   );
 }
 
-const PAGE_TOP_OFFSET = 72;
+const PAGE_TOP_OFFSET = 0;
 
 const Page = styled.main`
   padding-top: ${PAGE_TOP_OFFSET}px;
@@ -171,7 +171,7 @@ const Loading = styled.div`
 
 const ErrorText = styled.div`
   ${({ theme }) => theme.typography.small};
-  color: #ef4444;
+  color: ${({ theme }) => theme.colors.danger};
   text-align: center;
   padding: 12px 0;
 `;

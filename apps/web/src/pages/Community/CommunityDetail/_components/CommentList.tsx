@@ -5,9 +5,7 @@ type Props = {
   comments: Comment[];
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
-  /** 현재 수정/삭제 처리 중인 댓글 id (버튼 비활성화 용) */
   workingId?: string | null;
-  /** (선택) 내가 쓴 댓글만 버튼 노출하고 싶으면 전달: 기본은 모두 노출 */
   canManage?: (c: Comment) => boolean;
 };
 
@@ -30,18 +28,23 @@ export default function CommentList({
             </Meta>
             <Body>{c.content}</Body>
             {manageable && (onEdit || onDelete) && (
-              <Btns>
-                {onEdit && (
-                  <button disabled={busy} onClick={() => onEdit(c.id)}>
-                    수정
-                  </button>
-                )}
-                {onDelete && (
-                  <button disabled={busy} onClick={() => onDelete(c.id)}>
-                    삭제
-                  </button>
-                )}
-              </Btns>
+              <BtnRow>
+                <Btns>
+                  {onEdit && (
+                    <EditButton disabled={busy} onClick={() => onEdit(c.id)}>
+                      수정
+                    </EditButton>
+                  )}
+                  {onDelete && (
+                    <DeleteButton
+                      disabled={busy}
+                      onClick={() => onDelete(c.id)}
+                    >
+                      삭제
+                    </DeleteButton>
+                  )}
+                </Btns>
+              </BtnRow>
             )}
           </Row>
         );
@@ -55,24 +58,53 @@ const Wrap = styled.div`
   display: grid;
   gap: 12px;
 `;
+
 const Row = styled.div`
   display: grid;
   gap: 6px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.surface};
   padding-bottom: 12px;
 `;
+
 const Meta = styled.div`
   font-size: 12px;
-  color: ${({ theme }) => theme.colors.subtext};
+  color: ${({ theme }) => theme.colors.primary};
 `;
+
 const Author = styled.span`
   font-weight: 600;
 `;
+
 const Body = styled.div`
   font-size: 14px;
   white-space: pre-wrap;
 `;
+
+/* 버튼 줄을 오른쪽 끝으로 */
+const BtnRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
 const Btns = styled.div`
   display: flex;
   gap: 8px;
+`;
+
+const baseBtn = `
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent;
+  font-weight: 600;
+`;
+
+const EditButton = styled.button`
+  ${baseBtn}
+  color: ${({ theme }) => theme.colors.subtext};
+`;
+
+const DeleteButton = styled.button`
+  ${baseBtn}
+  color: ${({ theme }) => theme.colors.danger};
 `;

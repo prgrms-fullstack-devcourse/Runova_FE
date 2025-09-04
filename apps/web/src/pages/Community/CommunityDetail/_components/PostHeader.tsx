@@ -82,10 +82,10 @@ const baseBtn = `
 
 const EditButton = styled.button`
   ${baseBtn}
-  color: #475569;
+  color: ${({ theme }) => theme.colors.subtext};
 `;
 
 const DeleteButton = styled.button`
   ${baseBtn}
-  color: #dc2626;
+  color: ${({ theme }) => theme.colors.danger};
 `;

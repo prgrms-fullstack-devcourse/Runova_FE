@@ -18,12 +18,14 @@ import {
   updateComment,
   deleteComment,
 } from '@/api/comments';
+import { useModal } from '@/components/common/modal/modalContext';
 
 export default function CommunityDetail() {
   const nav = useNavigate();
   const { id } = useParams<{ id: string }>();
   const inputRef = useRef<HTMLInputElement>(null);
   const goBack = useBack('/community');
+  const { prompt, confirm } = useModal();
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,15 +134,26 @@ export default function CommunityDetail() {
     }
   };
 
-  // ✅ 댓글 수정
   const handleEditComment = async (commentId: string) => {
     const target = comments.find((c) => c.id === commentId);
     if (!target) return;
 
-    const next = prompt('댓글을 수정하세요', target.content);
+    const next = await prompt({
+      title: '댓글을 수정하세요',
+      defaultValue: target.content,
+      placeholder: '댓글 내용을 입력',
+      confirmText: '수정',
+      cancelText: '취소',
+    });
     if (next == null) return; // 취소
     const content = next.trim();
-    if (!content) return alert('내용을 입력하세요.');
+    if (!content) {
+      await alert({
+        title: '입력이 필요합니다',
+        description: '내용을 입력하세요.',
+      });
+      return;
+    }
 
     try {
       setEditingId(commentId);
@@ -151,7 +164,7 @@ export default function CommunityDetail() {
         ),
       );
     } catch (e) {
-      alert(getReadablePostError(e));
+      await alert({ title: '오류', description: getReadablePostError(e) });
     } finally {
       setEditingId(null);
     }
@@ -159,40 +172,53 @@ export default function CommunityDetail() {
 
   const handleDeletePost = useCallback(async () => {
     if (!post || deleting) return;
-    if (!confirm('삭제하시겠습니까?')) return;
+
+    const ok = await confirm({
+      title: '게시글을 삭제하시겠습니까?',
+      description: '이 작업은 되돌릴 수 없습니다.',
+      confirmText: '삭제',
+      cancelText: '취소',
+    });
+    if (!ok) return;
 
     try {
       setDeleting(true);
-      const ok = await deletePostById(post.id);
-      if (ok) {
+      const done = await deletePostById(post.id);
+      if (done) {
         nav('/community', { replace: true });
       } else {
-        alert('삭제에 실패했습니다.');
+        await alert({ title: '실패', description: '삭제에 실패했습니다.' });
       }
     } catch (e) {
-      alert(getReadablePostError(e));
+      await alert({ title: '오류', description: getReadablePostError(e) });
     } finally {
       setDeleting(false);
     }
-  }, [post, deleting, nav]);
+  }, [post, deleting, nav, confirm]);
 
-  // ✅ 댓글 삭제
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '댓글을 삭제하시겠습니까?',
+      description: '삭제 후 복구할 수 없습니다.',
+      confirmText: '삭제',
+      cancelText: '취소',
+    });
+    if (!ok) return;
+
     try {
       setDeletingCommentId(commentId);
-      const ok = await deleteComment(commentId);
-      if (ok) {
+      const done = await deleteComment(commentId);
+      if (done) {
         setComments((prev) => prev.filter((c) => c.id !== commentId));
         setPost((p) =>
           p ? { ...p, commentsCount: Math.max(0, p.commentsCount - 1) } : p,
         );
         setCTotal((t) => Math.max(0, t - 1));
       } else {
-        alert('삭제에 실패했습니다.');
+        await alert({ title: '실패', description: '삭제에 실패했습니다.' });
       }
     } catch (e) {
-      alert(getReadablePostError(e));
+      await alert({ title: '오류', description: getReadablePostError(e) });
     } finally {
       setDeletingCommentId(null);
     }
