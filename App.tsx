@@ -10,8 +10,6 @@ import { theme } from '@/styles/theme';
 const mapboxToken = Constants.expoConfig?.extra?.MAPBOX_ACCESS_TOKEN;
 Mapbox.setAccessToken(mapboxToken || '');
 
-console.log('읽어온 Mapbox 토큰:', mapboxToken);
-
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
