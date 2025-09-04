@@ -8,6 +8,8 @@ import type { Position, Feature, LineString } from 'geojson';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { TabParamList } from '@/types/navigation.types';
 
+const EARTH_RADIUS_IN_METERS = 6371e3;
+
 const haversineDistance = (coords1: Position, coords2: Position): number => {
   const toRad = (x: number) => (x * Math.PI) / 180;
 
@@ -16,7 +18,7 @@ const haversineDistance = (coords1: Position, coords2: Position): number => {
   const lon2 = coords2[0];
   const lat2 = coords2[1];
 
-  const R = 6371e3; // 지구 반지름 (미터)
+  const R = EARTH_RADIUS_IN_METERS;
 
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
