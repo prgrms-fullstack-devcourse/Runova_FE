@@ -41,3 +41,5 @@ yarn-error.*
 
 .env.development
 .env.production
+
+credentials.js
