@@ -1,0 +1,22 @@
+export type Category = 'all' | 'free' | 'auth' | 'share' | 'mate';
+
+export interface Post {
+  id: string;
+  category: Exclude<Category, 'all'>;
+  title: string;
+  author: string;
+  commentsCount: number;
+  content?: string;
+  liked?: boolean;
+  likeCount?: number;
+  postImageUrl?: string;
+}
+
+export interface Comment {
+  id: string;
+  postId: string;
+  author: string;
+  content: string;
+}
+
+export type NavKey = 'home' | 'photo' | 'route' | 'run';
