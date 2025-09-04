@@ -1,15 +1,17 @@
-export type Category = 'all' | 'free' | 'auth' | 'share' | 'mate';
+export type Category = 'ALL' | 'FREE' | 'PROOF' | 'SHARE' | 'MATE';
 
 export interface Post {
   id: string;
-  category: Exclude<Category, 'all'>;
+  category: Exclude<Category, 'ALL'>;
   title: string;
   author: string;
   commentsCount: number;
   content?: string;
   liked?: boolean;
   likeCount?: number;
-  postImageUrl?: string;
+  imageUrls?: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Comment {
@@ -17,6 +19,7 @@ export interface Comment {
   postId: string;
   author: string;
   content: string;
+  updatedAt: string;
 }
 
 export type NavKey = 'home' | 'photo' | 'route' | 'run';

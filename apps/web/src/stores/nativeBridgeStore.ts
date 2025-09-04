@@ -1,9 +1,12 @@
 import { create } from 'zustand';
-import type { NativeInitPayload, RNToWebMessage } from '@/types/nativeBridge.type';
+import type {
+  NativeInitPayload,
+  RNToWebMessage,
+} from '@/types/nativeBridge.type';
 
 type BridgeState = {
-  init: NativeInitPayload | null; // RN이 준 초기 페이로드
-  token: string | null; // 최신 액세스 토큰
+  init: NativeInitPayload | null;
+  token: string | null;
   lastMessage: RNToWebMessage | null;
   setFromNative: (msg: RNToWebMessage) => void;
   clear: () => void;

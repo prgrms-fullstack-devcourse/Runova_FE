@@ -2,10 +2,10 @@ import styled from '@emotion/styled';
 import type { Post } from '@/types/community';
 
 const CATEGORY_LABEL_MAP: Record<Post['category'], string> = {
-  free: '자유',
-  auth: '인증',
-  share: '공유',
-  mate: '메이트',
+  FREE: '자유',
+  PROOF: '인증',
+  SHARE: '공유',
+  MATE: '메이트',
 };
 
 export default function PostHeader({
