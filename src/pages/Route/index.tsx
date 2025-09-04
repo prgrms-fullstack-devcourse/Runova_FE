@@ -1,15 +1,24 @@
 import styled from '@emotion/native';
 import { useState } from 'react';
 import { ArrowLeft, Settings, PenTool } from 'lucide-react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Header from '@/components/Header';
 import TabNavigation from '@/components/TabNavigation';
 import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
-import type { RouteTabId, TabParamList } from '@/types/navigation.types';
+import type {
+  RootStackParamList,
+  RouteTabId,
+  TabParamList,
+} from '@/types/navigation.types';
 import type { RouteCardData } from '@/types/card.types';
 
-type Props = NativeStackScreenProps<TabParamList, 'Route'>;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Route'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'created', title: '생성한 경로' },
@@ -29,7 +38,7 @@ export default function Route({ navigation }: Props) {
   };
 
   const handleCreatePress = () => {
-    console.log('경로 생성');
+    navigation.navigate('Draw');
   };
 
   const handleTabPress = (tabId: RouteTabId) => {
