@@ -58,12 +58,12 @@ const Wrap = styled.div`
 const Row = styled.div`
   display: grid;
   gap: 6px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.surface};
   padding-bottom: 12px;
 `;
 const Meta = styled.div`
   font-size: 12px;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.subtext};
 `;
 const Author = styled.span`
   font-weight: 600;

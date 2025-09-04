@@ -114,12 +114,12 @@ const Container = styled.div`
 
 const Hint = styled.div`
   padding: 8px 12px;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.subtext};
   font-size: 14px;
 `;
 
 const ErrorMsg = styled.div`
   padding: 8px 12px;
-  color: #ef4444;
+  color: ${({ theme }) => theme.colors.danger};
   font-size: 14px;
 `;

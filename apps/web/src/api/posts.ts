@@ -153,7 +153,6 @@ export async function createPost(body: CreatePostReq): Promise<Post> {
     ...body,
     imageUrls: body.imageUrls ?? [],
   });
-  console.log('데이터 : ', data);
   return mapPostResToEntity(data);
 }
 
