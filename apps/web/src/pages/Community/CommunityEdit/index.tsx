@@ -42,7 +42,6 @@ export default function CommunityEdit() {
         setTitle(data.title ?? '');
         setContent(data.content ?? '');
         setImageUrls(Array.isArray(data.imageUrls) ? data.imageUrls : []);
-        // @ts-expect-error routeId 가 타입에 없다면 무시
         if (typeof data.routeId === 'number') setRouteId(data.routeId);
       } catch (e) {
         alert(getReadablePostError(e));
