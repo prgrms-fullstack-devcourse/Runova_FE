@@ -1,14 +1,18 @@
-import { RefObject } from 'react';
+import { RefObject, useRef } from 'react';
 import { Alert } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import { Gesture } from 'react-native-gesture-handler';
 import { getMatchedRoute } from '@/lib/mapMatching';
 import { findClosestRouteIndex } from '@/utils/draw';
-import { ERASE_DISTANCE_THRESHOLD } from '@/constants/draw';
+import {
+  ERASE_DISTANCE_THRESHOLD,
+  MIN_PIXEL_DISTANCE_FOR_UPDATE,
+} from '@/constants/draw';
 import useDrawStore from '@/store/draw';
 import type { Position } from 'geojson';
 
 export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
+  const lastScreenPoint = useRef({ x: 0, y: 0 });
   const {
     drawMode,
     drawnCoordinates,
@@ -43,6 +47,19 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
     })
     .onUpdate(async (event) => {
       if (drawMode !== 'draw' || !mapRef.current) return;
+
+      const dx = Math.abs(event.x - lastScreenPoint.current.x);
+      const dy = Math.abs(event.y - lastScreenPoint.current.y);
+
+      if (
+        dx < MIN_PIXEL_DISTANCE_FOR_UPDATE &&
+        dy < MIN_PIXEL_DISTANCE_FOR_UPDATE
+      ) {
+        return;
+      }
+
+      lastScreenPoint.current = { x: event.x, y: event.y };
+
       try {
         const newCoord = await mapRef.current.getCoordinateFromView([
           event.x,

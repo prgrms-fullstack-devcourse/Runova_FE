@@ -81,13 +81,15 @@ export default function Draw() {
       />
       <View style={styles.container}>
         <GestureDetector gesture={composedGesture}>
-          <DrawMap
-            mapRef={mapRef}
-            cameraRef={cameraRef}
-            initialLocation={initialLocation}
-            onPanToCurrentUserLocation={flyToCurrentUserLocation}
-            onUserLocationUpdate={handleUserLocationUpdate}
-          />
+          <View style={styles.container} collapsable={false}>
+            <DrawMap
+              mapRef={mapRef}
+              cameraRef={cameraRef}
+              initialLocation={initialLocation}
+              onPanToCurrentUserLocation={flyToCurrentUserLocation}
+              onUserLocationUpdate={handleUserLocationUpdate}
+            />
+          </View>
         </GestureDetector>
         {isLoading && <LoadingIndicator />}
       </View>

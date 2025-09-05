@@ -1,1 +1,2 @@
 export const ERASE_DISTANCE_THRESHOLD = 0.001;
+export const MIN_PIXEL_DISTANCE_FOR_UPDATE = 5;
