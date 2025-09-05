@@ -1,34 +1,28 @@
-import React, { RefObject } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
-import type { Position, Feature, LineString } from 'geojson';
 import { theme } from '@/styles/theme';
-import { INITIAL_ZOOM_LEVEL } from '@/constants/location';
-
-interface DrawMapProps {
-  mapRef: RefObject<Mapbox.MapView | null>;
-  drawnCoordinates: Position[];
-  matchedRoute: Feature<LineString> | null;
-}
+import type { DrawMapProps } from '@/types/draw.types';
+import Map from '@/components/Map';
+import DrawUI from './DrawUI';
+import useDrawStore from '@/store/draw';
 
 export default function DrawMap({
   mapRef,
-  drawnCoordinates,
-  matchedRoute,
+  cameraRef,
+  initialLocation,
+  onPanToCurrentUserLocation,
+  onUserLocationUpdate,
 }: DrawMapProps) {
+  const { drawnCoordinates, completedDrawings, matchedRoutes } = useDrawStore();
+
   return (
     <View style={styles.container}>
-      <Mapbox.MapView
-        ref={mapRef}
-        style={styles.map}
-        styleURL={Mapbox.StyleURL.Street}
+      <Map
+        mapRef={mapRef}
+        cameraRef={cameraRef}
+        initialLocation={initialLocation}
+        onUserLocationUpdate={onUserLocationUpdate}
       >
-        <Mapbox.Camera
-          followUserLocation
-          followZoomLevel={INITIAL_ZOOM_LEVEL}
-        />
-        <Mapbox.UserLocation />
-
         {drawnCoordinates.length > 1 && (
           <Mapbox.ShapeSource
             id="drawn-source"
@@ -53,10 +47,38 @@ export default function DrawMap({
           </Mapbox.ShapeSource>
         )}
 
-        {matchedRoute && (
-          <Mapbox.ShapeSource id="matched-source" shape={matchedRoute}>
+        {completedDrawings.map((drawing, index) => (
+          <Mapbox.ShapeSource
+            key={`completed-drawing-source-${index}`}
+            id={`completed-drawing-source-${index}`}
+            shape={{
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: drawing,
+              },
+            }}
+          >
             <Mapbox.LineLayer
-              id="matched-line"
+              id={`completed-drawing-line-${index}`}
+              style={{
+                lineColor: theme.colors.secondary[500],
+                lineWidth: 4,
+                lineOpacity: 0.7,
+              }}
+            />
+          </Mapbox.ShapeSource>
+        ))}
+
+        {matchedRoutes.map((route, index) => (
+          <Mapbox.ShapeSource
+            key={`matched-source-${index}`}
+            id={`matched-source-${index}`}
+            shape={route}
+          >
+            <Mapbox.LineLayer
+              id={`matched-line-${index}`}
               style={{
                 lineColor: theme.colors.primary[600],
                 lineWidth: 5,
@@ -64,17 +86,15 @@ export default function DrawMap({
               }}
             />
           </Mapbox.ShapeSource>
-        )}
-      </Mapbox.MapView>
+        ))}
+      </Map>
+      <DrawUI onPanToCurrentUserLocation={onPanToCurrentUserLocation} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  map: {
     flex: 1,
   },
 });
