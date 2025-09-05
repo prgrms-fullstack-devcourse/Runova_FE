@@ -7,6 +7,7 @@ interface FloatingButtonProps {
   icon: LucideIcon;
   onPress: () => void;
   style?: ViewStyle | ViewStyle[];
+  iconColor?: string;
 }
 
 const FLOATING_BUTTON_BOTTOM_OFFSET = 80;
@@ -15,6 +16,7 @@ export default function FloatingButton({
   icon: Icon,
   onPress,
   style,
+  iconColor = '#000000',
 }: FloatingButtonProps) {
   const insets = useSafeAreaInsets();
 
@@ -24,7 +26,7 @@ export default function FloatingButton({
       activeOpacity={0.8}
       style={[{ bottom: insets.bottom + FLOATING_BUTTON_BOTTOM_OFFSET }, style]}
     >
-      <Icon color="#ffffff" size={24} />
+      <Icon color={iconColor} size={24} />
     </ButtonContainer>
   );
 }
