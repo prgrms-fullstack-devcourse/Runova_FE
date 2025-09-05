@@ -6,9 +6,10 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, Save } from 'lucide-react-native';
+import { useCallback } from 'react';
 import { theme } from '@/styles/theme';
 import { useMapGestures } from '@/hooks/useMapGestures';
 import { useInitialLocation } from '@/hooks/useInitialLocation';
@@ -35,13 +36,21 @@ export default function Draw() {
 
   const currentUserLocation = useRef<Position | null>(null);
 
+  const clearAll = useDrawStore((s) => s.clearAll);
+  const isLoading = useDrawStore((s) => s.isLoading);
+
+  useFocusEffect(
+    useCallback(() => {
+      clearAll();
+    }, [clearAll]),
+  );
+
   useEffect(() => {
     if (initialLocation) {
       currentUserLocation.current = initialLocation;
     }
   }, [initialLocation]);
 
-  const isLoading = useDrawStore((s) => s.isLoading);
   const { composedGesture } = useMapGestures(mapRef);
 
   const flyToCurrentUserLocation = () => {
