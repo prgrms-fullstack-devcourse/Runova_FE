@@ -1,0 +1,1 @@
+export const ERASE_DISTANCE_THRESHOLD = 0.001;
