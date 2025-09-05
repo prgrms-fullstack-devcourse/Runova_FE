@@ -11,7 +11,7 @@ import {
 import CommunityList from '@/pages/CommunityList';
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
-import Route from '@/pages/Route';
+import RouteStackNavigator from '@/navigation/RouteStackNavigator';
 import Run from '@/pages/Run';
 
 import type { TabParamList } from '@/types/navigation.types';
@@ -57,7 +57,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Route"
-        component={Route}
+        component={RouteStackNavigator}
         options={{
           tabBarIcon: ({ color, size }) => (
             <AudioWaveform color={color} size={size} />
