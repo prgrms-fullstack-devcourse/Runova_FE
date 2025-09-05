@@ -10,6 +10,7 @@ interface MapProps {
   initialLocation: Position;
   onUserLocationUpdate?: (location: Mapbox.Location) => void;
   children?: React.ReactNode;
+  showUserLocation?: boolean;
 }
 
 export default function Map({
@@ -18,6 +19,7 @@ export default function Map({
   initialLocation,
   onUserLocationUpdate,
   children,
+  showUserLocation = true,
 }: MapProps) {
   return (
     <Mapbox.MapView
@@ -32,7 +34,9 @@ export default function Map({
           zoomLevel: INITIAL_ZOOM_LEVEL,
         }}
       />
-      <Mapbox.UserLocation onUpdate={onUserLocationUpdate} />
+      {showUserLocation && (
+        <Mapbox.UserLocation onUpdate={onUserLocationUpdate} />
+      )}
       {children}
     </Mapbox.MapView>
   );
