@@ -16,7 +16,7 @@ export default function FloatingButton({
   icon: Icon,
   onPress,
   style,
-  iconColor = '#000000',
+  iconColor = '#ffffff',
 }: FloatingButtonProps) {
   const insets = useSafeAreaInsets();
 
