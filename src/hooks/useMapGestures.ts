@@ -4,26 +4,23 @@ import Mapbox from '@rnmapbox/maps';
 import { Gesture } from 'react-native-gesture-handler';
 import { getMatchedRoute } from '@/lib/mapMatching';
 import { findClosestRouteIndex } from '@/utils/draw';
-import {
-  ERASE_DISTANCE_THRESHOLD,
-  MIN_PIXEL_DISTANCE_FOR_UPDATE,
-} from '@/constants/draw';
+import { ERASE_DISTANCE_THRESHOLD } from '@/constants/draw';
 import useDrawStore from '@/store/draw';
 import type { Position } from 'geojson';
 
 export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
-  const lastScreenPoint = useRef({ x: 0, y: 0 });
   const {
     drawMode,
-    drawnCoordinates,
     matchedRoutes,
-    addDrawnCoordinates,
     setDrawnCoordinates,
     addCompletedDrawing,
     addMatchedRoute,
     setIsLoading,
     eraseRouteByIndex,
   } = useDrawStore();
+
+  const pointsInCurrentGesture = useRef<Position[]>([]);
+  const updateQueued = useRef(false);
 
   const handleMatchRoute = async (coordinates: Position[]) => {
     if (coordinates.length < 2) return;
@@ -41,42 +38,39 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
   const panGesture = Gesture.Pan()
     .enabled(drawMode === 'draw')
     .onBegin(() => {
-      if (drawMode === 'draw') {
-        setDrawnCoordinates([]);
-      }
+      pointsInCurrentGesture.current = [];
+      setDrawnCoordinates([]);
     })
     .onUpdate(async (event) => {
       if (drawMode !== 'draw' || !mapRef.current) return;
-
-      const dx = Math.abs(event.x - lastScreenPoint.current.x);
-      const dy = Math.abs(event.y - lastScreenPoint.current.y);
-
-      if (
-        dx < MIN_PIXEL_DISTANCE_FOR_UPDATE &&
-        dy < MIN_PIXEL_DISTANCE_FOR_UPDATE
-      ) {
-        return;
-      }
-
-      lastScreenPoint.current = { x: event.x, y: event.y };
 
       try {
         const newCoord = await mapRef.current.getCoordinateFromView([
           event.x,
           event.y,
         ]);
-        addDrawnCoordinates(newCoord);
+        pointsInCurrentGesture.current.push(newCoord);
+
+        if (!updateQueued.current) {
+          updateQueued.current = true;
+          requestAnimationFrame(() => {
+            setDrawnCoordinates([...pointsInCurrentGesture.current]);
+            updateQueued.current = false;
+          });
+        }
       } catch (error) {
         console.warn('Coordinate conversion error:', error);
       }
     })
     .onEnd(() => {
-      if (drawMode === 'draw' && drawnCoordinates.length > 1) {
-        addCompletedDrawing(drawnCoordinates);
-        handleMatchRoute(drawnCoordinates);
-      } else if (drawMode === 'draw') {
+      const finalPoints = pointsInCurrentGesture.current;
+      if (drawMode === 'draw' && finalPoints.length > 1) {
+        addCompletedDrawing(finalPoints);
+        handleMatchRoute(finalPoints);
+      } else {
         setDrawnCoordinates([]);
       }
+      pointsInCurrentGesture.current = [];
     })
     .minDistance(1);
 
