@@ -1,24 +1,16 @@
 import styled from '@emotion/native';
 import { useState } from 'react';
-import { ArrowLeft, Settings, PenTool } from 'lucide-react-native';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { Settings, PenTool } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Header from '@/components/Header';
 import TabNavigation from '@/components/TabNavigation';
 import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
-import type {
-  RootStackParamList,
-  RouteTabId,
-  TabParamList,
-} from '@/types/navigation.types';
+import type { RouteTabId } from '@/types/navigation.types';
+import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import type { RouteCardData } from '@/types/card.types';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'Route'>,
-  NativeStackScreenProps<RootStackParamList>
->;
+type Props = NativeStackScreenProps<RouteStackParamList, 'RouteMain'>;
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'created', title: '생성한 경로' },
@@ -29,16 +21,12 @@ const tabs: Array<{ id: RouteTabId; title: string }> = [
 export default function Route({ navigation }: Props) {
   const [activeTab, setActiveTab] = useState<RouteTabId>('created');
 
-  const handleBackPress = () => {
-    navigation.goBack();
-  };
-
   const handleSettingsPress = () => {
     console.log('설정');
   };
 
   const handleCreatePress = () => {
-    navigation.navigate('Draw');
+    navigation.navigate('Draw', {});
   };
 
   const handleTabPress = (tabId: RouteTabId) => {
@@ -53,9 +41,7 @@ export default function Route({ navigation }: Props) {
     <Screen>
       <Header
         title="Runova"
-        leftIcon={ArrowLeft}
         rightIcon={Settings}
-        onLeftPress={handleBackPress}
         onRightPress={handleSettingsPress}
       />
       <TabNavigation<RouteTabId>
