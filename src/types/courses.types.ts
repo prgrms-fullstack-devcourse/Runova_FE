@@ -8,3 +8,16 @@ export interface CourseCreateRequest {
   imageURL: string;
   path: RouteCoordinate[];
 }
+
+export type CourseSaveData = {
+  title: string;
+  imageURL: string;
+  path: RouteCoordinate[];
+};
+
+export type CourseSaveResult = {
+  success: boolean;
+  data?: CourseSaveData;
+  error?: string;
+  imageProcessResult?: any;
+};
