@@ -1,7 +1,7 @@
-import { useRef, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRef, useCallback } from 'react';
+import { View, ActivityIndicator, Alert } from 'react-native';
+import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
-import type { Position } from 'geojson';
 import {
   GestureDetector,
   GestureHandlerRootView,
@@ -9,23 +9,26 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, Save } from 'lucide-react-native';
-import { useCallback } from 'react';
 import { theme } from '@/styles/theme';
 import { useMapGestures } from '@/hooks/useMapGestures';
-import { useInitialLocation } from '@/hooks/useInitialLocation';
+import { useLocationManager } from '@/hooks/useLocationManager';
+import { useMapCapture } from '@/hooks/useMapCapture';
+import { useRouteValidation } from '@/hooks/useRouteValidation';
 import Header from '@/components/Header';
 import DrawMap from './_components/DrawMap';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useDrawStore from '@/store/draw';
-import { useMapCapture } from '@/hooks/useMapCapture';
-import { useRouteSvgExport } from '@/hooks/useRouteSvgExport';
-
-Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '');
+import useAuthStore from '@/store/auth';
+import { useRouteSaveStore } from '@/store/routeSave';
+import {
+  showImageProcessingError,
+  showCourseSaveError,
+} from './_components/Toasts';
 
 const LoadingIndicator = () => (
-  <View style={styles.loadingOverlay}>
+  <StyledLoadingOverlay>
     <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-  </View>
+  </StyledLoadingOverlay>
 );
 
 export default function Draw() {
@@ -33,17 +36,21 @@ export default function Draw() {
     useNavigation<NativeStackNavigationProp<RouteStackParamList>>();
   const mapRef = useRef<Mapbox.MapView>(null);
   const cameraRef = useRef<Mapbox.Camera>(null);
-  const { location: initialLocation, loading: locationLoading } =
-    useInitialLocation();
-  const { captureMap } = useMapCapture(mapRef);
-  const { exportRouteAsSvg } = useRouteSvgExport();
-
-  const currentUserLocation = useRef<Position | null>(null);
 
   const clearAll = useDrawStore((s) => s.clearAll);
   const isLoading = useDrawStore((s) => s.isLoading);
-  const setIsCapturing = useDrawStore((s) => s.setIsCapturing);
-  const matchedRoutes = useDrawStore((s) => s.matchedRoutes);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const setRouteData = useRouteSaveStore((s) => s.setRouteData);
+
+  const {
+    initialLocation,
+    locationLoading,
+    flyToCurrentUserLocation,
+    handleUserLocationUpdate,
+  } = useLocationManager();
+  const { composedGesture } = useMapGestures(mapRef);
+  const { processImage } = useMapCapture(mapRef, cameraRef);
+  const { validateRoute } = useRouteValidation();
 
   useFocusEffect(
     useCallback(() => {
@@ -51,44 +58,41 @@ export default function Draw() {
     }, [clearAll]),
   );
 
-  useEffect(() => {
-    if (initialLocation) {
-      currentUserLocation.current = initialLocation;
-    }
-  }, [initialLocation]);
-
-  const { composedGesture } = useMapGestures(mapRef);
-
-  const flyToCurrentUserLocation = () => {
-    if (currentUserLocation.current) {
-      cameraRef.current?.flyTo(currentUserLocation.current, 1000);
-    }
-  };
-
-  const handleUserLocationUpdate = (location: Mapbox.Location) => {
-    currentUserLocation.current = [
-      location.coords.longitude,
-      location.coords.latitude,
-    ];
-  };
-
   const handleBackPress = () => {
     navigation.goBack();
   };
 
   const handleSavePress = async () => {
-    //저장아이콘 클릭 시
-    //좌표값,지도 이미지, svg 3개 api 요청
-    setIsCapturing(true);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    try {
+      const validation = validateRoute(accessToken || '');
+      if (!validation.isValid || !validation.data) {
+        showCourseSaveError(validation.error || '경로 검증에 실패했습니다.');
+        return;
+      }
 
-    await captureMap();
+      const imageResult = await processImage();
+      if (imageResult.captureError) {
+        showImageProcessingError(imageResult.captureError);
+        return;
+      }
 
-    const timestamp = new Date().getTime();
-    await exportRouteAsSvg(matchedRoutes, `runova-route-${timestamp}`);
+      const firstCoordinate = validation.data.path[0];
+      const startLocation: [number, number] = [
+        firstCoordinate.lon,
+        firstCoordinate.lat,
+      ];
 
-    setIsCapturing(false);
-    // TODO: 저장 로직 구현
+      setRouteData({
+        startLocation: startLocation,
+        imageURL: imageResult.imageURL || '',
+        path: validation.data.path,
+      });
+
+      navigation.navigate('RouteSave', {});
+    } catch (error: unknown) {
+      let errorMessage = '경로 저장에 실패했습니다.';
+      showCourseSaveError(errorMessage);
+    }
   };
 
   if (locationLoading || !initialLocation) {
@@ -96,7 +100,7 @@ export default function Draw() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.screen}>
+    <StyledGestureHandlerRootView>
       <Header
         title="경로 그리기"
         leftIcon={ArrowLeft}
@@ -104,37 +108,43 @@ export default function Draw() {
         onLeftPress={handleBackPress}
         onRightPress={handleSavePress}
       />
-      <View style={styles.container}>
+      <StyledContainer>
         <GestureDetector gesture={composedGesture}>
-          <View style={styles.container} collapsable={false}>
+          <StyledContainer collapsable={false}>
             <DrawMap
               mapRef={mapRef}
               cameraRef={cameraRef}
               initialLocation={initialLocation}
-              onPanToCurrentUserLocation={flyToCurrentUserLocation}
+              onPanToCurrentUserLocation={() =>
+                flyToCurrentUserLocation(cameraRef)
+              }
               onUserLocationUpdate={handleUserLocationUpdate}
             />
-          </View>
+          </StyledContainer>
         </GestureDetector>
         {isLoading && <LoadingIndicator />}
-      </View>
-    </GestureHandlerRootView>
+      </StyledContainer>
+    </StyledGestureHandlerRootView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  container: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-});
+const StyledGestureHandlerRootView = styled(GestureHandlerRootView)`
+  flex: 1;
+  background-color: #ffffff;
+`;
+
+const StyledContainer = styled(View)`
+  flex: 1;
+`;
+
+const StyledLoadingOverlay = styled(View)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+`;
