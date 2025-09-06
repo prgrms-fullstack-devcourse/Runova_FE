@@ -1,6 +1,5 @@
 import type { RefObject } from 'react';
 import type Mapbox from '@rnmapbox/maps';
-import { useImageUpload } from '@/hooks/useImageUpload';
 
 export type ImageProcessResult = {
   success: boolean;
@@ -13,8 +12,6 @@ export type ImageProcessResult = {
 };
 
 export function useMapCapture(mapRef: RefObject<Mapbox.MapView | null>) {
-  const { uploadImage } = useImageUpload();
-
   const captureMap = async (): Promise<string> => {
     if (!mapRef.current) {
       throw new Error('맵이 준비되지 않았습니다.');
@@ -33,11 +30,11 @@ export function useMapCapture(mapRef: RefObject<Mapbox.MapView | null>) {
   ): Promise<ImageProcessResult> => {
     try {
       const capturedImageUri = await captureMap();
-      const uploadedImageUrl = await uploadImage(capturedImageUri, accessToken);
 
+      // S3 업로드 없이 캡처한 이미지 URI를 바로 사용
       return {
         success: true,
-        imageURL: uploadedImageUrl,
+        imageURL: capturedImageUri,
         captureSuccess: true,
         uploadSuccess: true,
       };
