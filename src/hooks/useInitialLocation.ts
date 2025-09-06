@@ -5,12 +5,13 @@ import type { Position } from 'geojson';
 export function useInitialLocation() {
   const [location, setLocation] = useState<Position | null>(null);
   const [loading, setLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        console.error('위치 접근 권한이 거절되었습니다.');
+        setError('위치 접근 권한이 거절되었습니다.');
         setLoading(false);
         return;
       }
