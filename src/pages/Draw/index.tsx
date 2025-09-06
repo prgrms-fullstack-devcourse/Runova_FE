@@ -49,7 +49,7 @@ export default function Draw() {
     handleUserLocationUpdate,
   } = useLocationManager();
   const { composedGesture } = useMapGestures(mapRef);
-  const { processImage } = useMapCapture(mapRef);
+  const { processImage } = useMapCapture(mapRef, cameraRef);
   const { validateRoute } = useRouteValidation();
 
   useFocusEffect(
@@ -70,7 +70,7 @@ export default function Draw() {
         return;
       }
 
-      const imageResult = await processImage(accessToken || '');
+      const imageResult = await processImage();
       if (imageResult.captureError) {
         showImageProcessingError(imageResult.captureError);
         return;
