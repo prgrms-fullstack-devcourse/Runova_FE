@@ -263,13 +263,13 @@ const StyledImageContainer = styled(View)`
 
 const StyledRouteImage = styled(Image)`
   width: 100%;
-  height: 200px;
+  aspect-ratio: 1;
   border-radius: 8px;
 `;
 
 const StyledImagePlaceholder = styled(View)`
   width: 100%;
-  height: 200px;
+  aspect-ratio: 1;
   border-radius: 8px;
   background-color: ${theme.colors.gray[100]};
   justify-content: center;
