@@ -65,6 +65,7 @@ const useDrawStore = create<DrawState>((set) => ({
       matchedRoutes: [],
       completedDrawings: [],
       drawnCoordinates: [],
+      drawMode: 'none',
     }),
 }));
 
