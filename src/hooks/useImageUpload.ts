@@ -6,6 +6,8 @@ import {
 } from '@/lib/filesApi';
 import type { FileUploadType } from '@/types/files.types';
 
+const MAX_IMAGES_SIZE_BYTES = 10 * 1024 * 1024;
+
 export function useImageUpload() {
   const uploadImage = async (
     imageUri: string,
@@ -18,7 +20,7 @@ export function useImageUpload() {
 
     const fileSize = fileInfo.size || 0;
 
-    if (fileSize > 10485760) {
+    if (fileSize > MAX_IMAGES_SIZE_BYTES) {
       throw new Error('이미지 파일이 너무 큽니다. (최대 10MB)');
     }
 

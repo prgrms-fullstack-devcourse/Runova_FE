@@ -1,20 +1,11 @@
 import type { RefObject } from 'react';
 import type Mapbox from '@rnmapbox/maps';
 import useDrawStore from '@/store/draw';
+import { ImageProcessResult } from '@/types/image.types';
 
 const BOUNDS_PADDING = 0.6;
 const ANIMATION_DURATION = 1000;
 const TIMEOUT = 1200;
-
-export type ImageProcessResult = {
-  success: boolean;
-  imageURL?: string;
-  error?: string;
-  captureSuccess?: boolean;
-  uploadSuccess?: boolean;
-  captureError?: string;
-  uploadError?: string;
-};
 
 export function useMapCapture(
   mapRef: RefObject<Mapbox.MapView | null>,

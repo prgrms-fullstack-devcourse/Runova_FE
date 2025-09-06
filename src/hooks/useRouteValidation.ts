@@ -1,12 +1,13 @@
 import { mergeMatchedRoutes, convertToApiFormat } from '@/utils/draw';
 import useDrawStore from '@/store/draw';
+import { RouteCoordinate } from '@/types/courses.types';
 
 export type ValidationResult = {
   isValid: boolean;
   error?: string;
   data?: {
     title: string;
-    path: any[];
+    path: RouteCoordinate[];
   };
 };
 

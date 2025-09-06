@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -117,7 +118,7 @@ export default function RouteSave() {
           },
         },
       ]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       Alert.alert('오류', '경로 저장에 실패했습니다.');
     } finally {
       setIsSaving(false);
@@ -197,7 +198,7 @@ export default function RouteSave() {
       >
         <StyledSaveButton
           disabled={!title.trim() || isSaving}
-          onTouchEnd={handleSave}
+          onPress={handleSave}
         >
           {isSaving ? (
             <ActivityIndicator color="#ffffff" />
@@ -298,7 +299,7 @@ const StyledButtonContainer = styled(View)`
   padding-top: 16px;
 `;
 
-const StyledSaveButton = styled(View)<{ disabled?: boolean }>`
+const StyledSaveButton = styled(TouchableOpacity)<{ disabled?: boolean }>`
   background-color: ${(props) =>
     props.disabled ? theme.colors.gray[300] : theme.colors.primary[500]};
   border-radius: 8px;

@@ -1,3 +1,5 @@
+import { ImageProcessResult } from './image.types';
+
 export interface RouteCoordinate {
   lon: number;
   lat: number;
@@ -19,5 +21,5 @@ export type CourseSaveResult = {
   success: boolean;
   data?: CourseSaveData;
   error?: string;
-  imageProcessResult?: any;
+  imageProcessResult?: ImageProcessResult;
 };
