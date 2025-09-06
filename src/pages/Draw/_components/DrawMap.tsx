@@ -13,7 +13,8 @@ export default function DrawMap({
   onPanToCurrentUserLocation,
   onUserLocationUpdate,
 }: DrawMapProps) {
-  const { drawnCoordinates, completedDrawings, matchedRoutes } = useDrawStore();
+  const { drawnCoordinates, completedDrawings, matchedRoutes, isCapturing } =
+    useDrawStore();
 
   return (
     <View style={styles.container}>
@@ -22,8 +23,9 @@ export default function DrawMap({
         cameraRef={cameraRef}
         initialLocation={initialLocation}
         onUserLocationUpdate={onUserLocationUpdate}
+        showUserLocation={!isCapturing}
       >
-        {drawnCoordinates.length > 1 && (
+        {!isCapturing && drawnCoordinates.length > 1 && (
           <Mapbox.ShapeSource
             id="drawn-source"
             shape={{
@@ -47,29 +49,30 @@ export default function DrawMap({
           </Mapbox.ShapeSource>
         )}
 
-        {completedDrawings.map((drawing, index) => (
-          <Mapbox.ShapeSource
-            key={`completed-drawing-source-${index}`}
-            id={`completed-drawing-source-${index}`}
-            shape={{
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'LineString',
-                coordinates: drawing,
-              },
-            }}
-          >
-            <Mapbox.LineLayer
-              id={`completed-drawing-line-${index}`}
-              style={{
-                lineColor: theme.colors.secondary[500],
-                lineWidth: 4,
-                lineOpacity: 0.7,
+        {!isCapturing &&
+          completedDrawings.map((drawing, index) => (
+            <Mapbox.ShapeSource
+              key={`completed-drawing-source-${index}`}
+              id={`completed-drawing-source-${index}`}
+              shape={{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'LineString',
+                  coordinates: drawing,
+                },
               }}
-            />
-          </Mapbox.ShapeSource>
-        ))}
+            >
+              <Mapbox.LineLayer
+                id={`completed-drawing-line-${index}`}
+                style={{
+                  lineColor: theme.colors.secondary[500],
+                  lineWidth: 4,
+                  lineOpacity: 0.7,
+                }}
+              />
+            </Mapbox.ShapeSource>
+          ))}
 
         {matchedRoutes.map((route, index) => (
           <Mapbox.ShapeSource
@@ -88,7 +91,9 @@ export default function DrawMap({
           </Mapbox.ShapeSource>
         ))}
       </Map>
-      <DrawUI onPanToCurrentUserLocation={onPanToCurrentUserLocation} />
+      {!isCapturing && (
+        <DrawUI onPanToCurrentUserLocation={onPanToCurrentUserLocation} />
+      )}
     </View>
   );
 }

@@ -17,6 +17,8 @@ import Header from '@/components/Header';
 import DrawMap from './_components/DrawMap';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useDrawStore from '@/store/draw';
+import { useMapCapture } from '@/hooks/useMapCapture';
+import { useRouteSvgExport } from '@/hooks/useRouteSvgExport';
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '');
 
@@ -33,11 +35,15 @@ export default function Draw() {
   const cameraRef = useRef<Mapbox.Camera>(null);
   const { location: initialLocation, loading: locationLoading } =
     useInitialLocation();
+  const { captureMap } = useMapCapture(mapRef);
+  const { exportRouteAsSvg } = useRouteSvgExport();
 
   const currentUserLocation = useRef<Position | null>(null);
 
   const clearAll = useDrawStore((s) => s.clearAll);
   const isLoading = useDrawStore((s) => s.isLoading);
+  const setIsCapturing = useDrawStore((s) => s.setIsCapturing);
+  const matchedRoutes = useDrawStore((s) => s.matchedRoutes);
 
   useFocusEffect(
     useCallback(() => {
@@ -70,8 +76,18 @@ export default function Draw() {
     navigation.goBack();
   };
 
-  const handleSavePress = () => {
-    console.log('Save pressed');
+  const handleSavePress = async () => {
+    //저장아이콘 클릭 시
+    //좌표값,지도 이미지, svg 3개 api 요청
+    setIsCapturing(true);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await captureMap();
+
+    const timestamp = new Date().getTime();
+    await exportRouteAsSvg(matchedRoutes, `runova-route-${timestamp}`);
+
+    setIsCapturing(false);
     // TODO: 저장 로직 구현
   };
 

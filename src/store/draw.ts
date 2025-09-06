@@ -8,11 +8,13 @@ interface DrawState {
   matchedRoutes: Feature<LineString>[];
   isLoading: boolean;
   drawMode: DrawMode;
+  isCapturing: boolean;
   setDrawnCoordinates: (coords: Position[]) => void;
   addDrawnCoordinates: (coord: Position) => void;
   addCompletedDrawing: (drawing: Position[]) => void;
   addMatchedRoute: (route: Feature<LineString>) => void;
   setIsLoading: (loading: boolean) => void;
+  setIsCapturing: (capturing: boolean) => void;
   toggleDrawMode: () => void;
   toggleEraseMode: () => void;
   eraseRouteByIndex: (index: number) => void;
@@ -25,6 +27,7 @@ const useDrawStore = create<DrawState>((set) => ({
   matchedRoutes: [],
   isLoading: false,
   drawMode: 'none',
+  isCapturing: false,
 
   setDrawnCoordinates: (coords) => set({ drawnCoordinates: coords }),
   addDrawnCoordinates: (coord) =>
@@ -37,6 +40,7 @@ const useDrawStore = create<DrawState>((set) => ({
   addMatchedRoute: (route) =>
     set((state) => ({ matchedRoutes: [...state.matchedRoutes, route] })),
   setIsLoading: (loading) => set({ isLoading: loading }),
+  setIsCapturing: (capturing) => set({ isCapturing: capturing }),
   toggleDrawMode: () =>
     set((state) => ({
       drawMode: state.drawMode === 'draw' ? 'none' : 'draw',
