@@ -9,7 +9,7 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShadowVisible: false, headerShown: false }}
-      initialRouteName="TabNavigator"
+      initialRouteName="Auth"
     >
       <Stack.Screen name="Auth" component={Auth} />
       <Stack.Screen name="TabNavigator" component={TabNavigator} />
