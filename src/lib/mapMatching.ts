@@ -1,6 +1,7 @@
 import {
   MAP_MATCHING_API_PROFILE,
   MAP_MATCHING_MAX_COORDS,
+  MAP_MATCHING_RADIUS,
 } from '@/constants/mapMatching';
 import type { Feature, LineString, Position } from 'geojson';
 
@@ -20,7 +21,7 @@ export async function getMatchedRoute(
       : coordinates;
 
   const coordsString = coordsForApi.map((c) => c.join(',')).join(';');
-  const radiuses = coordsForApi.map(() => 25).join(';'); // 각 좌표에 25m의 스냅 반경을 적용
+  const radiuses = coordsForApi.map(() => MAP_MATCHING_RADIUS).join(';'); // 각 좌표에 25m의 스냅 반경을 적용
   const accessToken = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const url = `https://api.mapbox.com/matching/v5/mapbox/${MAP_MATCHING_API_PROFILE}/${coordsString}?geometries=geojson&radiuses=${radiuses}&access_token=${accessToken}`;
 
