@@ -7,7 +7,9 @@ import Constants from 'expo-constants';
 import RootNavigator from '@/navigation/RootNavigator';
 import { theme } from '@/styles/theme';
 
-const mapboxToken = Constants.expoConfig?.extra?.MAPBOX_ACCESS_TOKEN;
+const mapboxToken =
+  Constants.expoConfig?.extra?.MAPBOX_ACCESS_TOKEN ||
+  Constants.expoConfig?.extra?.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 Mapbox.setAccessToken(mapboxToken || '');
 
 export default function App() {
