@@ -69,7 +69,10 @@ export default function TabNavigator() {
             ),
             tabBarStyle: {
               ...baseTabBarStyle,
-              display: routeName === 'Draw' ? 'none' : 'flex',
+              display:
+                routeName === 'Draw' || routeName === 'RouteSave'
+                  ? 'none'
+                  : 'flex',
             },
           };
         }}

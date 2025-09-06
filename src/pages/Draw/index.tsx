@@ -11,19 +11,16 @@ import { ArrowLeft, Save } from 'lucide-react-native';
 import { theme } from '@/styles/theme';
 import { useMapGestures } from '@/hooks/useMapGestures';
 import { useLocationManager } from '@/hooks/useLocationManager';
-import { useRouteValidation } from '@/hooks/useRouteValidation';
 import { useMapCapture } from '@/hooks/useMapCapture';
-import { createCourse } from '@/lib/coursesApi';
+import { useRouteValidation } from '@/hooks/useRouteValidation';
 import Header from '@/components/Header';
 import DrawMap from './_components/DrawMap';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useDrawStore from '@/store/draw';
 import useAuthStore from '@/store/auth';
+import { useRouteSaveStore } from '@/store/routeSave';
 import {
-  showMapCaptureSuccess,
-  showImageUploadSuccess,
   showImageProcessingError,
-  showCourseSaveSuccess,
   showCourseSaveError,
 } from './_components/Toasts';
 
@@ -42,6 +39,7 @@ export default function Draw() {
   const clearAll = useDrawStore((s) => s.clearAll);
   const isLoading = useDrawStore((s) => s.isLoading);
   const accessToken = useAuthStore((s) => s.accessToken);
+  const setRouteData = useRouteSaveStore((s) => s.setRouteData);
 
   const {
     initialLocation,
@@ -50,8 +48,8 @@ export default function Draw() {
     handleUserLocationUpdate,
   } = useLocationManager();
   const { composedGesture } = useMapGestures(mapRef);
-  const { validateRoute } = useRouteValidation();
   const { processImage } = useMapCapture(mapRef);
+  const { validateRoute } = useRouteValidation();
 
   useFocusEffect(
     useCallback(() => {
@@ -72,32 +70,24 @@ export default function Draw() {
       }
 
       const imageResult = await processImage(accessToken || '');
-
-      if (imageResult.captureSuccess) {
-        showMapCaptureSuccess();
-      }
-      if (imageResult.uploadSuccess) {
-        showImageUploadSuccess();
-      }
       if (imageResult.captureError) {
         showImageProcessingError(imageResult.captureError);
-      }
-      if (imageResult.uploadError) {
-        showImageProcessingError(imageResult.uploadError);
+        return;
       }
 
-      await createCourse(
-        {
-          title: validation.data.title,
-          imageURL: imageResult.imageURL || '',
-          path: validation.data.path,
-        },
-        accessToken || '',
-      );
+      const firstCoordinate = validation.data.path[0];
+      const startLocation: [number, number] = [
+        firstCoordinate.lon,
+        firstCoordinate.lat,
+      ];
 
-      showCourseSaveSuccess();
-      clearAll();
-      navigation.goBack();
+      setRouteData({
+        startLocation: startLocation,
+        imageURL: imageResult.imageURL || '',
+        path: validation.data.path,
+      });
+
+      navigation.navigate('RouteSave', {});
     } catch (error: unknown) {
       let errorMessage = '경로 저장에 실패했습니다.';
       showCourseSaveError(errorMessage);
