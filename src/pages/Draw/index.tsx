@@ -14,7 +14,6 @@ import { useLocationManager } from '@/hooks/useLocationManager';
 import { useRouteValidation } from '@/hooks/useRouteValidation';
 import { useMapCapture } from '@/hooks/useMapCapture';
 import { createCourse } from '@/lib/coursesApi';
-import type { AxiosErrorResponse } from '@/types/api.types';
 import Header from '@/components/Header';
 import DrawMap from './_components/DrawMap';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
@@ -97,20 +96,10 @@ export default function Draw() {
       );
 
       showCourseSaveSuccess();
-    } catch (error: any) {
+      clearAll();
+      navigation.goBack();
+    } catch (error: unknown) {
       let errorMessage = '경로 저장에 실패했습니다.';
-      const response = error.response as AxiosErrorResponse | undefined;
-      if (response?.data?.message) {
-        errorMessage = response.data.message;
-      } else if (response?.data?.error) {
-        errorMessage =
-          typeof response.data.error === 'string'
-            ? response.data.error
-            : JSON.stringify(response.data.error);
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
       showCourseSaveError(errorMessage);
     }
   };
