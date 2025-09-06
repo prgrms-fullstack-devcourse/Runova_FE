@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import type { Feature, LineString } from 'geojson';
 import type * as Location from 'expo-location';
 import { theme } from '@/styles/theme';
-import { INITIAL_ZOOM_LEVEL } from '@/constants/location';
+import Map from '@/components/Map';
 
 interface RunMapProps {
   location: Location.LocationObject;
@@ -12,49 +12,36 @@ interface RunMapProps {
 }
 
 export default function RunMap({ location, routeGeoJSON }: RunMapProps) {
-  const [isMapReady, setIsMapReady] = useState(false);
-
-  const handleUserLocationUpdate = () => {
-    if (!isMapReady) {
-      setIsMapReady(true);
-    }
-  };
+  const mapRef = useRef<Mapbox.MapView>(null);
+  const cameraRef = useRef<Mapbox.Camera>(null);
 
   return (
-    <Mapbox.MapView style={styles.map} styleURL={Mapbox.StyleURL.Street}>
-      <Mapbox.UserLocation onUpdate={handleUserLocationUpdate} />
-      {isMapReady && (
-        <>
-          <Mapbox.Camera
-            defaultSettings={{
-              centerCoordinate: [
-                location.coords.longitude,
-                location.coords.latitude,
-              ],
-              zoomLevel: INITIAL_ZOOM_LEVEL,
-            }}
-          />
-          {routeGeoJSON.geometry.coordinates.length > 1 && (
-            <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
-              <Mapbox.LineLayer
-                id="routeLayer"
-                style={{
-                  lineColor: theme.colors.primary[500],
-                  lineWidth: 5,
-                  lineCap: 'round',
-                  lineJoin: 'round',
-                }}
-              />
-            </Mapbox.ShapeSource>
-          )}
-        </>
-      )}
-    </Mapbox.MapView>
+    <View style={styles.container}>
+      <Map
+        mapRef={mapRef}
+        cameraRef={cameraRef}
+        initialLocation={[location.coords.longitude, location.coords.latitude]}
+      >
+        {routeGeoJSON.geometry.coordinates.length > 1 && (
+          <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
+            <Mapbox.LineLayer
+              id="routeLayer"
+              style={{
+                lineColor: theme.colors.primary[500],
+                lineWidth: 5,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+          </Mapbox.ShapeSource>
+        )}
+      </Map>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  map: {
+  container: {
     flex: 1,
     width: '100%',
   },

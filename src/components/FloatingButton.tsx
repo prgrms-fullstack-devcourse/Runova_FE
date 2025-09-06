@@ -1,10 +1,13 @@
 import styled from '@emotion/native';
 import { LucideIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ViewStyle } from 'react-native';
 
 interface FloatingButtonProps {
   icon: LucideIcon;
   onPress: () => void;
+  style?: ViewStyle | ViewStyle[];
+  iconColor?: string;
 }
 
 const FLOATING_BUTTON_BOTTOM_OFFSET = 80;
@@ -12,6 +15,8 @@ const FLOATING_BUTTON_BOTTOM_OFFSET = 80;
 export default function FloatingButton({
   icon: Icon,
   onPress,
+  style,
+  iconColor = '#ffffff',
 }: FloatingButtonProps) {
   const insets = useSafeAreaInsets();
 
@@ -19,9 +24,9 @@ export default function FloatingButton({
     <ButtonContainer
       onPress={onPress}
       activeOpacity={0.8}
-      style={{ bottom: insets.bottom + FLOATING_BUTTON_BOTTOM_OFFSET }}
+      style={[{ bottom: insets.bottom + FLOATING_BUTTON_BOTTOM_OFFSET }, style]}
     >
-      <Icon color="#ffffff" size={24} />
+      <Icon color={iconColor} size={24} />
     </ButtonContainer>
   );
 }

@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Star,
@@ -10,9 +11,9 @@ import {
 
 import CommunityList from '@/pages/CommunityList';
 import WebCommunity from '@/pages/WebCommunity';
-import Home from '@/pages/Home/Home';
-import Route from '@/pages/Route/Route';
-import Run from '@/pages/Run/Run';
+import Home from '@/pages/Home';
+import RouteStackNavigator from '@/navigation/RouteStackNavigator';
+import Run from '@/pages/Run';
 
 import type { TabParamList } from '@/types/navigation.types';
 import WebMyPage from '@/pages/WebMyPage';
@@ -57,11 +58,27 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Route"
-        component={Route}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <AudioWaveform color={color} size={size} />
-          ),
+        component={RouteStackNavigator}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'RouteMain';
+          return {
+            tabBarIcon: ({ color, size }) => (
+              <AudioWaveform color={color} size={size} />
+            ),
+            tabBarStyle: {
+              display: routeName === 'Draw' ? 'none' : 'flex',
+              backgroundColor: 'transparent',
+              borderTopWidth: 0,
+              elevation: 0,
+              shadowOpacity: 0,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: TAB_BAR_HEIGHT + insets.bottom,
+              paddingBottom: insets.bottom,
+            },
+          };
         }}
       />
       <Tab.Screen

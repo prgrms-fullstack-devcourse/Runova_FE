@@ -11,16 +11,8 @@ export default function RootNavigator() {
       screenOptions={{ headerShadowVisible: false, headerShown: false }}
       initialRouteName="TabNavigator"
     >
-      <Stack.Screen
-        name="Auth"
-        component={Auth}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="TabNavigator"
-        component={TabNavigator}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="Auth" component={Auth} />
+      <Stack.Screen name="TabNavigator" component={TabNavigator} />
     </Stack.Navigator>
   );
 }

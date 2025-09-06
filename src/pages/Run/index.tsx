@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { theme } from '@/styles/theme';
 import type { Feature, LineString } from 'geojson';
@@ -9,7 +8,7 @@ import RunMap from './_components/RunMap';
 
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
-export default function Run({ navigation }: Props) {
+export default function Run() {
   const { routeCoordinates, location, errorMsg } = useLocationTracking();
 
   const routeGeoJSON: Feature<LineString> = {
