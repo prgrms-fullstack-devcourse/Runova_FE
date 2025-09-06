@@ -1,7 +1,6 @@
-import { useRef, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRef, useCallback } from 'react';
+import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
-import type { Position } from 'geojson';
 import {
   GestureDetector,
   GestureHandlerRootView,
@@ -9,18 +8,25 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, Save } from 'lucide-react-native';
-import { useCallback } from 'react';
 import { theme } from '@/styles/theme';
 import { useMapGestures } from '@/hooks/useMapGestures';
-import { useInitialLocation } from '@/hooks/useInitialLocation';
+import { useLocationManager } from '@/hooks/useLocationManager';
+import { useRouteValidation } from '@/hooks/useRouteValidation';
+import { useMapCapture } from '@/hooks/useMapCapture';
+import { createCourse } from '@/lib/coursesApi';
+import type { AxiosErrorResponse } from '@/types/api.types';
 import Header from '@/components/Header';
 import DrawMap from './_components/DrawMap';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useDrawStore from '@/store/draw';
-import { useMapCapture } from '@/hooks/useMapCapture';
-import { useRouteSvgExport } from '@/hooks/useRouteSvgExport';
-
-Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '');
+import useAuthStore from '@/store/auth';
+import {
+  showMapCaptureSuccess,
+  showImageUploadSuccess,
+  showImageProcessingError,
+  showCourseSaveSuccess,
+  showCourseSaveError,
+} from './_components/Toasts';
 
 const LoadingIndicator = () => (
   <View style={styles.loadingOverlay}>
@@ -33,17 +39,20 @@ export default function Draw() {
     useNavigation<NativeStackNavigationProp<RouteStackParamList>>();
   const mapRef = useRef<Mapbox.MapView>(null);
   const cameraRef = useRef<Mapbox.Camera>(null);
-  const { location: initialLocation, loading: locationLoading } =
-    useInitialLocation();
-  const { captureMap } = useMapCapture(mapRef);
-  const { exportRouteAsSvg } = useRouteSvgExport();
-
-  const currentUserLocation = useRef<Position | null>(null);
 
   const clearAll = useDrawStore((s) => s.clearAll);
   const isLoading = useDrawStore((s) => s.isLoading);
-  const setIsCapturing = useDrawStore((s) => s.setIsCapturing);
-  const matchedRoutes = useDrawStore((s) => s.matchedRoutes);
+  const accessToken = useAuthStore((s) => s.accessToken);
+
+  const {
+    initialLocation,
+    locationLoading,
+    flyToCurrentUserLocation,
+    handleUserLocationUpdate,
+  } = useLocationManager();
+  const { composedGesture } = useMapGestures(mapRef);
+  const { validateRoute } = useRouteValidation();
+  const { processImage } = useMapCapture(mapRef);
 
   useFocusEffect(
     useCallback(() => {
@@ -51,44 +60,59 @@ export default function Draw() {
     }, [clearAll]),
   );
 
-  useEffect(() => {
-    if (initialLocation) {
-      currentUserLocation.current = initialLocation;
-    }
-  }, [initialLocation]);
-
-  const { composedGesture } = useMapGestures(mapRef);
-
-  const flyToCurrentUserLocation = () => {
-    if (currentUserLocation.current) {
-      cameraRef.current?.flyTo(currentUserLocation.current, 1000);
-    }
-  };
-
-  const handleUserLocationUpdate = (location: Mapbox.Location) => {
-    currentUserLocation.current = [
-      location.coords.longitude,
-      location.coords.latitude,
-    ];
-  };
-
   const handleBackPress = () => {
     navigation.goBack();
   };
 
   const handleSavePress = async () => {
-    //저장아이콘 클릭 시
-    //좌표값,지도 이미지, svg 3개 api 요청
-    setIsCapturing(true);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    try {
+      const validation = validateRoute(accessToken || '');
+      if (!validation.isValid || !validation.data) {
+        showCourseSaveError(validation.error || '경로 검증에 실패했습니다.');
+        return;
+      }
 
-    await captureMap();
+      const imageResult = await processImage(accessToken || '');
 
-    const timestamp = new Date().getTime();
-    await exportRouteAsSvg(matchedRoutes, `runova-route-${timestamp}`);
+      if (imageResult.captureSuccess) {
+        showMapCaptureSuccess();
+      }
+      if (imageResult.uploadSuccess) {
+        showImageUploadSuccess();
+      }
+      if (imageResult.captureError) {
+        showImageProcessingError(imageResult.captureError);
+      }
+      if (imageResult.uploadError) {
+        showImageProcessingError(imageResult.uploadError);
+      }
 
-    setIsCapturing(false);
-    // TODO: 저장 로직 구현
+      await createCourse(
+        {
+          title: validation.data.title,
+          imageURL: imageResult.imageURL || '',
+          path: validation.data.path,
+        },
+        accessToken || '',
+      );
+
+      showCourseSaveSuccess();
+    } catch (error: any) {
+      let errorMessage = '경로 저장에 실패했습니다.';
+      const response = error.response as AxiosErrorResponse | undefined;
+      if (response?.data?.message) {
+        errorMessage = response.data.message;
+      } else if (response?.data?.error) {
+        errorMessage =
+          typeof response.data.error === 'string'
+            ? response.data.error
+            : JSON.stringify(response.data.error);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      showCourseSaveError(errorMessage);
+    }
   };
 
   if (locationLoading || !initialLocation) {
@@ -111,7 +135,9 @@ export default function Draw() {
               mapRef={mapRef}
               cameraRef={cameraRef}
               initialLocation={initialLocation}
-              onPanToCurrentUserLocation={flyToCurrentUserLocation}
+              onPanToCurrentUserLocation={() =>
+                flyToCurrentUserLocation(cameraRef)
+              }
               onUserLocationUpdate={handleUserLocationUpdate}
             />
           </View>
