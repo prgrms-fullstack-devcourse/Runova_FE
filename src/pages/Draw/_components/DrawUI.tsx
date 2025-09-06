@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
+import styled from '@emotion/native';
 import { Edit3, Eraser, LocateFixed } from 'lucide-react-native';
 import { theme } from '@/styles/theme';
 import FloatingButton from '@/components/FloatingButton';
@@ -10,7 +11,7 @@ export default function DrawUI({ onPanToCurrentUserLocation }: DrawUIProps) {
 
   return (
     <>
-      <View style={styles.drawButtonContainer}>
+      <StyledDrawButtonContainer>
         <FloatingButton
           icon={Edit3}
           onPress={toggleDrawMode}
@@ -20,8 +21,8 @@ export default function DrawUI({ onPanToCurrentUserLocation }: DrawUIProps) {
           ]}
           iconColor={drawMode === 'draw' ? '#ffffff' : '#000000'}
         />
-      </View>
-      <View style={styles.eraseButtonContainer}>
+      </StyledDrawButtonContainer>
+      <StyledEraseButtonContainer>
         <FloatingButton
           icon={Eraser}
           onPress={toggleEraseMode}
@@ -31,35 +32,38 @@ export default function DrawUI({ onPanToCurrentUserLocation }: DrawUIProps) {
           ]}
           iconColor={drawMode === 'erase' ? '#ffffff' : '#000000'}
         />
-      </View>
-      <View style={styles.locateButtonContainer}>
+      </StyledEraseButtonContainer>
+      <StyledLocateButtonContainer>
         <FloatingButton
           icon={LocateFixed}
           onPress={onPanToCurrentUserLocation}
           style={styles.defaultButton}
           iconColor="#000000"
         />
-      </View>
+      </StyledLocateButtonContainer>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  drawButtonContainer: {
-    position: 'absolute',
-    right: 0,
-    bottom: 10,
-  },
-  eraseButtonContainer: {
-    position: 'absolute',
-    right: 0,
-    bottom: -60,
-  },
-  locateButtonContainer: {
-    position: 'absolute',
-    right: 0,
-    top: 200,
-  },
+const StyledDrawButtonContainer = styled(View)`
+  position: absolute;
+  right: 0;
+  bottom: 10px;
+`;
+
+const StyledEraseButtonContainer = styled(View)`
+  position: absolute;
+  right: 0;
+  bottom: -60px;
+`;
+
+const StyledLocateButtonContainer = styled(View)`
+  position: absolute;
+  right: 0;
+  top: 200px;
+`;
+
+const styles = {
   defaultButton: {
     backgroundColor: '#ffffff',
   },
@@ -68,4 +72,4 @@ const styles = StyleSheet.create({
     elevation: 12,
     shadowOpacity: 0.5,
   },
-});
+};

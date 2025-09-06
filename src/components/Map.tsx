@@ -1,5 +1,5 @@
 import React, { RefObject } from 'react';
-import { StyleSheet } from 'react-native';
+import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import type { Position } from 'geojson';
 import { INITIAL_ZOOM_LEVEL } from '@/constants/location';
@@ -22,11 +22,7 @@ export default function Map({
   showUserLocation = true,
 }: MapProps) {
   return (
-    <Mapbox.MapView
-      ref={mapRef}
-      style={styles.map}
-      styleURL={Mapbox.StyleURL.Street}
-    >
+    <StyledMapView ref={mapRef} styleURL={Mapbox.StyleURL.Street}>
       <Mapbox.Camera
         ref={cameraRef}
         defaultSettings={{
@@ -38,12 +34,10 @@ export default function Map({
         <Mapbox.UserLocation onUpdate={onUserLocationUpdate} />
       )}
       {children}
-    </Mapbox.MapView>
+    </StyledMapView>
   );
 }
 
-const styles = StyleSheet.create({
-  map: {
-    flex: 1,
-  },
-});
+const StyledMapView = styled(Mapbox.MapView)`
+  flex: 1;
+`;

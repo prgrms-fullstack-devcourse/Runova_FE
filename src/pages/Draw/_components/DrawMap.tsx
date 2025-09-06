@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
+import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import { theme } from '@/styles/theme';
 import type { DrawMapProps } from '@/types/draw.types';
@@ -17,7 +18,7 @@ export default function DrawMap({
     useDrawStore();
 
   return (
-    <View style={styles.container}>
+    <StyledContainer>
       <Map
         mapRef={mapRef}
         cameraRef={cameraRef}
@@ -94,12 +95,10 @@ export default function DrawMap({
       {!isCapturing && (
         <DrawUI onPanToCurrentUserLocation={onPanToCurrentUserLocation} />
       )}
-    </View>
+    </StyledContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+const StyledContainer = styled(View)`
+  flex: 1;
+`;

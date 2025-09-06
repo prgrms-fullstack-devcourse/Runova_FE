@@ -1,5 +1,6 @@
 import { useRef, useCallback } from 'react';
-import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, ActivityIndicator, Alert } from 'react-native';
+import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import {
   GestureDetector,
@@ -25,9 +26,9 @@ import {
 } from './_components/Toasts';
 
 const LoadingIndicator = () => (
-  <View style={styles.loadingOverlay}>
+  <StyledLoadingOverlay>
     <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-  </View>
+  </StyledLoadingOverlay>
 );
 
 export default function Draw() {
@@ -99,7 +100,7 @@ export default function Draw() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.screen}>
+    <StyledGestureHandlerRootView>
       <Header
         title="경로 그리기"
         leftIcon={ArrowLeft}
@@ -107,9 +108,9 @@ export default function Draw() {
         onLeftPress={handleBackPress}
         onRightPress={handleSavePress}
       />
-      <View style={styles.container}>
+      <StyledContainer>
         <GestureDetector gesture={composedGesture}>
-          <View style={styles.container} collapsable={false}>
+          <StyledContainer collapsable={false}>
             <DrawMap
               mapRef={mapRef}
               cameraRef={cameraRef}
@@ -119,27 +120,31 @@ export default function Draw() {
               }
               onUserLocationUpdate={handleUserLocationUpdate}
             />
-          </View>
+          </StyledContainer>
         </GestureDetector>
         {isLoading && <LoadingIndicator />}
-      </View>
-    </GestureHandlerRootView>
+      </StyledContainer>
+    </StyledGestureHandlerRootView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  container: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-});
+const StyledGestureHandlerRootView = styled(GestureHandlerRootView)`
+  flex: 1;
+  background-color: #ffffff;
+`;
+
+const StyledContainer = styled(View)`
+  flex: 1;
+`;
+
+const StyledLoadingOverlay = styled(View)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+`;

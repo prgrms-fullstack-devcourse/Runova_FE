@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Image,
   Alert,
   ActivityIndicator,
@@ -11,6 +10,8 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import styled from '@emotion/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft } from 'lucide-react-native';
@@ -24,6 +25,8 @@ import useDrawStore from '@/store/draw';
 import { useRouteSaveStore } from '@/store/routeSave';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 
+const SAVE_BUTTON_BOTTOM_OFFSET = 20;
+
 type RouteSaveScreenNavigationProp = NativeStackNavigationProp<
   RouteStackParamList,
   'RouteSave'
@@ -32,6 +35,7 @@ type RouteSaveScreenNavigationProp = NativeStackNavigationProp<
 export default function RouteSave() {
   const navigation = useNavigation<RouteSaveScreenNavigationProp>();
   const routeData = useRouteSaveStore((s) => s.routeData);
+  const insets = useSafeAreaInsets();
 
   const [title, setTitle] = useState('');
   const [address, setAddress] = useState('위치 정보를 가져오는 중...');
@@ -85,7 +89,6 @@ export default function RouteSave() {
 
     setIsSaving(true);
     try {
-      // 저장 시에만 이미지를 S3에 업로드
       let finalImageURL = '';
       if (routeData.imageURL && routeData.imageURL.startsWith('file://')) {
         finalImageURL = await uploadImage(routeData.imageURL, accessToken);
@@ -122,8 +125,7 @@ export default function RouteSave() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
+    <StyledKeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <Header
@@ -132,37 +134,32 @@ export default function RouteSave() {
         onLeftPress={handleBackPress}
       />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 시작 위치 */}
-        <View style={styles.locationSection}>
-          <Text style={styles.sectionTitle}>시작 위치</Text>
-          <Text style={styles.addressText}>{address}</Text>
-        </View>
+      <StyledScrollView showsVerticalScrollIndicator={false}>
+        <StyledLocationSection>
+          <StyledSectionTitle>시작 위치</StyledSectionTitle>
+          <StyledAddressText>{address}</StyledAddressText>
+        </StyledLocationSection>
 
-        {/* 경로 이름 입력 */}
-        <View style={styles.inputSection}>
-          <Text style={styles.sectionTitle}>경로 이름</Text>
-          <TextInput
-            style={styles.textInput}
+        <StyledInputSection>
+          <StyledSectionTitle>경로 이름</StyledSectionTitle>
+          <StyledTextInput
             placeholder="경로 이름을 입력하세요"
             value={title}
             onChangeText={setTitle}
             maxLength={50}
             autoFocus
           />
-        </View>
+        </StyledInputSection>
 
-        {/* 경로 이미지 */}
-        <View style={styles.imageSection}>
-          <Text style={styles.sectionTitle}>경로 미리보기</Text>
-          <View style={styles.imageContainer}>
+        <StyledImageSection>
+          <StyledSectionTitle>경로 미리보기</StyledSectionTitle>
+          <StyledImageContainer>
             {routeData?.imageURL &&
             routeData.imageURL.trim() !== '' &&
             !imageError ? (
               <>
-                <Image
+                <StyledRouteImage
                   source={{ uri: routeData.imageURL }}
-                  style={styles.routeImage}
                   resizeMode="cover"
                   onLoadStart={() => {
                     setImageLoading(true);
@@ -175,136 +172,144 @@ export default function RouteSave() {
                   }}
                 />
                 {imageLoading && (
-                  <View style={styles.imageLoadingOverlay}>
+                  <StyledImageLoadingOverlay>
                     <ActivityIndicator color={theme.colors.primary[500]} />
-                  </View>
+                  </StyledImageLoadingOverlay>
                 )}
               </>
             ) : (
-              <View style={styles.imagePlaceholder}>
-                <Text style={styles.placeholderText}>
+              <StyledImagePlaceholder>
+                <StyledPlaceholderText>
                   {imageError
                     ? '이미지 로딩 실패\n(권한 또는 네트워크 문제)'
                     : !routeData?.imageURL || routeData.imageURL.trim() === ''
                       ? '이미지가 없습니다'
                       : '이미지를 불러올 수 없습니다'}
-                </Text>
-              </View>
+                </StyledPlaceholderText>
+              </StyledImagePlaceholder>
             )}
-          </View>
-        </View>
-      </ScrollView>
+          </StyledImageContainer>
+        </StyledImageSection>
+      </StyledScrollView>
 
-      {/* 저장 버튼 */}
-      <View style={styles.buttonContainer}>
-        <View
-          style={[
-            styles.saveButton,
-            (!title.trim() || isSaving) && styles.saveButtonDisabled,
-          ]}
+      <StyledButtonContainer
+        style={{ paddingBottom: insets.bottom + SAVE_BUTTON_BOTTOM_OFFSET }}
+      >
+        <StyledSaveButton
+          disabled={!title.trim() || isSaving}
           onTouchEnd={handleSave}
         >
           {isSaving ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.saveButtonText}>저장하기</Text>
+            <StyledSaveButtonText>저장하기</StyledSaveButtonText>
           )}
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+        </StyledSaveButton>
+      </StyledButtonContainer>
+    </StyledKeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  locationSection: {
-    marginTop: 24,
-    marginBottom: 32,
-  },
-  inputSection: {
-    marginBottom: 32,
-  },
-  imageSection: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.gray[900],
-    marginBottom: 12,
-  },
-  addressText: {
-    fontSize: 14,
-    color: theme.colors.gray[600],
-    lineHeight: 20,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: theme.colors.gray[300],
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: theme.colors.gray[900],
-    backgroundColor: '#ffffff',
-  },
-  imageContainer: {
-    alignItems: 'center',
-  },
-  routeImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-  },
-  imagePlaceholder: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    backgroundColor: theme.colors.gray[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: theme.colors.gray[500],
-  },
-  imageLoadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 34,
-    paddingTop: 16,
-  },
-  saveButton: {
-    backgroundColor: theme.colors.primary[500],
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 56,
-  },
-  saveButtonDisabled: {
-    backgroundColor: theme.colors.gray[300],
-  },
-  saveButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const StyledKeyboardAvoidingView = styled(KeyboardAvoidingView)`
+  flex: 1;
+  background-color: #ffffff;
+`;
+
+const StyledScrollView = styled(ScrollView)`
+  flex: 1;
+  padding-horizontal: 20px;
+`;
+
+const StyledLocationSection = styled(View)`
+  margin-top: 24px;
+  margin-bottom: 32px;
+`;
+
+const StyledInputSection = styled(View)`
+  margin-bottom: 32px;
+`;
+
+const StyledImageSection = styled(View)`
+  margin-bottom: 32px;
+`;
+
+const StyledSectionTitle = styled(Text)`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${theme.colors.gray[900]};
+  margin-bottom: 12px;
+`;
+
+const StyledAddressText = styled(Text)`
+  font-size: 14px;
+  color: ${theme.colors.gray[600]};
+  line-height: 20px;
+`;
+
+const StyledTextInput = styled(TextInput)`
+  border-width: 1px;
+  border-color: ${theme.colors.gray[300]};
+  border-radius: 8px;
+  padding-horizontal: 16px;
+  padding-vertical: 12px;
+  font-size: 16px;
+  color: ${theme.colors.gray[900]};
+  background-color: #ffffff;
+`;
+
+const StyledImageContainer = styled(View)`
+  align-items: center;
+`;
+
+const StyledRouteImage = styled(Image)`
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+`;
+
+const StyledImagePlaceholder = styled(View)`
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  background-color: ${theme.colors.gray[100]};
+  justify-content: center;
+  align-items: center;
+`;
+
+const StyledPlaceholderText = styled(Text)`
+  font-size: 14px;
+  color: ${theme.colors.gray[500]};
+`;
+
+const StyledImageLoadingOverlay = styled(View)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+`;
+
+const StyledButtonContainer = styled(View)`
+  padding-horizontal: 20px;
+  padding-top: 16px;
+`;
+
+const StyledSaveButton = styled(View)<{ disabled?: boolean }>`
+  background-color: ${(props) =>
+    props.disabled ? theme.colors.gray[300] : theme.colors.primary[500]};
+  border-radius: 8px;
+  padding-vertical: 16px;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+`;
+
+const StyledSaveButtonText = styled(Text)`
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+`;

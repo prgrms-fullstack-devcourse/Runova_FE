@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
+import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import type { Feature, LineString } from 'geojson';
 import type * as Location from 'expo-location';
@@ -16,7 +17,7 @@ export default function RunMap({ location, routeGeoJSON }: RunMapProps) {
   const cameraRef = useRef<Mapbox.Camera>(null);
 
   return (
-    <View style={styles.container}>
+    <StyledContainer>
       <Map
         mapRef={mapRef}
         cameraRef={cameraRef}
@@ -36,13 +37,12 @@ export default function RunMap({ location, routeGeoJSON }: RunMapProps) {
           </Mapbox.ShapeSource>
         )}
       </Map>
-    </View>
+    </StyledContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-  },
-});
+// Styled Components
+const StyledContainer = styled(View)`
+  flex: 1;
+  width: 100%;
+`;
