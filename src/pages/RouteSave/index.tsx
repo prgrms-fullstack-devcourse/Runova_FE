@@ -19,7 +19,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '@/styles/theme';
 import Header from '@/components/Header';
 import { reverseGeocode } from '@/utils/geocoding';
-import { createCourse } from '@/lib/coursesApi';
+import { createCourse } from '@/services/coursesApi';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import useAuthStore from '@/store/auth';
 import useDrawStore from '@/store/draw';

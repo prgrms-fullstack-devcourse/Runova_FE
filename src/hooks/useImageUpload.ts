@@ -3,7 +3,7 @@ import {
   requestPresignedUrl,
   uploadImageToS3,
   generatePublicImageUrl,
-} from '@/lib/filesApi';
+} from '@/services/filesApi';
 import type { FileUploadType } from '@/types/files.types';
 
 const MAX_IMAGES_SIZE_BYTES = 10 * 1024 * 1024;
