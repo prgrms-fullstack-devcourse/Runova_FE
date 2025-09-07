@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sampleComments, samplePosts } from '@/store/community.mock';
+import { sampleComments, samplePosts } from '@/__mocks__/community.mock';
 import type { RootStackParamList } from '@/types/navigation.types';
 
 import CommentList from './_components/CommentList';
