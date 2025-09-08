@@ -4,6 +4,7 @@ import {
   MAP_MATCHING_RADIUS,
 } from '@/constants/mapMatching';
 import type { Feature, LineString, Position } from 'geojson';
+import { callMapboxMapMatching } from './mapbox';
 
 export async function getMatchedRoute(
   coordinates: Position[],
@@ -12,6 +13,7 @@ export async function getMatchedRoute(
     throw new Error('Not enough coordinates for map matching.');
   }
 
+  // 좌표가 너무 많으면 샘플링
   const coordsForApi =
     coordinates.length > MAP_MATCHING_MAX_COORDS
       ? coordinates.filter(
@@ -20,24 +22,30 @@ export async function getMatchedRoute(
         )
       : coordinates;
 
-  const coordsString = coordsForApi.map((c) => c.join(',')).join(';');
-  const radiuses = coordsForApi.map(() => MAP_MATCHING_RADIUS).join(';'); // 각 좌표에 25m의 스냅 반경을 적용
-  const accessToken = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
-  const url = `https://api.mapbox.com/matching/v5/mapbox/${MAP_MATCHING_API_PROFILE}/${coordsString}?geometries=geojson&radiuses=${radiuses}&access_token=${accessToken}`;
+  // 각 좌표에 스냅 반경 적용
+  const radiuses = coordsForApi.map(() => MAP_MATCHING_RADIUS);
 
-  const response = await fetch(url);
-  const data = await response.json();
-
-  if (data.code !== 'Ok' || data.matchings.length === 0) {
-    console.log('Map matching failed response:', data);
-    throw new Error(
-      data.message || '유효한 경로를 찾지 못했습니다. 다시 시도해 주세요.',
+  try {
+    const data = await callMapboxMapMatching(
+      coordsForApi,
+      MAP_MATCHING_API_PROFILE,
+      radiuses,
     );
-  }
 
-  return {
-    type: 'Feature',
-    properties: {},
-    geometry: data.matchings[0].geometry,
-  };
+    if (data.code !== 'Ok' || data.matchings.length === 0) {
+      console.log('Map matching failed response:', data);
+      throw new Error(
+        data.message || '유효한 경로를 찾지 못했습니다. 다시 시도해 주세요.',
+      );
+    }
+
+    return {
+      type: 'Feature',
+      properties: {},
+      geometry: data.matchings[0].geometry,
+    };
+  } catch (error) {
+    console.error('맵매칭 오류:', error);
+    throw error;
+  }
 }

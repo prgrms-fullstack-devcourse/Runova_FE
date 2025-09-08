@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef } from 'react';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 
-import api from '@/lib/api';
 import useAuthStore from '@/store/auth';
+import { refreshToken } from '@/services/auth.service';
 import type { User } from '@/types/user.types';
 
 type NormalizedUser = {
@@ -95,21 +95,17 @@ export function useWebViewMessenger() {
         }
         case 'REFRESH_TOKEN': {
           try {
-            const { data } = await api.post<{ accessToken: string }>(
-              '/auth/refresh',
-            );
-            const newToken = data.accessToken;
-
-            if (!newToken) throw new Error('No accessToken in refresh result');
+            const { accessToken } = await refreshToken();
 
             if (user) {
-              setAuth(newToken, user);
+              setAuth(accessToken, user);
             } else {
               clearAuth();
             }
 
-            postJson({ type: 'NATIVE_TOKEN', payload: newToken });
-          } catch {
+            postJson({ type: 'NATIVE_TOKEN', payload: accessToken });
+          } catch (error) {
+            console.error('토큰 갱신 실패:', error);
             postJson({ type: 'NATIVE_TOKEN_ERROR' });
             clearAuth();
           }

@@ -1,16 +1,14 @@
 import { create } from 'zustand';
 
+import type { AuthState } from '@/types/auth.types';
 import type { User } from '@/types/user.types';
 
-export interface AuthState {
-  accessToken: string | null;
-  user: User | null;
-  isAuthenticated: boolean;
+export interface AuthStore extends AuthState {
   setAuth: (token: string, user: User) => void;
   clearAuth: () => void;
 }
 
-const useAuthStore = create<AuthState>((set) => ({
+const useAuthStore = create<AuthStore>((set) => ({
   accessToken: null,
   user: null,
   isAuthenticated: false,

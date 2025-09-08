@@ -1,4 +1,4 @@
-import api from './api';
+import api from '../lib/api';
 import type { CourseCreateRequest } from '@/types/courses.types';
 
 export async function createCourse(
