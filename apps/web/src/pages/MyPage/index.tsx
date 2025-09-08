@@ -1,4 +1,6 @@
+// pages/mypage/index.tsx
 import styled from '@emotion/styled';
+import { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
 import ProfileSection from './_components/ProfileSection';
 import Section from '@/components/common/Section';
@@ -8,86 +10,56 @@ import RouteItem from '@/components/common/RouteItem';
 import PostCard from '@/components/common/PostCard';
 import CertItem from '@/components/common/CertItem';
 import type { RoutePreview, PostPreview, CertPreview } from '@/types/mypage';
-
-const Wrap = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
-  min-height: 100vh;
-`;
-const Main = styled.main`
-  padding-top: 48px;
-  padding-bottom: 80px;
-`;
-const HScroll = styled.div`
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-`;
-const VStack12 = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const mockRoutes: RoutePreview[] = [
-  {
-    id: 'r1',
-    title: '한강공원 코스',
-    meta: `5.2km • 평균 페이스 5'30"`,
-    savedAt: '2024.01.15 저장',
-    thumbnail: 'https://picsum.photos/160/160',
-  },
-  {
-    id: 'r2',
-    title: '올림픽공원 둘레길',
-    meta: `3.8km • 평균 페이스 6'10"`,
-    savedAt: '2024.01.12 저장',
-    thumbnail: 'https://picsum.photos/160/160',
-  },
-];
-
-const mockPosts: PostPreview[] = [
-  {
-    id: 'p1',
-    title: '첫 10km 완주 후기!',
-    excerpt: '드디어 목표했던 10km를 완주했습니다. 처음엔 힘들었지만...',
-    date: '2024.01.14',
-    like: 24,
-    comments: 8,
-  },
-  {
-    id: 'p2',
-    title: '겨울 러닝 준비물 추천',
-    excerpt: '추운 날씨에도 꾸준히 달리기 위한 필수 아이템들을 정리해봤어요...',
-    date: '2024.01.10',
-    like: 18,
-    comments: 12,
-  },
-];
-
-const mockCerts: CertPreview[] = [
-  {
-    id: 'c1',
-    title: '오늘의 아침 러닝 완료!',
-    place: '한강공원 • 5.2km',
-    datetime: '2024.01.15 오전 7:30',
-    thumbnail: 'https://picsum.photos/160/160',
-  },
-  {
-    id: 'c2',
-    title: '저녁 러닝 목표 달성!',
-    place: '올림픽공원 • 3.8km',
-    datetime: '2024.01.12 오후 6:45',
-    thumbnail: 'https://picsum.photos/160/160',
-  },
-];
+import { getMyOverview, getReadableMyPageError } from '@/api/mypage';
+import type { ProfileRes } from '@/api/mypage';
 
 export default function MyPage() {
+  const [profile, setProfile] = useState<ProfileRes | null>(null);
+  const [routes, setRoutes] = useState<RoutePreview[]>([]);
+  const [posts, setPosts] = useState<PostPreview[]>([]);
+  const [certs, setCerts] = useState<CertPreview[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setErr(null);
+        const { profile, routes, posts, certs } = await getMyOverview();
+        if (!mounted) return;
+        setProfile(profile);
+        setRoutes(routes);
+        setPosts(posts);
+        setCerts(certs);
+      } catch (e) {
+        setErr(getReadableMyPageError(e));
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <Wrap>
       <Header title="마이페이지" />
       <Main>
-        <ProfileSection />
+        <ProfileSection
+          profile={
+            profile
+              ? {
+                  nickname: profile.nickname,
+                  avatarUrl: profile.avatarUrl,
+                  createdAt: profile.createdAt,
+                }
+              : undefined
+          }
+          onEdit={() => alert('프로필 편집은 준비 중입니다.')}
+        />
 
         <Section>
           <SectionHeader title="러닝 통계" />
@@ -125,31 +97,78 @@ export default function MyPage() {
 
         <Section>
           <SectionHeader title="나의 경로" to="/mypage/routes" />
+          {loading && <Hint>불러오는 중…</Hint>}
+          {err && <ErrorText>{err}</ErrorText>}
           <VStack12>
-            {mockRoutes.map((r) => (
-              <RouteItem key={r.id} data={r} />
-            ))}
+            {routes.length === 0 && !loading ? (
+              <Empty>저장된 경로가 없습니다.</Empty>
+            ) : (
+              routes.map((r) => <RouteItem key={r.id} data={r} />)
+            )}
           </VStack12>
         </Section>
 
         <Section>
           <SectionHeader title="내가 쓴 글" to="/mypage/posts" />
+          {loading && <Hint>불러오는 중…</Hint>}
+          {err && <ErrorText>{err}</ErrorText>}
           <VStack12>
-            {mockPosts.map((p) => (
-              <PostCard key={p.id} data={p} />
-            ))}
+            {posts.length === 0 && !loading ? (
+              <Empty>작성한 글이 없습니다.</Empty>
+            ) : (
+              posts.map((p) => <PostCard key={p.id} data={p} />)
+            )}
           </VStack12>
         </Section>
 
         <Section>
           <SectionHeader title="나의 인증 사진" to="/mypage/certs" />
+          {loading && <Hint>불러오는 중…</Hint>}
+          {err && <ErrorText>{err}</ErrorText>}
           <VStack12>
-            {mockCerts.map((c) => (
-              <CertItem key={c.id} data={c} />
-            ))}
+            {certs.length === 0 && !loading ? (
+              <Empty>등록된 인증 사진이 없습니다.</Empty>
+            ) : (
+              certs.map((c) => <CertItem key={c.id} data={c} />)
+            )}
           </VStack12>
         </Section>
       </Main>
     </Wrap>
   );
 }
+
+const Wrap = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  min-height: 100vh;
+`;
+const Main = styled.main`
+  padding-top: 48px;
+  padding-bottom: 80px;
+`;
+const HScroll = styled.div`
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+`;
+const VStack12 = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+const Hint = styled.div`
+  ${({ theme }) => theme.typography.small};
+  color: ${({ theme }) => theme.colors.subtext};
+  padding: 6px 0 0 0;
+`;
+const ErrorText = styled.div`
+  ${({ theme }) => theme.typography.small};
+  color: #ef4444;
+  padding: 6px 0 0 0;
+`;
+const Empty = styled.div`
+  ${({ theme }) => theme.typography.small};
+  color: ${({ theme }) => theme.colors.subtext};
+  padding: 6px 0;
+`;
