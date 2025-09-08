@@ -1,4 +1,5 @@
 import type { Position } from 'geojson';
+import { callMapboxGeocoding } from './mapbox';
 
 export interface GeocodingResult {
   address: string;
@@ -8,18 +9,8 @@ export interface GeocodingResult {
 export async function reverseGeocode(
   coordinates: Position,
 ): Promise<GeocodingResult> {
-  const [longitude, latitude] = coordinates;
-  const accessToken = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
-
-  if (!accessToken) {
-    throw new Error('Mapbox 액세스 토큰이 설정되지 않았습니다.');
-  }
-
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${accessToken}&types=address,poi`;
-
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await callMapboxGeocoding(coordinates);
 
     if (data.features && data.features.length > 0) {
       const feature = data.features[0];

@@ -18,7 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '@/styles/theme';
 import Header from '@/components/Header';
-import { reverseGeocode } from '@/utils/geocoding';
+import { reverseGeocode } from '@/lib/geocoding';
 import { createCourse } from '@/services/courses.service';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import useAuthStore from '@/store/auth';
