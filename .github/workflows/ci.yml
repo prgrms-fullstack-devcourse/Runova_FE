@@ -1,0 +1,58 @@
+name: CI (lint/typecheck on changed JS/TS)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Detect changed JS/TS
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            js_ts:
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.ts'
+              - '**/*.tsx'
+
+      - name: Lint (ESLint)
+        if: steps.changes.outputs.js_ts == 'true'
+        run: npm run lint
+
+      - name: Type check (TS)
+        if: steps.changes.outputs.js_ts == 'true'
+        run: npm run typecheck
+
+      - name: Prettier check (non-blocking)
+        if: steps.changes.outputs.js_ts == 'true'
+        run: npm run format:check
+        continue-on-error: true
