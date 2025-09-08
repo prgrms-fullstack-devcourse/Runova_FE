@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, Text } from 'react-native';
+import styled from '@emotion/native';
 import { theme } from '@/styles/theme';
 import type { Feature, LineString } from 'geojson';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,7 +9,7 @@ import RunMap from './_components/RunMap';
 
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
-export default function Run({ navigation }: Props) {
+export default function Run() {
   const { routeCoordinates, location, errorMsg } = useLocationTracking();
 
   const routeGeoJSON: Feature<LineString> = {
@@ -22,8 +22,8 @@ export default function Run({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.page}>
-      <View style={styles.container}>
+    <StyledPage>
+      <StyledContainer>
         {errorMsg ? (
           <Text>{errorMsg}</Text>
         ) : location ? (
@@ -31,26 +31,21 @@ export default function Run({ navigation }: Props) {
         ) : (
           <Text>Getting location...</Text>
         )}
-      </View>
-    </View>
+      </StyledContainer>
+    </StyledPage>
   );
 }
 
-const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.gray[100],
-  },
-  container: {
-    height: '100%',
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  map: {
-    flex: 1,
-    width: '100%',
-  },
-});
+const StyledPage = styled(View)`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: ${theme.colors.gray[100]};
+`;
+
+const StyledContainer = styled(View)`
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+`;

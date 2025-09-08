@@ -1,7 +1,7 @@
 import styled from '@emotion/native';
 import React from 'react';
 
-import { CATEGORY_LABEL } from '@/store/community.mock';
+import { CATEGORY_LABEL } from '@/__mocks__/community.mock';
 import type { Post } from '@/types/community.type';
 
 interface Props {

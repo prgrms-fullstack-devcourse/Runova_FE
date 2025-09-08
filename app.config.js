@@ -42,13 +42,19 @@ export default {
       [
         '@rnmapbox/maps',
         {
-          RNMapboxMapsDownloadToken: process.env.MAPBOX_DOWNLOADS_TOKEN,
-          RNMapboxMapsAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
+          RNMapboxMapsDownloadToken:
+            process.env.MAPBOX_DOWNLOADS_TOKEN ||
+            process.env.EXPO_PUBLIC_MAPBOX_DOWNLOADS_TOKEN,
+          RNMapboxMapsAccessToken:
+            process.env.MAPBOX_ACCESS_TOKEN ||
+            process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN,
         },
       ],
     ],
     extra: {
-      MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
+      MAPBOX_ACCESS_TOKEN:
+        process.env.MAPBOX_ACCESS_TOKEN ||
+        process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN,
       eas: {
         projectId: '283351db-1496-4db2-b305-7bdc74af3aa5',
       },

@@ -2,7 +2,7 @@ import styled from '@emotion/native';
 import { ScrollView } from 'react-native';
 import Card from '@/components/Card';
 import type { RouteCardData } from '@/types/card.types';
-import { routeData } from '@/store/routeInfo.mock';
+import { routeData } from '@/__mocks__/routeInfo.mock';
 
 interface RouteGridProps {
   onRouteCardPress: (cardData: RouteCardData) => void;
