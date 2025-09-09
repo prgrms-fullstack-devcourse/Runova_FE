@@ -7,7 +7,13 @@ export interface RouteCoordinate {
 
 export interface CourseCreateRequest {
   title: string;
-  imageURL: string;
+  imageUrl: string;
+  path: [number, number][];
+}
+
+export interface CourseClientData {
+  title: string;
+  imageUrl: string;
   path: RouteCoordinate[];
 }
 
