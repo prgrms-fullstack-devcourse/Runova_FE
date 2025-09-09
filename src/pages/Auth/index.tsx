@@ -28,12 +28,11 @@ export default function Auth() {
     try {
       setIsSubmitting(true);
       const { accessToken, user } = await signInWithGoogle();
+
       setAuth(accessToken, user);
       navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
     } catch (error: any) {
       console.error('로그인 오류:', error);
-
-      // 사용자가 취소한 경우는 토스트를 표시하지 않음
       if (error.message === '사용자가 로그인을 취소했습니다.') {
         return;
       }
