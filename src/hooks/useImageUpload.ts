@@ -5,14 +5,21 @@ import {
   generatePublicImageUrl,
 } from '@/services/files.service';
 import type { FileUploadType } from '@/types/files.types';
+import useAuthStore from '@/store/auth';
 
 const MAX_IMAGES_SIZE_BYTES = 10 * 1024 * 1024;
 
 export function useImageUpload() {
+  const user = useAuthStore((s) => s.user);
+
   const uploadImage = async (
     imageUri: string,
     accessToken: string,
   ): Promise<string> => {
+    if (!user?.id) {
+      throw new Error('사용자 정보가 없습니다. 다시 로그인해주세요.');
+    }
+
     const fileInfo = await FileSystem.getInfoAsync(imageUri);
     if (!fileInfo.exists) {
       throw new Error('이미지 파일을 찾을 수 없습니다.');
@@ -24,23 +31,23 @@ export function useImageUpload() {
       throw new Error('이미지 파일이 너무 큽니다. (최대 10MB)');
     }
 
-    const uploadType: FileUploadType = 'avatar';
+    const uploadType: FileUploadType = 'course';
     const presignData = await requestPresignedUrl(
       {
         type: uploadType,
         contentType: 'image/png',
         size: fileSize,
+        userId: user.id,
       },
       accessToken,
     );
 
     await uploadImageToS3(presignData.url, imageUri, fileSize);
 
-    const publicImageUrl = generatePublicImageUrl(
+    let publicImageUrl = generatePublicImageUrl(
       presignData.bucket,
       presignData.key,
     );
-
     return publicImageUrl;
   };
 
