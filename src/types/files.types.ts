@@ -4,7 +4,6 @@ export interface PresignRequest {
   type: FileUploadType;
   contentType: string;
   size: number;
-  userId: number;
 }
 
 export interface PresignResponse {

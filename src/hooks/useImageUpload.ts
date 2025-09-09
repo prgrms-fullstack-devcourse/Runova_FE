@@ -37,17 +37,19 @@ export function useImageUpload() {
         type: uploadType,
         contentType: 'image/png',
         size: fileSize,
-        userId: user.id,
       },
       accessToken,
     );
 
     await uploadImageToS3(presignData.url, imageUri, fileSize);
 
-    let publicImageUrl = generatePublicImageUrl(
+    const publicImageUrl = generatePublicImageUrl(
       presignData.bucket,
       presignData.key,
     );
+
+    console.log('📤 [useImageUpload] publicImageUrl:', publicImageUrl);
+
     return publicImageUrl;
   };
 
