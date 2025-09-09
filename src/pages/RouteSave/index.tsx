@@ -99,7 +99,7 @@ export default function RouteSave() {
 
       const courseData = {
         title: title.trim(),
-        imageURL: finalImageURL,
+        imageUrl: finalImageURL,
         path: routeData.path,
       };
 
