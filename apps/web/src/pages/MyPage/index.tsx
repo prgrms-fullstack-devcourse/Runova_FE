@@ -1,4 +1,3 @@
-// pages/mypage/index.tsx
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
@@ -10,11 +9,11 @@ import RouteItem from '@/components/common/RouteItem';
 import PostCard from '@/components/common/PostCard';
 import CertItem from '@/components/common/CertItem';
 import type { RoutePreview, PostPreview, CertPreview } from '@/types/mypage';
-import { getMyOverview, getReadableMyPageError } from '@/api/mypage';
-import type { ProfileRes } from '@/api/mypage';
+import { getMeOverview, getReadableUserError } from '@/api/mypage';
+import type { UserProfileRes } from '@/api/mypage';
 
 export default function MyPage() {
-  const [profile, setProfile] = useState<ProfileRes | null>(null);
+  const [profile, setProfile] = useState<UserProfileRes | null>(null);
   const [routes, setRoutes] = useState<RoutePreview[]>([]);
   const [posts, setPosts] = useState<PostPreview[]>([]);
   const [certs, setCerts] = useState<CertPreview[]>([]);
@@ -27,14 +26,14 @@ export default function MyPage() {
       try {
         setLoading(true);
         setErr(null);
-        const { profile, routes, posts, certs } = await getMyOverview();
+        const { profile, routes, posts, certs } = await getMeOverview();
         if (!mounted) return;
         setProfile(profile);
         setRoutes(routes);
         setPosts(posts);
         setCerts(certs);
       } catch (e) {
-        setErr(getReadableMyPageError(e));
+        setErr(getReadableUserError(e));
       } finally {
         setLoading(false);
       }
@@ -53,12 +52,16 @@ export default function MyPage() {
             profile
               ? {
                   nickname: profile.nickname,
-                  avatarUrl: profile.avatarUrl,
+                  avatarUrl: profile.imageUrl,
                   createdAt: profile.createdAt,
                 }
               : undefined
           }
-          onEdit={() => alert('프로필 편집은 준비 중입니다.')}
+          onAvatarUpdated={(newUrl) =>
+            setProfile((prev) =>
+              prev ? ({ ...prev, avatarUrl: newUrl } as UserProfileRes) : prev,
+            )
+          }
         />
 
         <Section>
@@ -99,39 +102,39 @@ export default function MyPage() {
           <SectionHeader title="나의 경로" to="/mypage/routes" />
           {loading && <Hint>불러오는 중…</Hint>}
           {err && <ErrorText>{err}</ErrorText>}
-          <VStack12>
+          <ImageArea>
             {routes.length === 0 && !loading ? (
               <Empty>저장된 경로가 없습니다.</Empty>
             ) : (
               routes.map((r) => <RouteItem key={r.id} data={r} />)
             )}
-          </VStack12>
+          </ImageArea>
         </Section>
 
         <Section>
           <SectionHeader title="내가 쓴 글" to="/mypage/posts" />
           {loading && <Hint>불러오는 중…</Hint>}
           {err && <ErrorText>{err}</ErrorText>}
-          <VStack12>
+          <ImageArea>
             {posts.length === 0 && !loading ? (
               <Empty>작성한 글이 없습니다.</Empty>
             ) : (
               posts.map((p) => <PostCard key={p.id} data={p} />)
             )}
-          </VStack12>
+          </ImageArea>
         </Section>
 
         <Section>
           <SectionHeader title="나의 인증 사진" to="/mypage/certs" />
           {loading && <Hint>불러오는 중…</Hint>}
           {err && <ErrorText>{err}</ErrorText>}
-          <VStack12>
+          <ImageArea>
             {certs.length === 0 && !loading ? (
               <Empty>등록된 인증 사진이 없습니다.</Empty>
             ) : (
               certs.map((c) => <CertItem key={c.id} data={c} />)
             )}
-          </VStack12>
+          </ImageArea>
         </Section>
       </Main>
     </Wrap>
@@ -152,7 +155,7 @@ const HScroll = styled.div`
   overflow-x: auto;
   padding-bottom: 8px;
 `;
-const VStack12 = styled.div`
+const ImageArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -164,7 +167,7 @@ const Hint = styled.div`
 `;
 const ErrorText = styled.div`
   ${({ theme }) => theme.typography.small};
-  color: #ef4444;
+  color: ${({ theme }) => theme.colors.danger};
   padding: 6px 0 0 0;
 `;
 const Empty = styled.div`
