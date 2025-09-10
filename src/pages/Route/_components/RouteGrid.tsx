@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/useRouteData';
+import { useRouteData } from '@/hooks/api/useRouteData';
 
 export default function RouteGrid() {
   const {

@@ -9,7 +9,7 @@ import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/useRouteData';
+import { useRouteData } from '@/hooks/api/useRouteData';
 
 type Props = NativeStackScreenProps<RouteStackParamList, 'RouteMain'>;
 
