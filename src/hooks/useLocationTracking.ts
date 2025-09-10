@@ -14,11 +14,13 @@ export function useLocationTracking() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null,
   );
+  const [isTracking, setIsTracking] = useState(false);
+  const [subscriber, setSubscriber] = useState<{ remove: () => void } | null>(
+    null,
+  );
 
   useEffect(() => {
-    let subscriber: { remove: () => void } | undefined;
-
-    const startWatching = async () => {
+    const getInitialLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
@@ -28,44 +30,85 @@ export function useLocationTracking() {
       const lastKnownPosition = await Location.getLastKnownPositionAsync();
       if (lastKnownPosition) {
         setLocation(lastKnownPosition);
-        const { latitude, longitude } = lastKnownPosition.coords;
-        setRouteCoordinates([[longitude, latitude]]);
       }
-
-      subscriber = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: LOCATION_UPDATE_INTERVAL_MS,
-          distanceInterval: LOCATION_DISTANCE_INTERVAL_M,
-        },
-        (newLocation) => {
-          const { latitude, longitude } = newLocation.coords;
-          setLocation(newLocation);
-
-          const newCoordinate: Position = [longitude, latitude];
-          setRouteCoordinates((prevCoords) => {
-            if (prevCoords.length > 0) {
-              const lastCoord = prevCoords[prevCoords.length - 1];
-              const distance = haversineDistance(lastCoord, newCoordinate);
-
-              if (distance > MIN_DISTANCE_THRESHOLD_M) {
-                return [...prevCoords, newCoordinate];
-              }
-            } else {
-              return [...prevCoords, newCoordinate];
-            }
-            return prevCoords;
-          });
-        },
-      );
     };
 
-    startWatching();
-
-    return () => {
-      subscriber?.remove();
-    };
+    getInitialLocation();
   }, []);
 
-  return { routeCoordinates, location, errorMsg };
+  const startTracking = async () => {
+    if (isTracking) return;
+
+    if (location) {
+      const { latitude, longitude } = location.coords;
+      setRouteCoordinates([[longitude, latitude]]);
+    }
+
+    const newSubscriber = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: LOCATION_UPDATE_INTERVAL_MS,
+        distanceInterval: LOCATION_DISTANCE_INTERVAL_M,
+      },
+      (newLocation) => {
+        const { latitude, longitude } = newLocation.coords;
+        setLocation(newLocation);
+
+        const newCoordinate: Position = [longitude, latitude];
+        setRouteCoordinates((prevCoords) => {
+          if (prevCoords.length > 0) {
+            const lastCoord = prevCoords[prevCoords.length - 1];
+            const distance = haversineDistance(lastCoord, newCoordinate);
+
+            if (distance > MIN_DISTANCE_THRESHOLD_M) {
+              return [...prevCoords, newCoordinate];
+            }
+          } else {
+            return [...prevCoords, newCoordinate];
+          }
+          return prevCoords;
+        });
+      },
+    );
+
+    setSubscriber(newSubscriber);
+    setIsTracking(true);
+  };
+
+  const pauseTracking = () => {
+    if (subscriber) {
+      subscriber.remove();
+      setSubscriber(null);
+    }
+    setIsTracking(false);
+  };
+
+  const stopTracking = () => {
+    if (subscriber) {
+      subscriber.remove();
+      setSubscriber(null);
+    }
+    setIsTracking(false);
+    setRouteCoordinates([]);
+    setLocation(null);
+  };
+
+  const toggleTracking = () => {
+    if (isTracking) {
+      pauseTracking();
+    } else {
+      startTracking();
+    }
+  };
+
+  return {
+    routeCoordinates,
+    location,
+    errorMsg,
+    isTracking,
+    startTracking,
+    pauseTracking,
+    stopTracking,
+    toggleTracking,
+  };
 }
