@@ -22,7 +22,7 @@ export async function createRunningRecord(
       },
     });
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw error;
   }
 }
