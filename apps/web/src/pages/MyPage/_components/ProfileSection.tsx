@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { uploadAvatarAndRefresh } from '@/api/mypage';
 
 export type ProfileSectionProps = {
@@ -27,14 +27,15 @@ export default function ProfileSection({
     setAvatarSrc(serverAvatar || '');
   }, [serverAvatar]);
 
-  const since = profile?.createdAt
-    ? (() => {
-        const d = new Date(profile.createdAt);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1;
-        return `${y}년 ${m}월부터 시작`;
-      })()
-    : undefined;
+  const since = useMemo(() => {
+    if (!profile?.createdAt) {
+      return undefined;
+    }
+    const d = new Date(profile.createdAt);
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    return `${y}년 ${m}월부터 시작`;
+  }, [profile?.createdAt]);
 
   const onClickEdit = () => fileRef.current?.click();
 
@@ -112,6 +113,7 @@ export default function ProfileSection({
   );
 }
 
+/* styled */
 const Section = styled.section`
   padding: 24px 16px;
   background: ${({ theme }) => theme.colors.surface};

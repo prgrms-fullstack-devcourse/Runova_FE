@@ -102,8 +102,7 @@ function mapCoursePreview(c: UserCourseRes): RoutePreview {
 }
 
 function mapPostPreview(p: UserPostRes): PostPreview {
-  const excerpt =
-    p.content.length > 120 ? `${p.content.slice(0, 120)}…` : p.content;
+  const excerpt = p.content;
   return {
     id: String(p.id),
     title: p.title,

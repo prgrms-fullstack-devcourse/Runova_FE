@@ -1,10 +1,8 @@
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
+import DataSection from './_components/DataSection';
 import ProfileSection from './_components/ProfileSection';
-import Section from '@/components/common/Section';
-import SectionHeader from '@/components/common/SectionHeader';
-import StatCard from '@/components/common/StatCard';
 import RouteItem from '@/components/common/RouteItem';
 import PostCard from '@/components/common/PostCard';
 import CertItem from '@/components/common/CertItem';
@@ -63,79 +61,35 @@ export default function MyPage() {
             )
           }
         />
+        <DataSection
+          title="나의 경로"
+          to="/mypage/routes"
+          loading={loading}
+          error={err}
+          items={routes}
+          emptyText="저장된 경로가 없습니다."
+          renderItem={(r) => <RouteItem key={r.id} data={r} />}
+        />
 
-        <Section>
-          <SectionHeader title="러닝 통계" />
-          <HScroll>
-            <StatCard
-              iconClass="ri-map-pin-range-line"
-              iconBg="#dbeafe"
-              iconColor="#2563eb"
-              value="247.5"
-              label="총 거리 (km)"
-            />
-            <StatCard
-              iconClass="ri-time-line"
-              iconBg="#dcfce7"
-              iconColor="#16a34a"
-              value="42h"
-              label="총 시간"
-            />
-            <StatCard
-              iconClass="ri-trophy-line"
-              iconBg="#f3e8ff"
-              iconColor="#7c3aed"
-              value="89"
-              label="완주 횟수"
-            />
-            <StatCard
-              iconClass="ri-fire-line"
-              iconBg="#ffedd5"
-              iconColor="#f97316"
-              value="12,450"
-              label="칼로리 (kcal)"
-            />
-          </HScroll>
-        </Section>
+        <DataSection
+          title="내가 쓴 글"
+          to="/mypage/posts"
+          loading={loading}
+          error={err}
+          items={posts}
+          emptyText="작성한 글이 없습니다."
+          renderItem={(p) => <PostCard key={p.id} data={p} />}
+        />
 
-        <Section>
-          <SectionHeader title="나의 경로" to="/mypage/routes" />
-          {loading && <Hint>불러오는 중…</Hint>}
-          {err && <ErrorText>{err}</ErrorText>}
-          <ImageArea>
-            {routes.length === 0 && !loading ? (
-              <Empty>저장된 경로가 없습니다.</Empty>
-            ) : (
-              routes.map((r) => <RouteItem key={r.id} data={r} />)
-            )}
-          </ImageArea>
-        </Section>
-
-        <Section>
-          <SectionHeader title="내가 쓴 글" to="/mypage/posts" />
-          {loading && <Hint>불러오는 중…</Hint>}
-          {err && <ErrorText>{err}</ErrorText>}
-          <ImageArea>
-            {posts.length === 0 && !loading ? (
-              <Empty>작성한 글이 없습니다.</Empty>
-            ) : (
-              posts.map((p) => <PostCard key={p.id} data={p} />)
-            )}
-          </ImageArea>
-        </Section>
-
-        <Section>
-          <SectionHeader title="나의 인증 사진" to="/mypage/certs" />
-          {loading && <Hint>불러오는 중…</Hint>}
-          {err && <ErrorText>{err}</ErrorText>}
-          <ImageArea>
-            {certs.length === 0 && !loading ? (
-              <Empty>등록된 인증 사진이 없습니다.</Empty>
-            ) : (
-              certs.map((c) => <CertItem key={c.id} data={c} />)
-            )}
-          </ImageArea>
-        </Section>
+        <DataSection
+          title="나의 인증 사진"
+          to="/mypage/certs"
+          loading={loading}
+          error={err}
+          items={certs}
+          emptyText="등록된 인증 사진이 없습니다."
+          renderItem={(c) => <CertItem key={c.id} data={c} />}
+        />
       </Main>
     </Wrap>
   );
@@ -145,33 +99,8 @@ const Wrap = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   min-height: 100vh;
 `;
+
 const Main = styled.main`
   padding-top: 48px;
   padding-bottom: 80px;
-`;
-const HScroll = styled.div`
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-`;
-const ImageArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-const Hint = styled.div`
-  ${({ theme }) => theme.typography.small};
-  color: ${({ theme }) => theme.colors.subtext};
-  padding: 6px 0 0 0;
-`;
-const ErrorText = styled.div`
-  ${({ theme }) => theme.typography.small};
-  color: ${({ theme }) => theme.colors.danger};
-  padding: 6px 0 0 0;
-`;
-const Empty = styled.div`
-  ${({ theme }) => theme.typography.small};
-  color: ${({ theme }) => theme.colors.subtext};
-  padding: 6px 0;
 `;
