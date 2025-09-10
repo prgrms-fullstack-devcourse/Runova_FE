@@ -3,6 +3,8 @@ import api from '../lib/api';
 import type {
   CourseClientData,
   CourseCreateRequest,
+  CourseSearchRequest,
+  CourseSearchResponse,
 } from '@/types/courses.types';
 
 export async function createCourse(
@@ -19,4 +21,17 @@ export async function createCourse(
       Authorization: `Bearer ${accessToken}`,
     },
   });
+}
+
+export async function searchUserCourses(
+  params: CourseSearchRequest,
+  accessToken: string,
+): Promise<CourseSearchResponse> {
+  const response = await api.get('/api/courses/search/users', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
 }
