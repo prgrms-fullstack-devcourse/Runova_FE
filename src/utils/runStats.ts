@@ -4,7 +4,7 @@ import { haversineDistance } from '@/utils/location';
 export interface RunStats {
   distance: number;
   calories: number;
-  pace: string;
+  pace: number;
   runningTime: string;
 }
 
@@ -51,12 +51,9 @@ export const calculateRunStats = (
   // TODO:칼로리 계산 로직 고도화 필요
   const calories = Math.round((totalDistance / 1000) * 50);
 
-  // 페이스 계산 (분/km) - 실제 달린 시간 기준
+  // 페이스 계산 (km당 초) - 실제 달린 시간 기준
   const distanceKm = totalDistance / 1000;
-  const paceSeconds = distanceKm > 0 ? actualRunningTime / distanceKm : 0;
-  const paceMinutes = Math.floor(paceSeconds / 60);
-  const paceSecs = Math.floor(paceSeconds % 60);
-  const pace = `${paceMinutes}'${paceSecs.toString().padStart(2, '0')}"`;
+  const pace = distanceKm > 0 ? actualRunningTime / distanceKm : 0;
 
   return {
     distance: Math.round(totalDistance),

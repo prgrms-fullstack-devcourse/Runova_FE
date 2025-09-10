@@ -1,6 +1,14 @@
 import styled from '@emotion/native';
 import useRunStore from '@/store/run';
 
+const formatPace = (paceSeconds: number): string => {
+  if (paceSeconds === 0) return '0\'00"';
+
+  const minutes = Math.floor(paceSeconds / 60);
+  const seconds = Math.floor(paceSeconds % 60);
+  return `${minutes}'${seconds.toString().padStart(2, '0')}"`;
+};
+
 export default function StatsContainer() {
   const { stats } = useRunStore();
   return (
@@ -19,7 +27,7 @@ export default function StatsContainer() {
           <StatLabel>칼로리</StatLabel>
         </StatItem>
         <StatItem>
-          <StatValue>{stats.pace}</StatValue>
+          <StatValue>{formatPace(stats.pace)}</StatValue>
           <StatLabel>페이스</StatLabel>
         </StatItem>
       </StatsRow>

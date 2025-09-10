@@ -64,7 +64,7 @@ export function useRunModals({ navigation }: Props) {
         (coord) => [coord[0], coord[1]] as [number, number],
       );
 
-      const paceValue = parseFloat(stats.pace.replace(/[^\d.]/g, '')) || 0;
+      const paceValue = stats.pace;
 
       if (!startTime || !endTime) {
         throw new Error('시작 시간 또는 종료 시간이 없습니다.');
