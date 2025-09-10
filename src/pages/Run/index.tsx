@@ -4,6 +4,7 @@ import styled from '@emotion/native';
 import { ArrowLeft, LocateFixed } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useLocationManager } from '@/hooks/useLocationManager';
@@ -15,8 +16,8 @@ import RunMap from './_components/RunMap';
 import StatsContainer from './_components/StatsContainer';
 import ControlContainer from './_components/ControlContainer';
 import Modal from '@/components/Modal';
+import Mapbox from '@rnmapbox/maps';
 import FloatingButton from '@/components/FloatingButton';
-import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
 
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
@@ -26,7 +27,7 @@ export default function Run({ route, navigation }: Props) {
   const { routeCoordinates, isTracking, resetLocationTracking } =
     useLocationTracking();
   const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
-  const cameraRef = useRef<any>(null);
+  const cameraRef = useRef<Mapbox.Camera>(null!);
 
   const {
     loading,
