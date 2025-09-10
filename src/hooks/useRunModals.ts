@@ -61,7 +61,7 @@ export function useRunModals({ navigation }: Props) {
       const endTime = new Date();
 
       const path: [number, number][] = routeCoordinates.map(
-        (coord) => [coord[0], coord[1]] as [number, number],
+        (coord: [number, number]) => [coord[0], coord[1]],
       );
 
       const paceValue = stats.pace;
