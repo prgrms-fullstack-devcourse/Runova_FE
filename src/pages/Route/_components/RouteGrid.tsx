@@ -9,6 +9,7 @@ import {
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
 import { useRouteData } from '@/hooks/api/useRouteData';
+import { CourseSearchItem } from '@/types/courses.types';
 
 export default function RouteGrid() {
   const {
@@ -21,7 +22,7 @@ export default function RouteGrid() {
   } = useRouteStore();
 
   const { handleLoadMore, handleRetry, handleRefresh } = useRouteData();
-  const renderRouteCard = ({ item }: { item: any }) => (
+  const renderRouteCard = ({ item }: { item: CourseSearchItem }) => (
     <Card
       imageSource={{ uri: item.imageUrl }}
       content={{ hasStar: item.bookmarked }}
@@ -72,8 +73,15 @@ export default function RouteGrid() {
       renderItem={renderRouteCard}
       keyExtractor={(item) => item.id.toString()}
       numColumns={2}
-      contentContainerStyle={{ padding: 16, paddingBottom: 32, gap: 16 }}
-      columnWrapperStyle={{ justifyContent: 'space-between' }}
+      contentContainerStyle={{
+        padding: 16,
+        paddingBottom: 32,
+      }}
+      columnWrapperStyle={{
+        justifyContent: 'space-between',
+        marginBottom: 16,
+        gap: 16,
+      }}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.1}
       refreshControl={

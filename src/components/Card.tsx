@@ -148,9 +148,8 @@ const CardContainer = styled(TouchableOpacity)<{
   borderWidth: 1,
   borderRadius: 12,
   padding: mode === 'only-image' ? 0 : 16,
-  marginRight: 16,
-  flex: fullWidth ? undefined : mode === 'only-image' ? 0 : 1,
-  width: fullWidth ? '100%' : mode === 'only-image' ? '48%' : undefined,
+  flex: fullWidth ? undefined : mode === 'only-image' ? 1 : 1,
+  width: fullWidth ? '100%' : undefined,
   aspectRatio: fullWidth ? undefined : 1,
 }));
 
