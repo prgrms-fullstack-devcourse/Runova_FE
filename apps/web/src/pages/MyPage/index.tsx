@@ -56,9 +56,7 @@ export default function MyPage() {
               : undefined
           }
           onAvatarUpdated={(newUrl) =>
-            setProfile((prev) =>
-              prev ? ({ ...prev, avatarUrl: newUrl } as UserProfileRes) : prev,
-            )
+            setProfile((prev) => (prev ? { ...prev, imageUrl: newUrl } : prev))
           }
         />
         <DataSection
