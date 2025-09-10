@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
+import { useRouteData } from '@/hooks/useRouteData';
 
 export default function RouteGrid() {
   const {
@@ -17,10 +18,9 @@ export default function RouteGrid() {
     error,
     refreshing,
     handleRouteCardPress,
-    handleLoadMore,
-    handleRetry,
-    handleRefresh,
   } = useRouteStore();
+
+  const { handleLoadMore, handleRetry, handleRefresh } = useRouteData();
   const renderRouteCard = ({ item }: { item: any }) => (
     <Card
       imageSource={{ uri: item.imageUrl }}
