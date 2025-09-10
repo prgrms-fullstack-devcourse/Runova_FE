@@ -15,21 +15,21 @@ export const calculateRunStats = (
   pausedTime: number = 0,
   pauseStartTime: Date | null = null,
 ): RunStats => {
+  // 달린 시간 계산 (일시중지 시간 제외)
   const currentTime = new Date();
-  let actualRunningTime = 0;
+  const totalElapsedTime = startTime
+    ? (currentTime.getTime() - startTime.getTime()) / 1000
+    : 0;
 
-  if (startTime) {
-    if (isTracking) {
-      const totalElapsedTime =
-        (currentTime.getTime() - startTime.getTime()) / 1000;
-      actualRunningTime = Math.max(0, totalElapsedTime - pausedTime);
-    } else {
-      const pauseTime = pauseStartTime || currentTime;
-      const totalElapsedTime =
-        (pauseTime.getTime() - startTime.getTime()) / 1000;
-      actualRunningTime = Math.max(0, totalElapsedTime - pausedTime);
-    }
-  }
+  // 현재 일시정지 중인 시간 계산
+  const currentPauseTime = pauseStartTime
+    ? (currentTime.getTime() - pauseStartTime.getTime()) / 1000
+    : 0;
+
+  const totalPausedTime = pausedTime + currentPauseTime;
+
+  // 실제 달린 시간 = 총 경과 시간 - 총 일시정지 시간
+  const actualRunningTime = Math.max(0, totalElapsedTime - totalPausedTime);
 
   const hours = Math.floor(actualRunningTime / 3600);
   const minutes = Math.floor((actualRunningTime % 3600) / 60);
