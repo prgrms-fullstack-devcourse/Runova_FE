@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import Toast from 'react-native-toast-message';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { TabParamList } from '@/types/navigation.types';
 import useRunStore from '@/store/run';
@@ -46,9 +47,10 @@ export function useRunModals({ navigation }: Props) {
   }, [setModal, setError]);
 
   const handleConfirmExit = useCallback(async () => {
-    if (!startTime) {
+    if (!startTime || routeCoordinates.length === 0) {
       resetLocationTracking();
       resetRunState();
+      navigation.goBack();
       return;
     }
 
@@ -57,10 +59,6 @@ export function useRunModals({ navigation }: Props) {
       setError('save', null);
 
       const endTime = new Date();
-
-      if (routeCoordinates.length === 0) {
-        throw new Error('저장할 경로 데이터가 없습니다.');
-      }
 
       const path: [number, number][] = routeCoordinates.map(
         (coord) => [coord[0], coord[1]] as [number, number],
@@ -85,6 +83,12 @@ export function useRunModals({ navigation }: Props) {
       };
 
       await saveRunningRecord(runningRecord);
+
+      Toast.show({
+        type: 'success',
+        text1: '저장 완료',
+        text2: '런닝 기록이 성공적으로 저장되었습니다.',
+      });
 
       resetLocationTracking();
       resetRunState();
@@ -128,6 +132,11 @@ export function useRunModals({ navigation }: Props) {
     navigation,
   ]);
 
+  const handleRetryExit = useCallback(() => {
+    setError('save', null);
+    handleConfirmExit();
+  }, [setError, handleConfirmExit]);
+
   return {
     showExitModal,
     showBackModal,
@@ -135,6 +144,7 @@ export function useRunModals({ navigation }: Props) {
     handleConfirmBack,
     handleCancelBack,
     handleCancelExit,
+    handleRetryExit,
     handleConfirmExit,
   };
 }

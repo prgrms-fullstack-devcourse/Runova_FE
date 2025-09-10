@@ -28,15 +28,19 @@ export default function Run({ route, navigation }: Props) {
   const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
   const cameraRef = useRef<any>(null);
 
-  const { loading, savingRecord, topologyError, saveError, resetRunState } =
-    useRunStore();
+  const {
+    loading,
+    savingRecord,
+    topologyError,
+    saveError,
+    resetRunState,
+    startTime,
+  } = useRunStore();
 
   useFocusEffect(
     useCallback(() => {
-      console.log('🔄 [DEBUG] Run 화면 포커스 - 상태 초기화 시작');
       resetLocationTracking();
       resetRunState();
-      console.log('✅ [DEBUG] Run 화면 포커스 - 상태 초기화 완료');
     }, [resetLocationTracking, resetRunState]),
   );
 
@@ -50,6 +54,7 @@ export default function Run({ route, navigation }: Props) {
     handleConfirmBack,
     handleCancelBack,
     handleCancelExit,
+    handleRetryExit,
     handleConfirmExit,
   } = useRunModals({ navigation });
 
@@ -101,16 +106,18 @@ export default function Run({ route, navigation }: Props) {
       />
       <Modal
         visible={showExitModal}
-        title="종료하시겠습니까?"
+        title={saveError ? '저장 실패' : '종료하시겠습니까?'}
         message={
           saveError
             ? saveError
-            : '현재 트래킹을 종료하면 기록된 경로가 삭제됩니다.'
+            : !startTime || routeCoordinates.length === 0
+              ? '저장할 데이터가 없습니다. 종료하시겠습니까?'
+              : '현재 트래킹을 종료하면 기록된 경로가 삭제됩니다.'
         }
         onCancel={handleCancelExit}
-        onConfirm={handleConfirmExit}
+        onConfirm={saveError ? handleRetryExit : handleConfirmExit}
         cancelText="취소"
-        confirmText="종료"
+        confirmText={saveError ? '재시도' : '종료'}
         loading={savingRecord}
         disabled={savingRecord}
       />
