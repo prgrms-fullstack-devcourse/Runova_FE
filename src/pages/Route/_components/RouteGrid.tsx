@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { useCallback } from 'react';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
 import { useRouteData } from '@/hooks/api/useRouteData';
@@ -22,18 +23,27 @@ export default function RouteGrid() {
   } = useRouteStore();
 
   const { handleLoadMore, handleRetry, handleRefresh } = useRouteData();
-  const renderRouteCard = ({ item }: { item: CourseSearchItem }) => (
-    <Card
-      imageSource={{ uri: item.imageUrl }}
-      content={{ hasStar: item.bookmarked }}
-      mode="only-image"
-      onPress={() => handleRouteCardPress(item)}
-    />
+
+  const renderRouteCard = useCallback(
+    ({ item }: { item: CourseSearchItem }) => (
+      <Card
+        imageSource={{ uri: item.imageUrl }}
+        content={{ hasStar: item.bookmarked }}
+        mode="only-image"
+        onPress={() => handleRouteCardPress(item)}
+      />
+    ),
+    [handleRouteCardPress],
   );
 
-  const handleEndReached = () => {
+  const handleEndReached = useCallback(() => {
     handleLoadMore();
-  };
+  }, [handleLoadMore]);
+
+  const keyExtractor = useCallback(
+    (item: CourseSearchItem) => item.id.toString(),
+    [],
+  );
 
   if (error && courses.length === 0) {
     return (
@@ -71,7 +81,7 @@ export default function RouteGrid() {
     <FlatList
       data={courses}
       renderItem={renderRouteCard}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={keyExtractor}
       numColumns={2}
       contentContainerStyle={{
         padding: 16,
