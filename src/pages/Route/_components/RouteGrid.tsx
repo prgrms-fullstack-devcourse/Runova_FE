@@ -12,15 +12,12 @@ import useRouteStore from '@/store/route';
 import { useRouteData } from '@/hooks/api/useRouteApi';
 import { CourseSearchItem } from '@/types/courses.types';
 
-export default function RouteGrid() {
-  const {
-    activeTab,
-    courses,
-    loading,
-    error,
-    refreshing,
-    handleRouteCardPress,
-  } = useRouteStore();
+interface RouteGridProps {
+  onRouteCardPress: (courseId: number) => void;
+}
+
+export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
+  const { activeTab, courses, loading, error, refreshing } = useRouteStore();
 
   const { handleLoadMore, handleRetry, handleRefresh } = useRouteData();
 
@@ -30,10 +27,10 @@ export default function RouteGrid() {
         imageSource={{ uri: item.imageUrl }}
         content={{ hasStar: item.bookmarked }}
         mode="only-image"
-        onPress={() => handleRouteCardPress(item)}
+        onPress={() => onRouteCardPress(item.id)}
       />
     ),
-    [handleRouteCardPress],
+    [onRouteCardPress],
   );
 
   const handleEndReached = useCallback(() => {
