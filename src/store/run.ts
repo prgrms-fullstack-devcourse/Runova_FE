@@ -150,7 +150,6 @@ const useRunStore = create<RunState>((set, get) => ({
   // 코스 액션들
   setCourseTopology: (courseTopology) => set({ courseTopology }),
 
-  // 전체 리셋
   resetRunState: () =>
     set({
       ...initialUIState,

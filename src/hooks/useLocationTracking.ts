@@ -130,6 +130,7 @@ export function useLocationTracking() {
     setRouteCoordinates([]);
     setIsTracking(false);
     setErrorMsg(null);
+    setLocation(null);
   };
 
   return {
