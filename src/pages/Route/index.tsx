@@ -1,5 +1,5 @@
 import styled from '@emotion/native';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Settings, PenTool } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Header from '@/components/Header';
@@ -8,7 +8,8 @@ import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
-import type { RouteCardData } from '@/types/card.types';
+import useRouteStore from '@/store/route';
+import { useRouteData } from '@/hooks/api/useRouteApi';
 
 type Props = NativeStackScreenProps<RouteStackParamList, 'RouteMain'>;
 
@@ -19,11 +20,16 @@ const tabs: Array<{ id: RouteTabId; title: string }> = [
 ];
 
 export default function Route({ navigation }: Props) {
-  const [activeTab, setActiveTab] = useState<RouteTabId>('created');
+  const { activeTab, setActiveTab, courses } = useRouteStore();
+  const { loadCourses } = useRouteData();
 
-  const handleSettingsPress = () => {
-    console.log('설정');
-  };
+  useEffect(() => {
+    if (activeTab === 'created' && courses.length === 0) {
+      loadCourses(true);
+    }
+  }, [activeTab, courses.length, loadCourses]);
+
+  const handleSettingsPress = () => {};
 
   const handleCreatePress = () => {
     navigation.navigate('Draw', {});
@@ -31,10 +37,9 @@ export default function Route({ navigation }: Props) {
 
   const handleTabPress = (tabId: RouteTabId) => {
     setActiveTab(tabId);
-  };
-
-  const handleRouteCardPress = (cardData: RouteCardData) => {
-    console.log('경로 카드 클릭:', cardData.id);
+    if (tabId === 'created') {
+      loadCourses(true);
+    }
   };
 
   return (
@@ -49,7 +54,7 @@ export default function Route({ navigation }: Props) {
         activeTab={activeTab}
         onTabPress={handleTabPress}
       />
-      <RouteGrid onRouteCardPress={handleRouteCardPress} />
+      <RouteGrid />
       <FloatingButton icon={PenTool} onPress={handleCreatePress} />
     </Screen>
   );
