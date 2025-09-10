@@ -10,6 +10,8 @@ interface ModalProps {
   onConfirm: () => void;
   cancelText?: string;
   confirmText?: string;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 export default function Modal({
@@ -20,6 +22,8 @@ export default function Modal({
   onConfirm,
   cancelText = '취소',
   confirmText = '확인',
+  loading = false,
+  disabled = false,
 }: ModalProps) {
   return (
     <RNModal
@@ -33,11 +37,17 @@ export default function Modal({
           <ModalTitle>{title}</ModalTitle>
           <ModalMessage>{message}</ModalMessage>
           <ButtonContainer>
-            <ModalButton onPress={onCancel}>
+            <ModalButton onPress={onCancel} disabled={disabled || loading}>
               <ModalButtonText>{cancelText}</ModalButtonText>
             </ModalButton>
-            <ModalButton onPress={onConfirm} isPrimary>
-              <ModalButtonText isPrimary>{confirmText}</ModalButtonText>
+            <ModalButton
+              onPress={onConfirm}
+              isPrimary
+              disabled={disabled || loading}
+            >
+              <ModalButtonText isPrimary>
+                {loading ? '저장 중...' : confirmText}
+              </ModalButtonText>
             </ModalButton>
           </ButtonContainer>
         </ModalContainer>
@@ -51,6 +61,7 @@ const ModalOverlay = styled(View)`
   background-color: rgba(0, 0, 0, 0.5);
   justify-content: center;
   align-items: center;
+  z-index: 2000;
 `;
 
 const ModalContainer = styled(View)`
@@ -83,13 +94,19 @@ const ButtonContainer = styled(View)`
   gap: 12px;
 `;
 
-const ModalButton = styled(TouchableOpacity)<{ isPrimary?: boolean }>`
+const ModalButton = styled(TouchableOpacity)<{
+  isPrimary?: boolean;
+  disabled?: boolean;
+}>`
   flex: 1;
   padding: 12px 16px;
   border-radius: 8px;
-  background-color: ${({ isPrimary }) =>
-    isPrimary ? theme.colors.primary[500] : theme.colors.gray[100]};
+  background-color: ${({ isPrimary, disabled }) => {
+    if (disabled) return theme.colors.gray[300];
+    return isPrimary ? theme.colors.primary[500] : theme.colors.gray[100];
+  }};
   align-items: center;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
 `;
 
 const ModalButtonText = styled(Text)<{ isPrimary?: boolean }>`
