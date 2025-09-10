@@ -33,10 +33,40 @@ export function useLocationManager() {
     ];
   };
 
+  const fitToCoordinates = (
+    cameraRef: React.RefObject<Mapbox.Camera | null>,
+    coordinates: Position[],
+  ) => {
+    if (coordinates.length === 0 || !cameraRef.current) return;
+
+    const lngs = coordinates.map((coord) => coord[0]);
+    const lats = coordinates.map((coord) => coord[1]);
+
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+
+    const centerLng = (minLng + maxLng) / 2;
+    const centerLat = (minLat + maxLat) / 2;
+
+    const lngDiff = maxLng - minLng;
+    const latDiff = maxLat - minLat;
+    const maxDiff = Math.max(lngDiff, latDiff);
+    const zoom = Math.max(10, Math.min(18, 14 - Math.log2(maxDiff * 100)));
+
+    cameraRef.current.setCamera({
+      centerCoordinate: [centerLng, centerLat],
+      zoomLevel: zoom,
+      animationDuration: 1000,
+    });
+  };
+
   return {
     initialLocation,
     locationLoading,
     flyToCurrentUserLocation,
     handleUserLocationUpdate,
+    fitToCoordinates,
   };
 }
