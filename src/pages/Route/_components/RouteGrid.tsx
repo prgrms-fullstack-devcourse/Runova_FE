@@ -9,7 +9,7 @@ import {
 import { useCallback } from 'react';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/api/useRouteData';
+import { useRouteData } from '@/hooks/api/useRouteApi';
 import { CourseSearchItem } from '@/types/courses.types';
 
 export default function RouteGrid() {
