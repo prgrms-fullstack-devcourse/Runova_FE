@@ -1,29 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import * as Location from 'expo-location';
-import type { Position } from 'geojson';
+import useRunStore from '@/store/run';
 import {
   LOCATION_UPDATE_INTERVAL_MS,
   LOCATION_DISTANCE_INTERVAL_M,
   MIN_DISTANCE_THRESHOLD_M,
 } from '@/constants/location';
 import { haversineDistance } from '@/utils/location';
+import type { Position } from 'geojson';
 
 export function useLocationTracking() {
-  const [routeCoordinates, setRouteCoordinates] = useState<Position[]>([]);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null,
-  );
-  const [isTracking, setIsTracking] = useState(false);
-  const [subscriber, setSubscriber] = useState<{ remove: () => void } | null>(
-    null,
-  );
+  const {
+    routeCoordinates,
+    errorMsg,
+    location,
+    isTracking,
+    subscriber,
+    setRouteCoordinates,
+    setLocation,
+    setIsTracking,
+    setSubscriber,
+    setLocationErrorMsg,
+    clearRouteCoordinates,
+    resetLocationTracking,
+  } = useRunStore();
 
   useEffect(() => {
     const getInitialLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
+        setLocationErrorMsg('Permission to access location was denied');
         return;
       }
 
@@ -34,9 +40,9 @@ export function useLocationTracking() {
     };
 
     getInitialLocation();
-  }, []);
+  }, [setLocationErrorMsg, setLocation]);
 
-  const startTracking = async () => {
+  const startTracking = useCallback(async () => {
     if (isTracking) return;
 
     if (location) {
@@ -55,55 +61,60 @@ export function useLocationTracking() {
         setLocation(newLocation);
 
         const newCoordinate: Position = [longitude, latitude];
-        setRouteCoordinates((prevCoords) => {
-          if (prevCoords.length > 0) {
-            const lastCoord = prevCoords[prevCoords.length - 1];
-            const distance = haversineDistance(lastCoord, newCoordinate);
+        const currentCoords = useRunStore.getState().routeCoordinates;
+        if (currentCoords.length > 0) {
+          const lastCoord = currentCoords[currentCoords.length - 1];
+          const distance = haversineDistance(lastCoord, newCoordinate);
 
-            if (distance > MIN_DISTANCE_THRESHOLD_M) {
-              return [...prevCoords, newCoordinate];
-            }
-          } else {
-            return [...prevCoords, newCoordinate];
+          if (distance > MIN_DISTANCE_THRESHOLD_M) {
+            setRouteCoordinates([...currentCoords, newCoordinate]);
           }
-          return prevCoords;
-        });
+        } else {
+          setRouteCoordinates([...currentCoords, newCoordinate]);
+        }
       },
     );
 
     setSubscriber(newSubscriber);
     setIsTracking(true);
-  };
+  }, [
+    isTracking,
+    location,
+    setRouteCoordinates,
+    setSubscriber,
+    setIsTracking,
+    setLocation,
+  ]);
 
-  const pauseTracking = () => {
+  const pauseTracking = useCallback(() => {
     if (subscriber) {
       subscriber.remove();
       setSubscriber(null);
     }
     setIsTracking(false);
-  };
+  }, [subscriber, setSubscriber, setIsTracking]);
 
-  const stopTracking = () => {
+  const stopTracking = useCallback(() => {
     if (subscriber) {
       subscriber.remove();
       setSubscriber(null);
     }
     setIsTracking(false);
-    setRouteCoordinates([]);
-  };
+    clearRouteCoordinates();
+  }, [subscriber, setSubscriber, setIsTracking, clearRouteCoordinates]);
 
-  const toggleTracking = () => {
+  const toggleTracking = useCallback(async () => {
     if (isTracking) {
       pauseTracking();
     } else {
-      startTracking();
+      await startTracking();
     }
-  };
+  }, [isTracking, pauseTracking, startTracking]);
 
-  const refreshLocation = async () => {
+  const refreshLocation = useCallback(async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      setErrorMsg('Permission to access location was denied');
+      setLocationErrorMsg('Permission to access location was denied');
       return;
     }
 
@@ -112,26 +123,11 @@ export function useLocationTracking() {
         accuracy: Location.Accuracy.BestForNavigation,
       });
       setLocation(currentPosition);
-      setErrorMsg(null);
+      setLocationErrorMsg(null);
     } catch (error) {
-      setErrorMsg('Failed to get current location');
+      setLocationErrorMsg('Failed to get current location');
     }
-  };
-
-  const clearRouteCoordinates = () => {
-    setRouteCoordinates([]);
-  };
-
-  const resetLocationTracking = () => {
-    if (subscriber) {
-      subscriber.remove();
-      setSubscriber(null);
-    }
-    setRouteCoordinates([]);
-    setIsTracking(false);
-    setErrorMsg(null);
-    setLocation(null);
-  };
+  }, [setLocationErrorMsg, setLocation]);
 
   return {
     routeCoordinates,

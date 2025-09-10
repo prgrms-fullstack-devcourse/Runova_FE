@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import * as Location from 'expo-location';
+import type { Position } from 'geojson';
 import type { CourseTopologyResponse } from '@/types/courses.types';
 import type { RunStats } from '@/utils/runStats';
 
@@ -30,7 +32,21 @@ interface CourseState {
   courseTopology: CourseTopologyResponse | null;
 }
 
-interface RunState extends UIState, ErrorState, RunningState, CourseState {
+// 위치 추적 상태 그룹
+interface LocationTrackingState {
+  routeCoordinates: Position[];
+  location: Location.LocationObject | null;
+  isTracking: boolean;
+  subscriber: { remove: () => void } | null;
+  errorMsg: string | null;
+}
+
+interface RunState
+  extends UIState,
+    ErrorState,
+    RunningState,
+    CourseState,
+    LocationTrackingState {
   // UI 액션들
   setUI: (ui: Partial<UIState>) => void;
   setModal: (modal: 'exit' | 'back' | null) => void;
@@ -49,6 +65,15 @@ interface RunState extends UIState, ErrorState, RunningState, CourseState {
 
   // 코스 액션들
   setCourseTopology: (topology: CourseTopologyResponse | null) => void;
+
+  // 위치 추적 액션들
+  setRouteCoordinates: (coords: Position[]) => void;
+  setLocation: (location: Location.LocationObject | null) => void;
+  setIsTracking: (tracking: boolean) => void;
+  setSubscriber: (sub: { remove: () => void } | null) => void;
+  setLocationErrorMsg: (msg: string | null) => void;
+  clearRouteCoordinates: () => void;
+  resetLocationTracking: () => void;
 
   // 전체 리셋
   resetRunState: () => void;
@@ -85,12 +110,21 @@ const initialCourseState: CourseState = {
   courseTopology: null,
 };
 
+const initialLocationTrackingState: LocationTrackingState = {
+  routeCoordinates: [],
+  location: null,
+  isTracking: false,
+  subscriber: null,
+  errorMsg: null,
+};
+
 const useRunStore = create<RunState>((set, get) => ({
   // 초기 상태
   ...initialUIState,
   ...initialErrorState,
   ...initialRunningState,
   ...initialCourseState,
+  ...initialLocationTrackingState,
 
   // UI 액션들
   setUI: (ui) => set((state) => ({ ...state, ...ui })),
@@ -150,13 +184,42 @@ const useRunStore = create<RunState>((set, get) => ({
   // 코스 액션들
   setCourseTopology: (courseTopology) => set({ courseTopology }),
 
-  resetRunState: () =>
+  // 위치 추적 액션들
+  setRouteCoordinates: (coords) => set({ routeCoordinates: coords }),
+  setLocation: (location) => set({ location }),
+  setIsTracking: (tracking) => set({ isTracking: tracking }),
+  setSubscriber: (sub) => set({ subscriber: sub }),
+  setLocationErrorMsg: (msg) => set({ errorMsg: msg }),
+  clearRouteCoordinates: () => set({ routeCoordinates: [] }),
+  resetLocationTracking: () => {
+    console.log('🔄 [DEBUG] resetLocationTracking 호출됨');
+    const state = get();
+    if (state.subscriber) {
+      state.subscriber.remove();
+      set({ subscriber: null });
+    }
+    set({
+      routeCoordinates: [],
+      isTracking: false,
+      errorMsg: null,
+      location: null,
+    });
+    console.log(
+      '✅ [DEBUG] resetLocationTracking 완료 - isTracking: false로 설정됨',
+    );
+  },
+
+  resetRunState: () => {
+    console.log('🔄 [DEBUG] resetRunState 호출됨');
     set({
       ...initialUIState,
       ...initialErrorState,
       ...initialRunningState,
       ...initialCourseState,
-    }),
+      ...initialLocationTrackingState,
+    });
+    console.log('✅ [DEBUG] resetRunState 완료');
+  },
 }));
 
 export default useRunStore;

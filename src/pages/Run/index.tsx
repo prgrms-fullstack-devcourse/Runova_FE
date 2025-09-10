@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { Text } from 'react-native';
 import styled from '@emotion/native';
 import { ArrowLeft, LocateFixed } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
@@ -22,11 +23,22 @@ type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 export default function Run({ route, navigation }: Props) {
   const courseId = route.params?.courseId;
 
-  const { routeCoordinates, isTracking } = useLocationTracking();
+  const { routeCoordinates, isTracking, resetLocationTracking } =
+    useLocationTracking();
   const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
   const cameraRef = useRef<any>(null);
 
-  const { loading, savingRecord, topologyError, saveError } = useRunStore();
+  const { loading, savingRecord, topologyError, saveError, resetRunState } =
+    useRunStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔄 [DEBUG] Run 화면 포커스 - 상태 초기화 시작');
+      resetLocationTracking();
+      resetRunState();
+      console.log('✅ [DEBUG] Run 화면 포커스 - 상태 초기화 완료');
+    }, [resetLocationTracking, resetRunState]),
+  );
 
   useRunStats(routeCoordinates, isTracking);
   const { loadCourseTopology } = useCourseTopologyApi(courseId);

@@ -62,10 +62,9 @@ export function useRunModals({ navigation }: Props) {
         throw new Error('저장할 경로 데이터가 없습니다.');
       }
 
-      const path: [number, number][] = routeCoordinates.map((coord) => [
-        coord[0],
-        coord[1],
-      ]);
+      const path: [number, number][] = routeCoordinates.map(
+        (coord) => [coord[0], coord[1]] as [number, number],
+      );
 
       const paceValue = parseFloat(stats.pace.replace(/[^\d.]/g, '')) || 0;
 
