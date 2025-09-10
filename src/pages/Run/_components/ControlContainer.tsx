@@ -10,18 +10,18 @@ export default function ControlContainer() {
   const {
     isLocked,
     startTime,
-    setUI,
     setModal,
     setRunning,
     startRun,
     pauseRun,
     resumeRun,
+    toggleLock,
   } = useRunStore();
   const { isTracking, toggleTracking, routeCoordinates } =
     useLocationTracking();
 
   const handleLockPress = () => {
-    setUI({ isLocked: !isLocked });
+    toggleLock();
   };
 
   const handleToggleTracking = () => {
