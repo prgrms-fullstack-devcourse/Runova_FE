@@ -21,10 +21,8 @@ export default function ProfileSection({
   const name = profile?.nickname ?? '러너';
   const serverAvatar = profile?.avatarUrl ?? '';
 
-  // 표시용 아바타 상태 (낙관적 업데이트/미리보기 반영)
   const [avatarSrc, setAvatarSrc] = useState(serverAvatar);
 
-  // 부모에서 프로필 업데이트되면 동기화
   useEffect(() => {
     setAvatarSrc(serverAvatar || '');
   }, [serverAvatar]);
@@ -45,7 +43,6 @@ export default function ProfileSection({
     e.currentTarget.value = '';
     if (!f || uploading) return;
 
-    // 1) 즉시 미리보기 (낙관적)
     const prev = avatarSrc;
     const tempUrl = URL.createObjectURL(f);
     setAvatarSrc(tempUrl);
@@ -115,7 +112,6 @@ export default function ProfileSection({
   );
 }
 
-/* styled */
 const Section = styled.section`
   padding: 24px 16px;
   background: ${({ theme }) => theme.colors.surface};
