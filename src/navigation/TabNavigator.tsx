@@ -82,6 +82,10 @@ export default function TabNavigator() {
         component={Run}
         options={{
           tabBarIcon: ({ color, size }) => <Play color={color} size={size} />,
+          tabBarStyle: {
+            ...baseTabBarStyle,
+            display: 'none',
+          },
         }}
       />
       <Tab.Screen
