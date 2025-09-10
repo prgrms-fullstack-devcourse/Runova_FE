@@ -122,6 +122,16 @@ export function useLocationTracking() {
     setRouteCoordinates([]);
   };
 
+  const resetLocationTracking = () => {
+    if (subscriber) {
+      subscriber.remove();
+      setSubscriber(null);
+    }
+    setRouteCoordinates([]);
+    setIsTracking(false);
+    setErrorMsg(null);
+  };
+
   return {
     routeCoordinates,
     location,
@@ -133,5 +143,6 @@ export function useLocationTracking() {
     toggleTracking,
     refreshLocation,
     clearRouteCoordinates,
+    resetLocationTracking,
   };
 }

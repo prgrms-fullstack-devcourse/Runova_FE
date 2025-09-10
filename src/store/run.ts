@@ -34,6 +34,7 @@ interface RunState extends UIState, ErrorState, RunningState, CourseState {
   // UI 액션들
   setUI: (ui: Partial<UIState>) => void;
   setModal: (modal: 'exit' | 'back' | null) => void;
+  toggleLock: () => void;
 
   // 에러 액션들
   setError: (type: 'topology' | 'save', error: string | null) => void;
@@ -99,6 +100,8 @@ const useRunStore = create<RunState>((set, get) => ({
       showExitModal: modal === 'exit',
       showBackModal: modal === 'back',
     }),
+
+  toggleLock: () => set((state) => ({ isLocked: !state.isLocked })),
 
   // 에러 액션들
   setError: (type, error) =>
