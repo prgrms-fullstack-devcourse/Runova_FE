@@ -2,11 +2,13 @@ import { useRef, useEffect } from 'react';
 import type { Position } from 'geojson';
 import type Mapbox from '@rnmapbox/maps';
 import { useInitialLocation } from '@/hooks/useInitialLocation';
+import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { FLY_TO_USER_LOCATION_DURATION } from '@/constants/draw';
 
 export function useLocationManager() {
   const { location: initialLocation, loading: locationLoading } =
     useInitialLocation();
+  const { location, errorMsg, refreshLocation } = useLocationTracking();
   const currentUserLocation = useRef<Position | null>(null);
 
   useEffect(() => {
@@ -14,6 +16,12 @@ export function useLocationManager() {
       currentUserLocation.current = initialLocation;
     }
   }, [initialLocation]);
+
+  useEffect(() => {
+    if (!location && !errorMsg) {
+      refreshLocation();
+    }
+  }, [location, errorMsg, refreshLocation]);
 
   const flyToCurrentUserLocation = (
     cameraRef: React.RefObject<Mapbox.Camera | null>,
@@ -65,6 +73,9 @@ export function useLocationManager() {
   return {
     initialLocation,
     locationLoading,
+    location,
+    errorMsg,
+    refreshLocation,
     flyToCurrentUserLocation,
     handleUserLocationUpdate,
     fitToCoordinates,
