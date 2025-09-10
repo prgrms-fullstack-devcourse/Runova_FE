@@ -18,6 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '@/styles/theme';
 import Header from '@/components/Header';
+import { LoadingOverlay } from '@/components/Overlay';
 import { reverseGeocode } from '@/lib/geocoding';
 import { createCourse } from '@/services/courses.service';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -172,11 +173,7 @@ export default function RouteSave() {
                     setImageError(true);
                   }}
                 />
-                {imageLoading && (
-                  <StyledImageLoadingOverlay>
-                    <ActivityIndicator color={theme.colors.primary[500]} />
-                  </StyledImageLoadingOverlay>
-                )}
+                {imageLoading && <LoadingOverlay message="이미지 로딩 중..." />}
               </>
             ) : (
               <StyledImagePlaceholder>
@@ -280,18 +277,6 @@ const StyledImagePlaceholder = styled(View)`
 const StyledPlaceholderText = styled(Text)`
   font-size: 14px;
   color: ${theme.colors.gray[500]};
-`;
-
-const StyledImageLoadingOverlay = styled(View)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px;
 `;
 
 const StyledButtonContainer = styled(View)`
