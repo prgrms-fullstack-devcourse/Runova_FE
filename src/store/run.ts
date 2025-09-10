@@ -1,73 +1,160 @@
 import { create } from 'zustand';
-import type { CourseSearchItem } from '@/types/courses.types';
-import type { RouteTabId } from '@/types/navigation.types';
+import type { CourseTopologyResponse } from '@/types/courses.types';
+import type { RunStats } from '@/utils/runStats';
 
-interface RouteState {
-  activeTab: RouteTabId;
-  courses: CourseSearchItem[];
+// UI 상태 그룹
+interface UIState {
+  isLocked: boolean;
+  showExitModal: boolean;
+  showBackModal: boolean;
   loading: boolean;
-  refreshing: boolean;
-  hasMore: boolean;
-  error: string | null;
-  cursor: number | null;
-  setActiveTab: (tab: RouteTabId) => void;
-  setCourses: (courses: CourseSearchItem[]) => void;
-  appendCourses: (courses: CourseSearchItem[]) => void;
-  setLoading: (loading: boolean) => void;
-  setRefreshing: (refreshing: boolean) => void;
-  setHasMore: (hasMore: boolean) => void;
-  setError: (error: string | null) => void;
-  setCursor: (cursor: number | null) => void;
+  savingRecord: boolean;
 }
 
-const useRouteStore = create<RouteState>((set) => ({
-  activeTab: 'created',
-  courses: [],
+// 에러 상태 그룹
+interface ErrorState {
+  topologyError: string | null;
+  saveError: string | null;
+}
+
+// 런닝 상태 그룹
+interface RunningState {
+  startTime: Date | null;
+  pausedTime: number;
+  pauseStartTime: Date | null;
+  stats: RunStats;
+}
+
+// 코스 데이터 그룹
+interface CourseState {
+  courseTopology: CourseTopologyResponse | null;
+}
+
+interface RunState extends UIState, ErrorState, RunningState, CourseState {
+  // UI 액션들
+  setUI: (ui: Partial<UIState>) => void;
+  setModal: (modal: 'exit' | 'back' | null) => void;
+
+  // 에러 액션들
+  setError: (type: 'topology' | 'save', error: string | null) => void;
+  clearErrors: () => void;
+
+  // 런닝 액션들
+  setRunning: (running: Partial<RunningState>) => void;
+  startRun: () => void;
+  pauseRun: () => void;
+  resumeRun: () => void;
+  stopRun: () => void;
+
+  // 코스 액션들
+  setCourseTopology: (topology: CourseTopologyResponse | null) => void;
+
+  // 전체 리셋
+  resetRunState: () => void;
+}
+
+const initialStats: RunStats = {
+  distance: 0,
+  calories: 0,
+  pace: '0\'00"',
+  runningTime: '00:00:00',
+};
+
+const initialUIState: UIState = {
+  isLocked: false,
+  showExitModal: false,
+  showBackModal: false,
   loading: false,
-  refreshing: false,
-  hasMore: true,
-  error: null,
-  cursor: null,
+  savingRecord: false,
+};
 
-  setActiveTab: (tab: RouteTabId) => {
+const initialErrorState: ErrorState = {
+  topologyError: null,
+  saveError: null,
+};
+
+const initialRunningState: RunningState = {
+  startTime: null,
+  pausedTime: 0,
+  pauseStartTime: null,
+  stats: initialStats,
+};
+
+const initialCourseState: CourseState = {
+  courseTopology: null,
+};
+
+const useRunStore = create<RunState>((set, get) => ({
+  // 초기 상태
+  ...initialUIState,
+  ...initialErrorState,
+  ...initialRunningState,
+  ...initialCourseState,
+
+  // UI 액션들
+  setUI: (ui) => set((state) => ({ ...state, ...ui })),
+
+  setModal: (modal) =>
     set({
-      activeTab: tab,
-      courses: [],
-      cursor: null,
-      error: null,
-      hasMore: true,
-    });
-  },
+      showExitModal: modal === 'exit',
+      showBackModal: modal === 'back',
+    }),
 
-  setCourses: (courses: CourseSearchItem[]) => {
-    set({ courses });
-  },
+  // 에러 액션들
+  setError: (type, error) =>
+    set({
+      [`${type}Error`]: error,
+    }),
 
-  appendCourses: (courses: CourseSearchItem[]) => {
-    set((state) => ({
-      courses: [...state.courses, ...courses],
-    }));
-  },
+  clearErrors: () => set(initialErrorState),
 
-  setLoading: (loading: boolean) => {
-    set({ loading });
-  },
+  // 런닝 액션들
+  setRunning: (running) => set((state) => ({ ...state, ...running })),
 
-  setRefreshing: (refreshing: boolean) => {
-    set({ refreshing });
-  },
+  startRun: () =>
+    set({
+      startTime: new Date(),
+      pausedTime: 0,
+      pauseStartTime: null,
+    }),
 
-  setHasMore: (hasMore: boolean) => {
-    set({ hasMore });
-  },
+  pauseRun: () =>
+    set({
+      pauseStartTime: new Date(),
+    }),
 
-  setError: (error: string | null) => {
-    set({ error });
-  },
+  resumeRun: () =>
+    set((state) => {
+      if (state.pauseStartTime) {
+        const pauseDuration =
+          (new Date().getTime() - state.pauseStartTime.getTime()) / 1000;
+        return {
+          pausedTime: state.pausedTime + pauseDuration,
+          pauseStartTime: null,
+        };
+      }
+      return state;
+    }),
 
-  setCursor: (cursor: number | null) => {
-    set({ cursor });
-  },
+  stopRun: () =>
+    set({
+      startTime: null,
+      pausedTime: 0,
+      pauseStartTime: null,
+      stats: initialStats,
+    }),
+
+  // 코스 액션들
+  setCourseTopology: (courseTopology) => set({ courseTopology }),
+
+  // 전체 리셋
+  resetRunState: () =>
+    set({
+      ...initialUIState,
+      ...initialErrorState,
+      ...initialRunningState,
+      ...initialCourseState,
+    }),
 }));
 
-export default useRouteStore;
+export default useRunStore;
