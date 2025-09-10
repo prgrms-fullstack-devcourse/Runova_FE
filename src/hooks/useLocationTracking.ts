@@ -90,7 +90,6 @@ export function useLocationTracking() {
     }
     setIsTracking(false);
     setRouteCoordinates([]);
-    setLocation(null);
   };
 
   const toggleTracking = () => {
@@ -99,6 +98,28 @@ export function useLocationTracking() {
     } else {
       startTracking();
     }
+  };
+
+  const refreshLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
+
+    try {
+      const currentPosition = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.BestForNavigation,
+      });
+      setLocation(currentPosition);
+      setErrorMsg(null);
+    } catch (error) {
+      setErrorMsg('Failed to get current location');
+    }
+  };
+
+  const clearRouteCoordinates = () => {
+    setRouteCoordinates([]);
   };
 
   return {
@@ -110,5 +131,7 @@ export function useLocationTracking() {
     pauseTracking,
     stopTracking,
     toggleTracking,
+    refreshLocation,
+    clearRouteCoordinates,
   };
 }
