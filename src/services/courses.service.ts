@@ -5,6 +5,7 @@ import type {
   CourseCreateRequest,
   CourseSearchRequest,
   CourseSearchResponse,
+  CourseTopologyResponse,
 } from '@/types/courses.types';
 
 export async function createCourse(
@@ -29,6 +30,18 @@ export async function searchUserCourses(
 ): Promise<CourseSearchResponse> {
   const response = await api.get('/api/courses/search/users', {
     params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function getCourseTopology(
+  courseId: number,
+  accessToken: string,
+): Promise<CourseTopologyResponse> {
+  const response = await api.get(`/api/courses/${courseId}/topology`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
