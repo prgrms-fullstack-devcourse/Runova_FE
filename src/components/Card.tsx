@@ -33,13 +33,12 @@ export default function Card({
   fullWidth = false,
 }: CardProps) {
   const { width: screenWidth } = Dimensions.get('window');
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const finalMode = mode || (imageSource ? 'image-with-text' : 'only-text');
 
   if (finalMode === 'only-image') {
-    const [imageError, setImageError] = useState(false);
-    const [imageLoading, setImageLoading] = useState(true);
-
     const handleImageError = () => {
       setImageError(true);
       setImageLoading(false);
