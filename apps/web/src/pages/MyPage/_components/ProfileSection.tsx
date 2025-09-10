@@ -99,7 +99,7 @@ export default function ProfileSection({
             onChange={onPickFile}
           />
         </AvatarWrap>
-        <div style={{ flex: 1 }}>
+        <InfoWrap>
           <Name>{name}</Name>
           {since && (
             <Since>
@@ -107,13 +107,12 @@ export default function ProfileSection({
               <span>{since}</span>
             </Since>
           )}
-        </div>
+        </InfoWrap>
       </Row>
     </Section>
   );
 }
 
-/* styled */
 const Section = styled.section`
   padding: 24px 16px;
   background: ${({ theme }) => theme.colors.surface};
@@ -133,6 +132,11 @@ const Avatar = styled.img`
   object-fit: cover;
   border: 2px solid ${({ theme }) => theme.colors.border};
 `;
+
+const InfoWrap = styled.div`
+  flex: 1;
+`;
+
 const EditBtn = styled.button`
   position: absolute;
   right: -4px;
