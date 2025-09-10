@@ -9,8 +9,6 @@ import {
   type PromptOptions,
 } from './modalContext';
 
-/** ===== 모달 요청 타입(유니온) - any 없음 ===== */
-
 type ModalRequest =
   | {
       id: number;

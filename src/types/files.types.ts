@@ -1,4 +1,4 @@
-export type FileUploadType = 'avatar' | 'verify';
+export type FileUploadType = 'avatar' | 'verify' | 'course';
 
 export interface PresignRequest {
   type: FileUploadType;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from '@emotion/native';
 import { TouchableOpacity, Image, ViewStyle, Dimensions } from 'react-native';
 import { Star } from 'lucide-react-native';
@@ -33,10 +33,21 @@ export default function Card({
   fullWidth = false,
 }: CardProps) {
   const { width: screenWidth } = Dimensions.get('window');
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const finalMode = mode || (imageSource ? 'image-with-text' : 'only-text');
 
   if (finalMode === 'only-image') {
+    const handleImageError = () => {
+      setImageError(true);
+      setImageLoading(false);
+    };
+
+    const handleImageLoad = () => {
+      setImageLoading(false);
+    };
+
     return (
       <CardContainer
         fullWidth={fullWidth}
@@ -46,12 +57,24 @@ export default function Card({
         activeOpacity={0.8}
       >
         <ImageContainer>
-          {imageSource && (
+          {imageSource && !imageError && (
             <CardImage
               source={imageSource}
               mode={finalMode}
               resizeMode="cover"
+              onError={handleImageError}
+              onLoad={handleImageLoad}
             />
+          )}
+          {(imageError || !imageSource) && (
+            <FallbackContainer>
+              <FallbackText>이미지가 없습니다.</FallbackText>
+            </FallbackContainer>
+          )}
+          {imageLoading && imageSource && !imageError && (
+            <LoadingContainer>
+              <LoadingText>로딩중...</LoadingText>
+            </LoadingContainer>
           )}
           {content?.hasStar && (
             <StarIcon size={20} color="#FFD700" fill="#FFD700" />
@@ -125,8 +148,7 @@ const CardContainer = styled(TouchableOpacity)<{
   borderWidth: 1,
   borderRadius: 12,
   padding: mode === 'only-image' ? 0 : 16,
-  marginRight: 16,
-  flex: fullWidth ? undefined : 1,
+  flex: fullWidth ? undefined : mode === 'only-image' ? 1 : 1,
   width: fullWidth ? '100%' : undefined,
   aspectRatio: fullWidth ? undefined : 1,
 }));
@@ -202,4 +224,37 @@ const StarIcon = styled(Star)({
   top: 8,
   right: 8,
   zIndex: 1,
+});
+
+const FallbackContainer = styled.View({
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#f0f0f0',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRadius: 12,
+});
+
+const FallbackText = styled.Text({
+  color: '#666666',
+  fontSize: 14,
+  fontWeight: '500',
+});
+
+const LoadingContainer = styled.View({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRadius: 12,
+});
+
+const LoadingText = styled.Text({
+  color: '#007AFF',
+  fontSize: 12,
+  fontWeight: '500',
 });
