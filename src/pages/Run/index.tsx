@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import styled from '@emotion/native';
 import {
   ArrowLeft,
@@ -44,15 +44,19 @@ export default function Run({ route, navigation }: Props) {
     startTime,
   } = useRunStore();
 
+  useRunStats(routeCoordinates, isTracking);
+  const { loadCourseTopology } = useCourseTopologyApi(courseId);
+
   useFocusEffect(
     useCallback(() => {
       resetLocationTracking();
       resetRunState();
-    }, [resetLocationTracking, resetRunState]),
+      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
+      if (courseId) {
+        loadCourseTopology();
+      }
+    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
   );
-
-  useRunStats(routeCoordinates, isTracking);
-  const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
   // 코스 검증 훅
   const {
