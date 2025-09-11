@@ -3,6 +3,7 @@ import * as Location from 'expo-location';
 import type { Position } from 'geojson';
 import type { CourseTopologyResponse } from '@/types/courses.types';
 import type { RunStats } from '@/utils/runStats';
+import type { CourseValidationResult } from '@/types/courseValidation.types';
 
 // UI 상태 그룹
 interface UIState {
@@ -41,12 +42,25 @@ interface LocationTrackingState {
   errorMsg: string | null;
 }
 
+// 코스 검증 상태 그룹
+interface CourseValidationState {
+  isOnCourse: boolean;
+  courseDeviation: {
+    isDeviating: boolean;
+    severity: 'low' | 'medium' | 'high';
+    distanceFromCourse: number | null;
+  };
+  validationHistory: CourseValidationResult[];
+  lastValidationTime: Date | null;
+}
+
 interface RunState
   extends UIState,
     ErrorState,
     RunningState,
     CourseState,
-    LocationTrackingState {
+    LocationTrackingState,
+    CourseValidationState {
   // UI 액션들
   setUI: (ui: Partial<UIState>) => void;
   setModal: (modal: 'exit' | 'back' | null) => void;
@@ -74,6 +88,11 @@ interface RunState
   setLocationErrorMsg: (msg: string | null) => void;
   clearRouteCoordinates: () => void;
   resetLocationTracking: () => void;
+
+  // 코스 검증 액션들
+  setCourseValidation: (validation: Partial<CourseValidationState>) => void;
+  updateCourseValidation: (result: CourseValidationResult) => void;
+  clearValidationHistory: () => void;
 
   // 전체 리셋
   resetRunState: () => void;
@@ -118,6 +137,17 @@ const initialLocationTrackingState: LocationTrackingState = {
   errorMsg: null,
 };
 
+const initialCourseValidationState: CourseValidationState = {
+  isOnCourse: false, // 초기값을 false로 변경
+  courseDeviation: {
+    isDeviating: false,
+    severity: 'low',
+    distanceFromCourse: null,
+  },
+  validationHistory: [],
+  lastValidationTime: null,
+};
+
 const useRunStore = create<RunState>((set, get) => ({
   // 초기 상태
   ...initialUIState,
@@ -125,6 +155,7 @@ const useRunStore = create<RunState>((set, get) => ({
   ...initialRunningState,
   ...initialCourseState,
   ...initialLocationTrackingState,
+  ...initialCourseValidationState,
 
   // UI 액션들
   setUI: (ui) => set((state) => ({ ...state, ...ui })),
@@ -206,6 +237,39 @@ const useRunStore = create<RunState>((set, get) => ({
     console.log();
   },
 
+  // 코스 검증 액션들
+  setCourseValidation: (validation) =>
+    set((state) => ({ ...state, ...validation })),
+
+  updateCourseValidation: (result) =>
+    set((state) => {
+      const now = new Date();
+      const newHistory = [...state.validationHistory, result].slice(-50); // 최근 50개만 유지
+
+      return {
+        isOnCourse: result.isOnCourse,
+        courseDeviation: {
+          isDeviating: !result.isOnCourse,
+          severity: !result.isOnCourse
+            ? result.distanceFromCourse && result.distanceFromCourse > 100
+              ? 'high'
+              : result.distanceFromCourse && result.distanceFromCourse > 50
+                ? 'medium'
+                : 'low'
+            : 'low',
+          distanceFromCourse: result.distanceFromCourse || null,
+        },
+        validationHistory: newHistory,
+        lastValidationTime: now,
+      };
+    }),
+
+  clearValidationHistory: () =>
+    set({
+      validationHistory: [],
+      lastValidationTime: null,
+    }),
+
   resetRunState: () => {
     set({
       ...initialUIState,
@@ -213,6 +277,7 @@ const useRunStore = create<RunState>((set, get) => ({
       ...initialRunningState,
       ...initialCourseState,
       ...initialLocationTrackingState,
+      ...initialCourseValidationState,
     });
   },
 }));

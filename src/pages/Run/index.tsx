@@ -1,7 +1,12 @@
 import { useRef, useCallback } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import styled from '@emotion/native';
-import { ArrowLeft, LocateFixed } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  LocateFixed,
+  AlertTriangle,
+  CheckCircle,
+} from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
@@ -11,6 +16,7 @@ import { useLocationManager } from '@/hooks/useLocationManager';
 import { useRunStats } from '@/hooks/useRunStats';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
+import { useCourseValidation } from '@/hooks/useCourseValidation';
 import useRunStore from '@/store/run';
 import RunMap from './_components/RunMap';
 import StatsContainer from './_components/StatsContainer';
@@ -48,6 +54,22 @@ export default function Run({ route, navigation }: Props) {
   useRunStats(routeCoordinates, isTracking);
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
+  // 코스 검증 훅
+  const {
+    isOnCourse,
+    courseDeviation,
+    isDeviating,
+    deviationSeverity,
+    distanceFromCourse,
+  } = useCourseValidation({
+    validationOptions: {
+      tolerance: 5, // 5미터 허용 오차 (매우 엄격하게)
+      enableDistanceCalculation: true,
+    },
+    enableRealTimeValidation: true, // 실시간 검증 활성화
+    validationInterval: 1000, // 1초마다 검증 (매우 자주)
+  });
+
   const {
     showExitModal,
     showBackModal,
@@ -61,6 +83,24 @@ export default function Run({ route, navigation }: Props) {
 
   const handleCurrentLocationPress = () => {
     flyToCurrentUserLocation(cameraRef);
+  };
+
+  // 코스 이탈 상태에 따른 메시지 생성
+  const getDeviationMessage = () => {
+    if (!isDeviating) return null;
+
+    const distance = distanceFromCourse ? Math.round(distanceFromCourse) : 0;
+
+    switch (deviationSeverity) {
+      case 'high':
+        return `경로에서 ${distance}m 이탈했습니다. 경로로 돌아가세요.`;
+      case 'medium':
+        return `경로에서 ${distance}m 벗어났습니다.`;
+      case 'low':
+        return `경로 근처에서 ${distance}m 떨어져 있습니다.`;
+      default:
+        return '경로를 벗어났습니다.';
+    }
   };
 
   return (
@@ -77,6 +117,22 @@ export default function Run({ route, navigation }: Props) {
                 message={topologyError}
                 onRetry={loadCourseTopology}
               />
+            )}
+            {/* 코스 이탈 알림 */}
+            {isDeviating && (
+              <DeviationOverlay severity={deviationSeverity}>
+                <DeviationAlert severity={deviationSeverity}>
+                  <AlertTriangle size={24} color="#ffffff" />
+                  <DeviationText>{getDeviationMessage()}</DeviationText>
+                </DeviationAlert>
+              </DeviationOverlay>
+            )}
+            {/* 코스 내부 상태 표시 */}
+            {isOnCourse && !isDeviating && (
+              <OnCourseIndicator>
+                <CheckCircle size={16} color="#10b981" />
+                <OnCourseText>경로 내부</OnCourseText>
+              </OnCourseIndicator>
             )}
           </>
         ) : (
@@ -143,4 +199,82 @@ const StyledPage = styled.View(({ theme }) => ({
 const StyledContainer = styled.View({
   flex: 1,
   width: '100%',
+});
+
+const DeviationOverlay = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
+  ({ severity }) => ({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor:
+      severity === 'high'
+        ? 'rgba(239, 68, 68, 0.15)' // 빨간색 오버레이
+        : severity === 'medium'
+          ? 'rgba(245, 158, 11, 0.1)' // 주황색 오버레이
+          : 'rgba(59, 130, 246, 0.05)', // 파란색 오버레이
+    zIndex: 999,
+    pointerEvents: 'none', // 터치 이벤트 통과
+  }),
+);
+
+const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
+  ({ severity }) => ({
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    backgroundColor:
+      severity === 'high'
+        ? '#ef4444'
+        : severity === 'medium'
+          ? '#f59e0b'
+          : '#3b82f6',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  }),
+);
+
+const DeviationText = styled.Text({
+  color: '#ffffff',
+  fontSize: 16,
+  fontWeight: '700',
+  marginLeft: 12,
+  flex: 1,
+  textAlign: 'center',
+});
+
+const OnCourseIndicator = styled.View({
+  position: 'absolute',
+  top: 100,
+  right: 20,
+  backgroundColor: '#ffffff',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 20,
+  flexDirection: 'row',
+  alignItems: 'center',
+  zIndex: 1000,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 2,
+  elevation: 3,
+});
+
+const OnCourseText = styled.Text({
+  color: '#10b981',
+  fontSize: 12,
+  fontWeight: '600',
+  marginLeft: 4,
 });
