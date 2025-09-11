@@ -103,5 +103,5 @@ const LockOverlayContainer = styled.View<{
   right: 0,
   bottom: 0,
   backgroundColor: 'transparent',
-  zIndex: 1500,
+  zIndex: 1000,
 });

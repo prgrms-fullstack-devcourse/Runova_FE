@@ -92,7 +92,7 @@ export default function Run({ route, navigation }: Props) {
           position: 'absolute',
           top: 60,
           left: 20,
-          zIndex: 1000,
+          zIndex: 999,
         }}
       />
       <FloatingButton
@@ -102,7 +102,7 @@ export default function Run({ route, navigation }: Props) {
           position: 'absolute',
           top: 60,
           right: 20,
-          zIndex: 1000,
+          zIndex: 999,
         }}
       />
       <Modal

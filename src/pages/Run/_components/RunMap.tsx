@@ -1,4 +1,3 @@
-import { View } from 'react-native';
 import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import { theme } from '@/styles/theme';
@@ -95,7 +94,7 @@ export default function RunMap({
           </Mapbox.PointAnnotation>
         ))} */}
       </Map>
-      {isLocked && <LockOverlay pointerEvents="none" />}
+      {isLocked && <LockOverlay pointerEvents="auto" />}
     </StyledContainer>
   );
 }
