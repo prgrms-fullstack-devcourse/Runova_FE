@@ -70,7 +70,9 @@ export default function TabNavigator() {
             tabBarStyle: {
               ...baseTabBarStyle,
               display:
-                routeName === 'Draw' || routeName === 'RouteSave'
+                routeName === 'Draw' ||
+                routeName === 'RouteSave' ||
+                routeName === 'Detail'
                   ? 'none'
                   : 'flex',
             },
