@@ -11,7 +11,12 @@ import { getPosts, getReadablePostError } from '@/api/posts';
 export default function CommunityList() {
   const navigate = useNavigate();
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  // 섹션별 상태
+  const [runPosts, setRunPosts] = useState<Post[]>([]);
+  const [photoPosts, setPhotoPosts] = useState<Post[]>([]);
+  const [routePosts, setRoutePosts] = useState<Post[]>([]);
+  const [latestPosts, setLatestPosts] = useState<Post[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,14 +25,27 @@ export default function CommunityList() {
     (async () => {
       try {
         setLoading(true);
-        // 최신순으로 전체 가져오고 클라이언트에서 섹션 분리
-        const items = await getPosts({ sort: 'recent' });
-        if (mounted) {
-          setPosts(items);
-          setError(null);
-        }
+        setError(null);
+
+        const [mate, proof, share, latest] = await Promise.all([
+          // 러닝 메이트
+          getPosts({ category: 'MATE', limit: 5 }),
+          // 인증샷
+          getPosts({ category: 'PROOF', limit: 5 }),
+          // 경로 공유
+          getPosts({ category: 'SHARE', limit: 5 }),
+          // 최신 전체
+          getPosts({ limit: 5 }),
+        ]);
+
+        if (!mounted) return;
+        setRunPosts(mate);
+        setPhotoPosts(proof);
+        setRoutePosts(share);
+        setLatestPosts(latest);
       } catch (e) {
-        if (mounted) setError(getReadablePostError(e));
+        if (!mounted) return;
+        setError(getReadablePostError(e));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -39,65 +57,48 @@ export default function CommunityList() {
 
   const toPostCard = (p: Post) => <PostCard key={p.id} post={p} />;
 
-  // 섹션별 분기
-  const itemsRun = useMemo(
-    () =>
-      posts
-        .filter((p) => p.category === 'MATE')
-        .slice(0, 5)
-        .map(toPostCard),
-    [posts],
-  );
-  const itemsPhoto = useMemo(
-    () =>
-      posts
-        .filter((p) => p.category === 'PROOF')
-        .slice(0, 5)
-        .map(toPostCard),
-    [posts],
-  );
-  const itemsRoute = useMemo(
-    () =>
-      posts
-        .filter((p) => p.category === 'SHARE')
-        .slice(0, 5)
-        .map(toPostCard),
-    [posts],
-  );
-  // 최신 포스트: 카테고리 구분 없이 상단 5개
-  const itemsLatest = useMemo(() => posts.slice(0, 5).map(toPostCard), [posts]);
+  const itemsRun = useMemo(() => runPosts.map(toPostCard), [runPosts]);
+  const itemsPhoto = useMemo(() => photoPosts.map(toPostCard), [photoPosts]);
+  const itemsRoute = useMemo(() => routePosts.map(toPostCard), [routePosts]);
+  const itemsLatest = useMemo(() => latestPosts.map(toPostCard), [latestPosts]);
 
   return (
     <CommunityAppLayout title="Runova">
-      <Container>
-        {loading && <Hint>불러오는 중…</Hint>}
-        {error && <ErrorMsg>{error}</ErrorMsg>}
+      {loading && <Hint>불러오는 중…</Hint>}
+      {!loading && (
+        <Container>
+          {error && <ErrorMsg>{error}</ErrorMsg>}
 
-        <SectionCarousel
-          icon={<i className="ri-run-fill" />}
-          title="러닝메이트 구해요!"
-          items={itemsRun}
-          onMoreClick={() => navigate('/community/feed/mate')}
-        />
-        <SectionCarousel
-          icon={<i className="ri-camera-2-fill" />}
-          title="인증샷"
-          items={itemsPhoto}
-          onMoreClick={() => navigate('/community/feed/proof')}
-        />
-        <SectionCarousel
-          icon={<i className="ri-route-line" />}
-          title="경로 공유"
-          items={itemsRoute}
-          onMoreClick={() => navigate('/community/feed/share')}
-        />
-        <SectionCarousel
-          icon={<i className="ri-article-fill" />}
-          title="최신 포스트"
-          items={itemsLatest}
-          onMoreClick={() => navigate('/community/feed/all')}
-        />
-      </Container>
+          <SectionCarousel
+            icon={<i className="ri-run-fill" />}
+            title="러닝메이트 구해요!"
+            items={itemsRun}
+            onMoreClick={() => navigate('/community/feed/mate')}
+          />
+
+          <SectionCarousel
+            icon={<i className="ri-camera-2-fill" />}
+            title="인증샷"
+            items={itemsPhoto}
+            onMoreClick={() => navigate('/community/feed/proof')}
+          />
+
+          <SectionCarousel
+            icon={<i className="ri-route-line" />}
+            title="경로 공유"
+            items={itemsRoute}
+            onMoreClick={() => navigate('/community/feed/share')}
+          />
+
+          <SectionCarousel
+            icon={<i className="ri-article-fill" />}
+            title="최신 포스트"
+            items={itemsLatest}
+            onMoreClick={() => navigate('/community/feed/all')}
+          />
+        </Container>
+      )}
+
       <Fab
         icon={<i className="ri-edit-2-fill" />}
         onClick={() => navigate('/community/edit')}

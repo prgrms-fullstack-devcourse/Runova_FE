@@ -27,6 +27,7 @@ export default function EditForm({
   onSubmit,
   submitting = false,
   submitLabel = '작성하기',
+  footerSlot,
 }: {
   category: Category;
   title: string;
@@ -36,10 +37,9 @@ export default function EditForm({
   onSelectItem?: (id: string) => void;
   onChange: (patch: EditPatch) => void;
   onSubmit: () => void | Promise<void>;
-  /** 버튼/입력 비활성화 여부 */
   submitting?: boolean;
-  /** 버튼 라벨 (예: '수정하기' / '작성하기') */
   submitLabel?: string;
+  footerSlot?: React.ReactNode;
 }) {
   const showPicker = category === 'SHARE' || category === 'PROOF';
 
@@ -75,9 +75,7 @@ export default function EditForm({
             {category === 'PROOF' ? '인증샷 선택' : '공유할 항목 선택'}
           </Label>
           <Picker role="listbox" aria-label="선택 리스트">
-            {items.length === 0 ? (
-              <div>선택할 항목이 없습니다.</div>
-            ) : (
+            {items.length !== 0 &&
               items.map((it) => {
                 const active = selectedItemId === it.id;
                 return (
@@ -99,8 +97,8 @@ export default function EditForm({
                     {active && <i className="ri-check-line" aria-hidden />}
                   </PickerItem>
                 );
-              })
-            )}
+              })}
+            {footerSlot}
           </Picker>
         </Field>
       )}
