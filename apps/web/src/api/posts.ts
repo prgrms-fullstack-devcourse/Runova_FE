@@ -28,11 +28,12 @@ type PostResBase = {
   id: number;
   type: ServerPostType;
   title: string;
-  imageUrls: string[];
+  imageUrls?: string[];
+  imageUrl?: string;
   routeId?: number | null;
   likeCount: number;
   commentCount: number;
-  createdAt: string; // ISO date string
+  createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
 };
@@ -88,7 +89,7 @@ type PostResListItemAlt = PostResBase & {
 /** 커서 목록 응답 */
 type PostListCursorRes = {
   items: Array<PostResListItem | PostResListItemAlt>;
-  nextCursor: number | null;
+  nextCursor: number | string | null;
 };
 
 export type GetPostsCursorQuery = {
@@ -96,7 +97,7 @@ export type GetPostsCursorQuery = {
   authorId?: number;
   routeId?: number;
   sort?: 'recent' | 'popular';
-  cursor?: number | null;
+  cursor?: string | number | null;
   limit?: number;
 };
 
@@ -107,15 +108,24 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
       ? (res.author?.nickname ?? String(res.author?.id ?? ''))
       : String(res.authorId);
 
+  // imageUrls: 서버가 imageUrl(string)만 주면 배열로 포장
+  const imgs = (
+    Array.isArray(res.imageUrls) && res.imageUrls.length > 0
+      ? res.imageUrls
+      : res.imageUrl
+        ? [res.imageUrl]
+        : []
+  ) as string[];
+
   return {
     id: String(res.id),
     category: res.type,
     title: res.title,
     author,
     commentsCount: res.commentCount,
-    content: res.content, // 없으면 undefined
+    content: res.content,
     likeCount: res.likeCount,
-    imageUrls: res.imageUrls ?? [],
+    imageUrls: imgs,
     createdAt: res.createdAt,
     updatedAt: res.updatedAt,
   };
@@ -182,8 +192,9 @@ export async function getPost(id: number | string): Promise<Post> {
 /** 커서 기반 목록 */
 export async function getPostsCursor(
   query: GetPostsCursorQuery = {},
-): Promise<{ items: Post[]; nextCursor: number | null }> {
+): Promise<{ items: Post[]; nextCursor: number | string | null }> {
   const params = new URLSearchParams();
+
   if (query.type) params.set('type', query.type);
   if (typeof query.authorId === 'number')
     params.set('authorId', String(query.authorId));
@@ -191,8 +202,13 @@ export async function getPostsCursor(
     params.set('routeId', String(query.routeId));
   if (query.sort) params.set('sort', query.sort);
   if (typeof query.limit === 'number') params.set('limit', String(query.limit));
-  if (typeof query.cursor === 'number')
-    params.set('cursor', String(query.cursor));
+
+  const cur = query.cursor;
+  if (cur != null) {
+    // cur: number | string
+    const s = typeof cur === 'string' ? cur : String(cur);
+    if (s !== '') params.set('cursor', s);
+  }
 
   const { data } = await api.get<PostListCursorRes>(
     `/community/posts${params.toString() ? `?${params.toString()}` : ''}`,

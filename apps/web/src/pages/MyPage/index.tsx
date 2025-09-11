@@ -91,7 +91,7 @@ export default function MyPage() {
 
         <DataSection
           title="내가 쓴 글"
-          to="/mypage/posts"
+          to={`/community/feed/my?authorId=${profile?.id}`}
           loading={loading}
           error={err}
           items={posts}
@@ -101,7 +101,7 @@ export default function MyPage() {
 
         <DataSection
           title="나의 인증 사진"
-          to="/mypage/certs"
+          to={`/community/feed/my?authorId=${profile?.id}&type=PROOF`}
           loading={loading}
           error={err}
           items={certs}
