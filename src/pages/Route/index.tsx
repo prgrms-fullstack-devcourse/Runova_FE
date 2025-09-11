@@ -11,7 +11,11 @@ import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId, TabParamList } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/api/useRouteApi';
+import {
+  useRouteData,
+  useBookmarkedCourses,
+  useCompletedCourses,
+} from '@/hooks/api/useRouteApi';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<RouteStackParamList, 'RouteMain'>,
@@ -25,8 +29,16 @@ const tabs: Array<{ id: RouteTabId; title: string }> = [
 ];
 
 export default function Route({ navigation }: Props) {
-  const { activeTab, setActiveTab, courses } = useRouteStore();
+  const {
+    activeTab,
+    setActiveTab,
+    courses,
+    bookmarkedCourses,
+    completedCourses,
+  } = useRouteStore();
   const { loadCourses } = useRouteData();
+  const { loadBookmarkedCourses } = useBookmarkedCourses();
+  const { loadCompletedCourses } = useCompletedCourses();
 
   const handleRouteCardPress = (courseId: number) => {
     navigation.navigate('Run', { courseId });
@@ -46,8 +58,14 @@ export default function Route({ navigation }: Props) {
 
   const handleTabPress = (tabId: RouteTabId) => {
     setActiveTab(tabId);
-    if (tabId === 'created') {
+
+    // 탭 전환 시 해당 탭의 데이터가 비어있을 때만 로드
+    if (tabId === 'created' && courses.length === 0) {
       loadCourses(true);
+    } else if (tabId === 'liked' && bookmarkedCourses.length === 0) {
+      loadBookmarkedCourses(true);
+    } else if (tabId === 'completed' && completedCourses.length === 0) {
+      loadCompletedCourses(true);
     }
   };
 

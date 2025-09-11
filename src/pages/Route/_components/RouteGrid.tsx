@@ -9,51 +9,146 @@ import {
 import { useCallback } from 'react';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/api/useRouteApi';
-import { CourseSearchItem } from '@/types/courses.types';
+import {
+  useRouteData,
+  useBookmarkedCourses,
+  useCompletedCourses,
+} from '@/hooks/api/useRouteApi';
+import {
+  BookmarkedCourseItem,
+  CompletedCourseItem,
+  CourseSearchItem,
+} from '@/types/courses.types';
 
 interface RouteGridProps {
   onRouteCardPress: (courseId: number) => void;
 }
 
 export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
-  const { activeTab, courses, loading, error, refreshing } = useRouteStore();
+  const {
+    activeTab,
+    courses,
+    bookmarkedCourses,
+    completedCourses,
+    loading,
+    error,
+    refreshing,
+  } = useRouteStore();
 
   const { handleLoadMore, handleRetry, handleRefresh } = useRouteData();
+  const {
+    handleLoadMore: handleBookmarkedLoadMore,
+    handleRetry: handleBookmarkedRetry,
+    handleRefresh: handleBookmarkedRefresh,
+  } = useBookmarkedCourses();
+  const {
+    handleLoadMore: handleCompletedLoadMore,
+    handleRetry: handleCompletedRetry,
+    handleRefresh: handleCompletedRefresh,
+  } = useCompletedCourses();
+
+  const getCurrentData = () => {
+    switch (activeTab) {
+      case 'created':
+        return courses;
+      case 'liked':
+        return bookmarkedCourses;
+      case 'completed':
+        return completedCourses;
+      default:
+        return courses;
+    }
+  };
+
+  const getCurrentHandlers = () => {
+    switch (activeTab) {
+      case 'created':
+        return { handleLoadMore, handleRetry, handleRefresh };
+      case 'liked':
+        return {
+          handleLoadMore: handleBookmarkedLoadMore,
+          handleRetry: handleBookmarkedRetry,
+          handleRefresh: handleBookmarkedRefresh,
+        };
+      case 'completed':
+        return {
+          handleLoadMore: handleCompletedLoadMore,
+          handleRetry: handleCompletedRetry,
+          handleRefresh: handleCompletedRefresh,
+        };
+      default:
+        return { handleLoadMore, handleRetry, handleRefresh };
+    }
+  };
 
   const renderRouteCard = useCallback(
-    ({ item }: { item: CourseSearchItem }) => (
-      <Card
-        imageSource={{ uri: item.imageUrl }}
-        content={{ hasStar: item.bookmarked }}
-        mode="only-image"
-        onPress={() => onRouteCardPress(item.id)}
-      />
-    ),
-    [onRouteCardPress],
+    ({
+      item,
+    }: {
+      item: CourseSearchItem | BookmarkedCourseItem | CompletedCourseItem;
+    }) => {
+      if (activeTab === 'completed') {
+        const completedItem = item as CompletedCourseItem;
+        return (
+          <Card
+            content={{
+              title: `완주 기록 #${completedItem.id}`,
+              subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
+            }}
+            mode="only-text"
+            onPress={() => onRouteCardPress(completedItem.id)}
+          />
+        );
+      } else if (activeTab === 'liked') {
+        const bookmarkedItem = item as BookmarkedCourseItem;
+        return (
+          <Card
+            imageSource={{ uri: bookmarkedItem.imageUrl }}
+            content={{ hasStar: bookmarkedItem.bookmarked }}
+            mode="only-image"
+            onPress={() => onRouteCardPress(bookmarkedItem.id)}
+          />
+        );
+      } else {
+        const courseItem = item as CourseSearchItem;
+        return (
+          <Card
+            imageSource={{ uri: courseItem.imageUrl }}
+            content={{ hasStar: courseItem.bookmarked }}
+            mode="only-image"
+            onPress={() => onRouteCardPress(courseItem.id)}
+          />
+        );
+      }
+    },
+    [activeTab, onRouteCardPress],
   );
 
+  const currentData = getCurrentData();
+  const currentHandlers = getCurrentHandlers();
+
   const handleEndReached = useCallback(() => {
-    handleLoadMore();
-  }, [handleLoadMore]);
+    currentHandlers.handleLoadMore();
+  }, [currentHandlers]);
 
   const keyExtractor = useCallback(
-    (item: CourseSearchItem) => item.id.toString(),
+    (item: CourseSearchItem | BookmarkedCourseItem | CompletedCourseItem) =>
+      item.id.toString(),
     [],
   );
 
-  if (error && courses.length === 0) {
+  if (error && currentData.length === 0) {
     return (
       <ErrorContainer>
         <ErrorText>{error}</ErrorText>
-        <RetryButton onPress={handleRetry}>
+        <RetryButton onPress={currentHandlers.handleRetry}>
           <RetryButtonText>다시 시도</RetryButtonText>
         </RetryButton>
       </ErrorContainer>
     );
   }
 
-  if (courses.length === 0 && !loading && !error) {
+  if (currentData.length === 0 && !loading && !error) {
     const getEmptyMessage = () => {
       switch (activeTab) {
         case 'created':
@@ -76,7 +171,7 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
 
   return (
     <FlatList
-      data={courses}
+      data={currentData}
       renderItem={renderRouteCard}
       keyExtractor={keyExtractor}
       numColumns={2}
@@ -94,7 +189,7 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
-          onRefresh={handleRefresh}
+          onRefresh={currentHandlers.handleRefresh}
           tintColor="#007AFF"
           colors={['#007AFF']}
         />
@@ -106,10 +201,10 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
               <ActivityIndicator size="large" color="#007AFF" />
             </LoadingContainer>
           )}
-          {error && courses.length > 0 && (
+          {error && currentData.length > 0 && (
             <ErrorMessage>
               <ErrorText>{error}</ErrorText>
-              <RetryButton onPress={handleRetry}>
+              <RetryButton onPress={currentHandlers.handleRetry}>
                 <RetryButtonText>다시 시도</RetryButtonText>
               </RetryButton>
             </ErrorMessage>
