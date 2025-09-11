@@ -69,9 +69,11 @@ type UpdatePostRes = {
 
 export type GetPostsQuery = {
   type?: ServerPostType;
+  category?: Category;
   authorId?: number;
   routeId?: number;
-  sort?: 'recent' | 'popular'; // default recent
+  sort?: 'recent' | 'popular';
+  limit?: number;
 };
 
 /** 목록 아이템 (author 객체 버전) */
@@ -168,25 +170,34 @@ export async function createPost(body: CreatePostReq): Promise<Post> {
 
 /** --- 게시글 목록 --- */
 export async function getPosts(query: GetPostsQuery = {}): Promise<Post[]> {
-  const params = new URLSearchParams();
-  if (query.type) params.set('type', query.type);
-  if (typeof query.authorId === 'number')
-    params.set('authorId', String(query.authorId));
-  if (typeof query.routeId === 'number')
-    params.set('routeId', String(query.routeId));
-  if (query.sort) params.set('sort', query.sort);
+  const q: string[] = [];
+
+  if (query.type) {
+    q.push(`type=${encodeURIComponent(query.type)}`);
+  } else if (query.category && query.category !== 'ALL') {
+    q.push(`type=${encodeURIComponent(query.category as ServerPostType)}`);
+  }
+
+  if (typeof query.authorId === 'number') {
+    q.push(`authorId=${query.authorId}`);
+  }
+  if (typeof query.routeId === 'number') {
+    q.push(`routeId=${query.routeId}`);
+  }
+  if (query.sort) {
+    q.push(`sort=${encodeURIComponent(query.sort)}`);
+  }
+  if (typeof query.limit === 'number') {
+    q.push(`limit=${query.limit}`);
+  }
+
+  const qs = q.length > 0 ? `?${q.join('&')}` : '';
 
   const { data } = await api.get<{ items: PostResListItem[] }>(
-    `/community/posts${params.toString() ? `?${params.toString()}` : ''}`,
+    `/community/posts${qs}`,
   );
 
   return (data.items ?? []).map(mapPostResToEntity);
-}
-
-/** --- 게시글 상세 --- */
-export async function getPost(id: number | string): Promise<Post> {
-  const { data } = await api.get<PostResDetail>(`/community/posts/${id}`);
-  return mapPostResToEntity(data);
 }
 
 /** 커서 기반 목록 */
@@ -205,7 +216,6 @@ export async function getPostsCursor(
 
   const cur = query.cursor;
   if (cur != null) {
-    // cur: number | string
     const s = typeof cur === 'string' ? cur : String(cur);
     if (s !== '') params.set('cursor', s);
   }
@@ -218,6 +228,12 @@ export async function getPostsCursor(
     items: (data.items ?? []).map(mapListItemToEntity),
     nextCursor: data.nextCursor ?? null,
   };
+}
+
+/** --- 게시글 상세 --- */
+export async function getPost(id: number | string): Promise<Post> {
+  const { data } = await api.get<PostResDetail>(`/community/posts/${id}`);
+  return mapPostResToEntity(data);
 }
 
 /** 게시글 수정 */

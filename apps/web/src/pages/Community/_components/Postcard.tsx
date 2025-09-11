@@ -10,7 +10,16 @@ type PostCardProps = {
 export default function PostCard({ post }: PostCardProps) {
   const navigate = useNavigate();
 
-  const { id, author, content, liked, likeCount, commentsCount } = post;
+  const {
+    id,
+    author,
+    content,
+    liked,
+    likeCount,
+    commentsCount,
+    imageUrl,
+    createdAt,
+  } = post;
 
   return (
     <Container
@@ -20,15 +29,15 @@ export default function PostCard({ post }: PostCardProps) {
     >
       <ProfileHeader
         userName={author}
-        postDate={'2025-09-01'}
+        postDate={createdAt.slice(0, 10)}
         imageUrl={`https://picsum.photos/48?random=${id}`}
       />
 
-      {/* {imageUrls && (
+      {imageUrl && imageUrl !== '{}' && (
         <PostImageContainer>
-          <PostImage src={imageUrls[0]} alt="post image" />
+          <PostImage src={imageUrl} alt="post image" />
         </PostImageContainer>
-      )} */}
+      )}
 
       <Contents>{content ?? ''}</Contents>
 
@@ -59,18 +68,18 @@ const Container = styled.div`
   }
 `;
 
-// const PostImageContainer = styled.div`
-//   width: 100%;
-//   border-radius: 8px;
-//   overflow: hidden;
-// `;
+const PostImageContainer = styled.div`
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+`;
 
-// const PostImage = styled.img`
-//   width: 100%;
-//   aspect-ratio: 1 / 1;
-//   object-fit: cover;
-//   display: block;
-// `;
+const PostImage = styled.img`
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+`;
 
 const Contents = styled.span`
   ${({ theme }) => theme.typography.small};
