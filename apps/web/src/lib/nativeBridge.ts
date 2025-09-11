@@ -28,6 +28,21 @@ export function postToNative(message: WebToRNMessage) {
   window.ReactNativeWebView?.postMessage(str);
 }
 
+export const isNativeWebView = () =>
+  typeof window !== 'undefined' &&
+  !!window.ReactNativeWebView &&
+  typeof window.ReactNativeWebView.postMessage === 'function';
+
+// 네이티브 Route 목록 열기 (초기 탭 전달 가능)
+export function openNativeRouteList(params?: {
+  initialTab?: 'ALL' | 'FREE' | 'PROOF' | 'SHARE' | 'MATE';
+}) {
+  postToNative({
+    type: 'NAVIGATE',
+    payload: { screen: 'ROUTE_LIST', params },
+  });
+}
+
 /** 간단 테스트용 */
 export const sendPing = () => postToNative({ type: 'PING' });
 export const requestRefreshToken = () =>

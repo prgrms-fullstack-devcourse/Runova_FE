@@ -1,6 +1,11 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
 export type RootStackParamList = {
   Auth: undefined;
-  TabNavigator: Record<string, never>;
+  TabNavigator:
+    | Record<string, never>
+    | NavigatorScreenParams<TabParamList>
+    | undefined;
   Details: {
     id: string;
   };

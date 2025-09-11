@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useRef } from 'react';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 
-import useAuthStore from '@/store/auth';
 import { refreshToken } from '@/services/auth.service';
+import useAuthStore from '@/store/auth';
 import type { User } from '@/types/user.types';
+
+export type NativeScreen = 'ROUTE_LIST' | 'ROUTE_DETAIL' | 'PROFILE';
 
 type NormalizedUser = {
   id: string;
@@ -23,16 +25,23 @@ type NativeMessage =
   | { type: 'NATIVE_TOKEN'; payload: string }
   | { type: 'NATIVE_TOKEN_ERROR' }
   | { type: 'PONG' }
-  | { type: string; payload?: unknown }; // 확장성 위해 기본 구조 유지
+  | { type: string; payload?: unknown };
 
 type WebToNativeMessage =
   | { type: 'PING' }
   | { type: 'REFRESH_TOKEN' }
   | { type: 'LOG'; payload?: unknown }
-  | { type: string; payload?: unknown };
+  | {
+      type: 'NAVIGATE';
+      payload: { screen: NativeScreen; params?: Record<string, unknown> };
+    };
 
-export function useWebViewMessenger() {
-  const webRef = useRef<WebView>(null);
+type UseWebViewMessengerOptions = {
+  onNavigate?: (screen: NativeScreen, params?: Record<string, unknown>) => void;
+};
+
+export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
+  const webRef = useRef<WebView | null>(null);
 
   const accessToken = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
@@ -41,11 +50,9 @@ export function useWebViewMessenger() {
 
   const normalizeUser = (u: User | null): NormalizedUser => {
     if (!u) return null;
-
-    const rawId: number | string | undefined =
+    const rawId =
       (u as { id?: number | string }).id ??
       (u as { userId?: number | string }).userId;
-
     return {
       id: rawId !== undefined ? String(rawId) : '',
       name:
@@ -60,16 +67,17 @@ export function useWebViewMessenger() {
     };
   };
 
-  const initPayload: NativeInitPayload = useMemo(() => {
-    return {
+  const initPayload: NativeInitPayload = useMemo(
+    () => ({
       user: normalizeUser(user),
       accessToken: accessToken ?? null,
       app: { platform: 'native' },
-    };
-  }, [accessToken, user]);
+    }),
+    [accessToken, user],
+  );
 
   const postJson = useCallback((data: NativeMessage) => {
-    console.log('[RN → Web] 보내는 메시지:', data);
+    console.log('[RN → Web] send:', data);
     webRef.current?.postMessage(JSON.stringify(data));
   }, []);
 
@@ -79,9 +87,9 @@ export function useWebViewMessenger() {
 
   const onMessage = useCallback(
     async (e: WebViewMessageEvent) => {
-      console.log('[Web → RN] 원본 데이터:', e.nativeEvent.data);
+      console.log('[Web → RN] raw:', e.nativeEvent.data);
 
-      let msg: WebToNativeMessage;
+      let msg: WebToNativeMessage | { type: 'LOG'; payload?: unknown };
       try {
         msg = JSON.parse(e.nativeEvent.data) as WebToNativeMessage;
       } catch {
@@ -89,20 +97,15 @@ export function useWebViewMessenger() {
       }
 
       switch (msg.type) {
-        case 'PING': {
+        case 'PING':
           postJson({ type: 'PONG' });
           break;
-        }
-        case 'REFRESH_TOKEN': {
+
+        case 'REFRESH_TOKEN':
           try {
             const { accessToken } = await refreshToken();
-
-            if (user) {
-              setAuth(accessToken, user);
-            } else {
-              clearAuth();
-            }
-
+            if (user) setAuth(accessToken, user);
+            else clearAuth();
             postJson({ type: 'NATIVE_TOKEN', payload: accessToken });
           } catch (error) {
             console.error('토큰 갱신 실패:', error);
@@ -110,17 +113,21 @@ export function useWebViewMessenger() {
             clearAuth();
           }
           break;
-        }
-        case 'LOG': {
+
+        case 'NAVIGATE':
+          // payload는 타입으로 강제됨
+          opts?.onNavigate?.(msg.payload.screen, msg.payload.params);
+          break;
+
+        case 'LOG':
           console.log('[Web LOG]', msg.payload);
           break;
-        }
-        default: {
+
+        default:
           break;
-        }
       }
     },
-    [postJson, setAuth, clearAuth, user],
+    [postJson, setAuth, clearAuth, user, opts],
   );
 
   const sendToWeb = useCallback(
