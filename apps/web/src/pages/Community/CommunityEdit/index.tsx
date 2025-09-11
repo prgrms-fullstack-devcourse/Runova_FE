@@ -94,15 +94,9 @@ export default function CommunityEdit() {
 
   // 카테고리 바뀌면 목록 초기화
   useEffect(() => {
-    if (isProofCategory(category) || isShareCategory(category)) {
-      setItems([]);
-      setCursor(null);
-      setListDone(false);
-    } else {
-      setItems([]);
-      setCursor(null);
-      setListDone(true);
-    }
+    setItems([]);
+    setCursor(null);
+    setListDone(true);
   }, [category]);
 
   // 페이지 로드 함수
