@@ -47,16 +47,13 @@ export default function CommunityEdit() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // ▽ 인증/공유 목록 무한스크롤 상태
   const [items, setItems] = useState<ItemShape[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [listLoading, setListLoading] = useState(false);
   const [listDone, setListDone] = useState(false);
 
-  // 센티넬 ref
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // 기존 글 불러오기
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -82,7 +79,6 @@ export default function CommunityEdit() {
     };
   }, [editing, id, navigate]);
 
-  // 폼 변경 핸들러
   const handleFormChange = useCallback((patch: EditPatch) => {
     if (patch.category && patch.category !== 'ALL') setCategory(patch.category);
     if (typeof patch.title === 'string') setTitle(patch.title);
@@ -155,7 +151,6 @@ export default function CommunityEdit() {
     }
   }, [category, cursor, listDone, listLoading]);
 
-  // 최초 1페이지 자동 로드
   useEffect(() => {
     if (
       (isProofCategory(category) || isShareCategory(category)) &&
@@ -167,7 +162,6 @@ export default function CommunityEdit() {
     }
   }, [category, listDone, listLoading, items.length, loadMore]);
 
-  // IntersectionObserver로 무한스크롤
   useEffect(() => {
     if (!sentinelRef.current) return;
     if (listDone) return;
@@ -181,8 +175,8 @@ export default function CommunityEdit() {
         }
       },
       {
-        root: null, // viewport
-        rootMargin: '200px 0px', // 미리 당겨서 로드
+        root: null,
+        rootMargin: '200px 0px',
         threshold: 0.01,
       },
     );
@@ -254,14 +248,13 @@ export default function CommunityEdit() {
             submitLabel={editing ? '수정하기' : '작성하기'}
             onChange={handleFormChange}
             onSubmit={submit}
-            // ⬇⬇ 리스트 맨 아래에 센티넬/로딩 뷰 삽입
             footerSlot={
               (isProofCategory(category) || isShareCategory(category)) && (
                 <FooterArea>
                   {!listDone && <Sentinel ref={sentinelRef} />}
                   {listLoading && <SmallHint>불러오는 중…</SmallHint>}
                   {listDone && items.length > 0 && (
-                    <SmallHint>끝까지 봤어요</SmallHint>
+                    <SmallHint>마지막 항목입니다.</SmallHint>
                   )}
                   {listDone && items.length === 0 && (
                     <SmallHint>표시할 항목이 없습니다</SmallHint>
