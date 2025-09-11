@@ -44,13 +44,7 @@ export function useRunMap(
   // 코스 토폴로지가 로드되면 지도에 맞춤
   useEffect(() => {
     if (courseTopology && courseTopology.shape.length > 0) {
-      const allCoordinates: [number, number][] = [];
-
-      courseTopology.shape.forEach((polygon) => {
-        polygon.forEach((coord) => {
-          allCoordinates.push(coord);
-        });
-      });
+      const allCoordinates: [number, number][] = courseTopology.shape.flat(1);
 
       if (allCoordinates.length > 0) {
         fitToCoordinates(finalCameraRef, allCoordinates);
