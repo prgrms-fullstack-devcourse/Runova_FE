@@ -1,20 +1,32 @@
+// WebScreen.tsx
 import styled from '@emotion/native';
-import { useMemo } from 'react';
+import type { NavigatorScreenParams } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 
+import type { NativeScreen } from '@/hooks/useWebViewMessenger';
 import { useWebViewMessenger } from '@/hooks/useWebViewMessenger';
+import type {
+  RootStackParamList,
+  TabParamList,
+} from '@/types/navigation.types';
 
 type Props = {
   origin: string | undefined;
   path: string;
-  /** 탭바 높이 등 추가로 더할 하단 인셋 (기본 60) */
   bottomInsetExtra?: number;
-  /** WebView에 그대로 전달할 추가 props (원하면 확장) */
   webViewProps?: Partial<React.ComponentProps<typeof WebView>>;
 };
 
 const DEFAULT_TAB_BAR_HEIGHT = 60;
+
+const TAB_TARGET = {
+  ROUTE_LIST: 'Route',
+  PROFILE: 'Settings', // 필요에 맞게 바꾸세요 ('Profile' 탭이 따로 있으면 그 이름)
+} as const;
 
 export default function WebScreen({
   origin,
@@ -23,14 +35,58 @@ export default function WebScreen({
   webViewProps,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const { webRef, onLoadEnd, onMessage } = useWebViewMessenger();
 
-  const uri = useMemo(() => {
-    const o = origin ?? '';
-    return `${o}${path}`;
-  }, [origin, path]);
+  // ✅ 네비게이션을 루트 스택 기준으로 타입 지정
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  // 안전: originWhitelist는 허용 오리진만 (origin이 설정돼 있지 않으면 * 로)
+  // ✅ Web → Native 브릿지에서 온 네비게이션 요청 처리
+  const handleNavigate = useCallback(
+    (screen: NativeScreen, params?: Record<string, unknown>) => {
+      switch (screen) {
+        // 탭 내 특정 화면으로 이동 (중첩 네비게이션)
+        case 'ROUTE_LIST': {
+          const nested: NavigatorScreenParams<TabParamList> = {
+            screen: TAB_TARGET.ROUTE_LIST,
+            // TabParamList 각 스크린 파라미터가 Record<string, never>라면 반드시 빈 객체 필요
+            params: {},
+          };
+          navigation.navigate('TabNavigator', nested);
+          break;
+        }
+        case 'PROFILE': {
+          const nested: NavigatorScreenParams<TabParamList> = {
+            screen: TAB_TARGET.PROFILE,
+            params: {},
+          };
+          navigation.navigate('TabNavigator', nested);
+          break;
+        }
+
+        // 루트 스택 화면으로 이동
+        case 'ROUTE_DETAIL': {
+          // 예: RootStackParamList['Details']가 { id: string }
+          const id =
+            typeof params?.id === 'string'
+              ? params.id
+              : String(params?.id ?? '');
+          navigation.navigate('Details', { id });
+          break;
+        }
+
+        default:
+          // 정의되지 않은 스크린은 무시
+          break;
+      }
+    },
+    [navigation],
+  );
+
+  const { webRef, onLoadEnd, onMessage } = useWebViewMessenger({
+    onNavigate: handleNavigate,
+  });
+
+  const uri = useMemo(() => `${origin ?? ''}${path}`, [origin, path]);
   const originWhitelist = useMemo(() => (origin ? [origin] : ['*']), [origin]);
 
   return (
@@ -41,13 +97,12 @@ export default function WebScreen({
       <StyledWebView
         ref={webRef}
         source={{ uri }}
-        onLoadEnd={onLoadEnd} // RN → Web : 로그인정보/토큰 보내기
-        onMessage={onMessage} // Web → RN : 메시지 받기
+        onLoadEnd={onLoadEnd}
+        onMessage={onMessage}
         javaScriptEnabled
         domStorageEnabled
         sharedCookiesEnabled
         originWhitelist={originWhitelist}
-        // 안드로이드에서 WebView가 탭바를 덮는 현상 방지
         {...webViewProps}
       />
     </Container>

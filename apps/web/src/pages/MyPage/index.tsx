@@ -10,6 +10,7 @@ import type { RoutePreview, PostPreview, CertPreview } from '@/types/mypage';
 import { getMeOverview, getReadableUserError } from '@/api/mypage';
 import type { UserProfileRes } from '@/api/mypage';
 import { useNativeBridgeStore } from '@/stores/nativeBridgeStore'; // ✅ 토큰 구독
+import { postToNative } from '@/lib/nativeBridge';
 
 export default function MyPage() {
   const token = useNativeBridgeStore((s) => s.token); // ✅ 브릿지 토큰
@@ -47,6 +48,15 @@ export default function MyPage() {
     };
   }, [token]);
 
+  const handleMoreRoutes = () => {
+    if (window.ReactNativeWebView) {
+      postToNative({
+        type: 'NAVIGATE',
+        payload: { screen: 'ROUTE_LIST', params: { initialTab: 'ALL' } },
+      });
+    }
+  };
+
   return (
     <Wrap>
       <Header title="마이페이지" />
@@ -71,6 +81,7 @@ export default function MyPage() {
         <DataSection
           title="나의 경로"
           to="/mypage/routes"
+          onMoreClick={handleMoreRoutes}
           loading={loading}
           error={err}
           items={routes}

@@ -11,6 +11,7 @@ type DataSectionProps<T> = {
   items: T[];
   emptyText: string;
   renderItem: (item: T, index: number) => ReactNode;
+  onMoreClick?: () => void;
 };
 
 export default function DataSection<T>({
@@ -21,10 +22,11 @@ export default function DataSection<T>({
   items,
   emptyText,
   renderItem,
+  onMoreClick, // ✅
 }: DataSectionProps<T>) {
   return (
     <Section>
-      <SectionHeader title={title} to={to} />
+      <SectionHeader title={title} to={to} onMoreClick={onMoreClick} />
 
       {loading && <Hint>불러오는 중…</Hint>}
       {error && <ErrorText>{error}</ErrorText>}
