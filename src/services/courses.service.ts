@@ -1,6 +1,8 @@
 import { convertPathToApiFormat } from '@/utils/courseFormatter';
 import api from '../lib/api';
 import type {
+  BookmarkedCourseResponse,
+  CompletedCourseResponse,
   CourseClientData,
   CourseCreateRequest,
   CourseSearchRequest,
@@ -42,6 +44,37 @@ export async function getCourseTopology(
   accessToken: string,
 ): Promise<CourseTopologyResponse> {
   const response = await api.get(`/api/courses/${courseId}/topology`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function searchBookmarkedCourses(
+  params: CourseSearchRequest,
+  accessToken: string,
+): Promise<BookmarkedCourseResponse> {
+  const response = await api.get('/api/courses/search/bookmarked', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function searchCompletedCourses(
+  params: {
+    since?: string;
+    until?: string;
+    cursor?: { id: number } | null;
+    limit?: number;
+  },
+  accessToken: string,
+): Promise<CompletedCourseResponse> {
+  const response = await api.get('/api/running/records', {
+    params,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
