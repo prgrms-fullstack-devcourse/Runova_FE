@@ -1,39 +1,50 @@
-import { useRef } from 'react';
-import { View } from 'react-native';
 import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
-import type { Feature, LineString } from 'geojson';
-import type * as Location from 'expo-location';
 import { theme } from '@/styles/theme';
 import Map from '@/components/Map';
-
-interface RunMapProps {
-  location: Location.LocationObject;
-  routeGeoJSON: Feature<LineString>;
-  isLocked?: boolean;
-}
+import { LockOverlay } from '@/components/Overlay';
+import { useRunMap } from '@/hooks/useRunMap';
+import { useLocationTracking } from '@/hooks/useLocationTracking';
+import { useLocationManager } from '@/hooks/useLocationManager';
 
 export default function RunMap({
-  location,
-  routeGeoJSON,
-  isLocked = false,
-}: RunMapProps) {
-  const mapRef = useRef<Mapbox.MapView>(null);
-  const cameraRef = useRef<Mapbox.Camera>(null);
+  cameraRef: externalCameraRef,
+}: {
+  cameraRef?: React.RefObject<Mapbox.Camera>;
+}) {
+  const { routeCoordinates } = useLocationTracking();
+  const { location: locationObject } = useLocationManager();
+
+  // LocationObject를 Position으로 변환
+  const location = locationObject
+    ? ([locationObject.coords.longitude, locationObject.coords.latitude] as [
+        number,
+        number,
+      ])
+    : null;
+
+  const {
+    mapRef,
+    cameraRef,
+    routeGeoJSON,
+    courseShapeGeoJSON,
+    courseShapePolygons,
+    isLocked,
+  } = useRunMap(externalCameraRef, location, routeCoordinates);
+
+  if (!location) {
+    return null;
+  }
 
   return (
     <StyledContainer>
-      <Map
-        mapRef={mapRef}
-        cameraRef={cameraRef}
-        initialLocation={[location.coords.longitude, location.coords.latitude]}
-      >
+      <Map mapRef={mapRef} cameraRef={cameraRef} initialLocation={location}>
         {routeGeoJSON.geometry.coordinates.length > 1 && (
           <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
             <Mapbox.LineLayer
               id="routeLayer"
               style={{
-                lineColor: theme.colors.primary[500],
+                lineColor: theme.colors.secondary[500],
                 lineWidth: 5,
                 lineCap: 'round',
                 lineJoin: 'round',
@@ -41,24 +52,55 @@ export default function RunMap({
             />
           </Mapbox.ShapeSource>
         )}
+
+        {/* 선택해서 읽어온 코스 shape 표시 */}
+        {courseShapePolygons.length > 0 && (
+          <Mapbox.ShapeSource id="courseShapeSource" shape={courseShapeGeoJSON}>
+            <Mapbox.FillLayer
+              id="courseShapeLayer"
+              style={{
+                fillColor: theme.colors.primary[200],
+                fillOpacity: 0.3,
+              }}
+            />
+            <Mapbox.LineLayer
+              id="courseShapeBorderLayer"
+              style={{
+                lineColor: theme.colors.primary[500],
+                lineWidth: 2,
+                lineOpacity: 0.8,
+              }}
+            />
+          </Mapbox.ShapeSource>
+        )}
+
+        {/* 코스 노드 표시 */}
+        {/* {courseTopology?.nodes.map((node, index) => (
+          <Mapbox.PointAnnotation
+            key={`node-${index}`}
+            id={`node-${index}`}
+            coordinate={node.location}
+          >
+            <View
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: theme.colors.primary[500],
+                borderWidth: 2,
+                borderColor: '#ffffff',
+              }}
+            />
+          </Mapbox.PointAnnotation>
+        ))} */}
       </Map>
       {isLocked && <LockOverlay pointerEvents="auto" />}
     </StyledContainer>
   );
 }
 
-const StyledContainer = styled(View)`
-  flex: 1;
-  width: 100%;
-  position: relative;
-`;
-
-const LockOverlay = styled(View)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: transparent;
-  z-index: 1000;
-`;
+const StyledContainer = styled.View({
+  flex: 1,
+  width: '100%',
+  position: 'relative',
+});

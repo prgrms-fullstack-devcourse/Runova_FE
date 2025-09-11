@@ -84,9 +84,11 @@ export function useMapCapture(
         captureSuccess: true,
         uploadSuccess: true,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error.message || '이미지 처리 중 오류가 발생했습니다.';
+        error instanceof Error
+          ? error.message
+          : '이미지 처리 중 오류가 발생했습니다.';
       const isCaptureError =
         errorMessage.includes('맵') || errorMessage.includes('캡처');
 

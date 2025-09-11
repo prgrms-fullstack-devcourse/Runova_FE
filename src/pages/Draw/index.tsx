@@ -15,6 +15,7 @@ import { useLocationManager } from '@/hooks/useLocationManager';
 import { useMapCapture } from '@/hooks/useMapCapture';
 import { useRouteValidation } from '@/hooks/useRouteValidation';
 import Header from '@/components/Header';
+import { LoadingOverlay } from '@/components/Overlay';
 import DrawMap from './_components/DrawMap';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import useDrawStore from '@/store/draw';
@@ -25,11 +26,7 @@ import {
   showCourseSaveError,
 } from './_components/Toasts';
 
-const LoadingIndicator = () => (
-  <StyledLoadingOverlay>
-    <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-  </StyledLoadingOverlay>
-);
+const LoadingIndicator = () => <LoadingOverlay message="로딩 중..." />;
 
 export default function Draw() {
   const navigation =
@@ -135,16 +132,4 @@ const StyledGestureHandlerRootView = styled(GestureHandlerRootView)`
 
 const StyledContainer = styled(View)`
   flex: 1;
-`;
-
-const StyledLoadingOverlay = styled(View)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
 `;

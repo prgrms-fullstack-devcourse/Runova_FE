@@ -30,7 +30,6 @@ export type CourseSaveResult = {
   imageProcessResult?: ImageProcessResult;
 };
 
-// 내가 만든 경로 검색 API 타입
 export interface CourseSearchRequest {
   cursor?: number | null;
   limit?: number;
@@ -51,4 +50,15 @@ export interface CourseSearchItem {
 
 export interface CourseSearchResponse {
   results: CourseSearchItem[];
+}
+
+export interface CourseTopologyNode {
+  location: [number, number];
+  progress: number;
+  bearing: number;
+}
+
+export interface CourseTopologyResponse {
+  nodes: CourseTopologyNode[];
+  shape: [number, number][][];
 }

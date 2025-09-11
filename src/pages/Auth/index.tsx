@@ -31,16 +31,25 @@ export default function Auth() {
 
       setAuth(accessToken, user);
       navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('로그인 오류:', error);
-      if (error.message === '사용자가 로그인을 취소했습니다.') {
+
+      if (
+        error instanceof Error &&
+        error.message === '사용자가 로그인을 취소했습니다.'
+      ) {
         return;
       }
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '로그인 중 오류가 발생했습니다.';
 
       Toast.show({
         type: 'error',
         text1: '로그인 실패',
-        text2: error.message || '로그인 중 오류가 발생했습니다.',
+        text2: errorMessage,
       });
     } finally {
       setIsSubmitting(false);

@@ -18,7 +18,6 @@ interface RouteState {
   setHasMore: (hasMore: boolean) => void;
   setError: (error: string | null) => void;
   setCursor: (cursor: number | null) => void;
-  handleRouteCardPress: (course: CourseSearchItem) => void;
 }
 
 const useRouteStore = create<RouteState>((set) => ({
@@ -69,8 +68,6 @@ const useRouteStore = create<RouteState>((set) => ({
   setCursor: (cursor: number | null) => {
     set({ cursor });
   },
-
-  handleRouteCardPress: (course: CourseSearchItem) => {},
 }));
 
 export default useRouteStore;

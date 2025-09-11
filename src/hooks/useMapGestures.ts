@@ -28,8 +28,12 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
     try {
       const route = await getMatchedRoute(coordinates);
       addMatchedRoute(route);
-    } catch (error: any) {
-      Alert.alert('경로 보정 실패', error.message);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '경로 보정 중 오류가 발생했습니다.';
+      Alert.alert('경로 보정 실패', errorMessage);
     } finally {
       setIsLoading(false);
     }
