@@ -10,7 +10,7 @@ import type { RoutePreview, PostPreview, CertPreview } from '@/types/mypage';
 import { getMeOverview, getReadableUserError } from '@/api/mypage';
 import type { UserProfileRes } from '@/api/mypage';
 import { useNativeBridgeStore } from '@/stores/nativeBridgeStore'; // ✅ 토큰 구독
-import { postToNative } from '@/lib/nativeBridge';
+import { openNativeRouteList } from '@/lib/nativeBridge';
 
 export default function MyPage() {
   const token = useNativeBridgeStore((s) => s.token); // ✅ 브릿지 토큰
@@ -50,12 +50,18 @@ export default function MyPage() {
 
   const handleMoreRoutes = () => {
     if (window.ReactNativeWebView) {
-      postToNative({
-        type: 'NAVIGATE',
-        payload: { screen: 'ROUTE_LIST', params: { initialTab: 'ALL' } },
-      });
+      openNativeRouteList({ initialTab: 'ALL' });
     }
   };
+
+  // const handleMoreRoutes = () => {
+  //   if (window.ReactNativeWebView) {
+  //     postToNative({
+  //       type: 'NAVIGATE',
+  //       payload: { screen: 'ROUTE_LIST', params: { initialTab: 'ALL' } },
+  //     });
+  //   }
+  // };
 
   return (
     <Wrap>
@@ -91,7 +97,11 @@ export default function MyPage() {
 
         <DataSection
           title="내가 쓴 글"
-          to={`/community/feed/my?authorId=${profile?.id}`}
+          to={
+            profile?.id
+              ? `/community/feed/my?authorId=${profile.id}`
+              : undefined
+          }
           loading={loading}
           error={err}
           items={posts}
@@ -101,7 +111,11 @@ export default function MyPage() {
 
         <DataSection
           title="나의 인증 사진"
-          to={`/community/feed/my?authorId=${profile?.id}&type=PROOF`}
+          to={
+            profile?.id
+              ? `/community/feed/my?authorId=${profile.id}&type=PROOF`
+              : undefined
+          }
           loading={loading}
           error={err}
           items={certs}

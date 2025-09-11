@@ -11,6 +11,8 @@ import type { ServerPostType } from '@/api/posts';
 
 type RouteType = 'all' | 'free' | 'proof' | 'share' | 'mate' | 'my';
 
+const DEFAULT_PAGE_LIMIT = 10;
+
 const TITLE_MAP: Record<RouteType, string> = {
   all: '전체',
   free: '자유',
@@ -35,7 +37,6 @@ function toNum(v: string | null): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-// 서버가 허용하는 type만 필터로 사용
 const POST_TYPES = ['FREE', 'PROOF', 'SHARE', 'MATE'] as const;
 type PostType = (typeof POST_TYPES)[number];
 
@@ -55,12 +56,10 @@ export default function CommunityFeed() {
 
   const category = ROUTE_TO_CATEGORY[routeType];
 
-  // 쿼리 파라미터 해석
   const qsAuthorId = toNum(searchParams.get('authorId'));
-  const qsLimit = toNum(searchParams.get('limit')) ?? 10;
+  const qsLimit = toNum(searchParams.get('limit')) ?? DEFAULT_PAGE_LIMIT;
   const qsSort = searchParams.get('sort') === 'popular' ? 'popular' : 'recent';
 
-  // 쿼리 type (FREE/PROOF/SHARE/MATE) 안전 파싱
   const rawQsType = (searchParams.get('type') || '').toUpperCase();
   const qsType: PostType | undefined = POST_TYPES.includes(
     rawQsType as PostType,
@@ -68,24 +67,17 @@ export default function CommunityFeed() {
     ? (rawQsType as PostType)
     : undefined;
 
-  // 네이티브에 실린 유저 ID (백업)
   const nativeUserId = useNativeBridgeStore((s) => s.init?.user?.id);
   const nativeAuthorId = useMemo(() => {
     const n = Number(nativeUserId);
     return Number.isFinite(n) ? n : undefined;
   }, [nativeUserId]);
 
-  // 최종 authorId (my일 때만 사용)
   const effectiveAuthorId =
     routeType === 'my' ? (qsAuthorId ?? nativeAuthorId) : undefined;
 
-  // 실제 API에 넘길 type
   const effectiveType: ServerPostType | undefined =
-    routeType !== 'my'
-      ? category !== 'ALL'
-        ? category // 'ALL'을 제외했으니 'FREE'|'PROOF'|'SHARE'|'MATE' 로 좁혀짐
-        : undefined
-      : qsType; // 쿼리에서 온 것도 동일 유니온 타입
+    routeType !== 'my' ? (category !== 'ALL' ? category : undefined) : qsType;
 
   const title = useMemo(() => {
     if (routeType !== 'my') return TITLE_MAP[routeType];
@@ -104,7 +96,6 @@ export default function CommunityFeed() {
   }, [routeType, qsType]);
 
   const [items, setItems] = useState<Post[]>([]);
-  // undefined: 아직 첫 로드 전 / string|number: 다음 커서 / null: 더 없음
   const [cursor, setCursor] = useState<string | number | null | undefined>(
     undefined,
   );
@@ -112,7 +103,6 @@ export default function CommunityFeed() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 동시 호출/중복 첫 로드 방지
   const inFlightRef = useRef(false);
   const initialLoadRef = useRef(false);
 
@@ -140,7 +130,7 @@ export default function CommunityFeed() {
         authorId: effectiveAuthorId,
         sort: qsSort,
         limit: qsLimit,
-        cursor, // undefined면 첫 페이지
+        cursor,
       });
 
       setItems((prev) => [...prev, ...page]);
