@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import type Mapbox from '@rnmapbox/maps';
+import type { Position } from 'geojson';
 import useDrawStore from '@/store/draw';
 import { ImageProcessResult } from '@/types/image.types';
 
@@ -13,25 +14,26 @@ export function useMapCapture(
 ) {
   const { matchedRoutes, setIsCapturing } = useDrawStore();
 
-  const captureMap = async (): Promise<string> => {
+  const captureMap = async (routeCoordinates?: Position[]): Promise<string> => {
     if (!mapRef.current) {
       throw new Error('맵이 준비되지 않았습니다.');
     }
 
     setIsCapturing(true);
 
-    if (matchedRoutes.length > 0) {
-      try {
-        const allCoordinates: number[][] = [];
-        matchedRoutes.forEach((route) => {
-          if (route.geometry.type === 'LineString') {
-            allCoordinates.push(...route.geometry.coordinates);
-          }
-        });
+    try {
+      const coordinatesToUse =
+        routeCoordinates ||
+        matchedRoutes.flatMap((route) =>
+          route.geometry.type === 'LineString'
+            ? route.geometry.coordinates
+            : [],
+        );
 
-        if (allCoordinates.length > 0) {
-          const lons = allCoordinates.map((coord) => coord[0]);
-          const lats = allCoordinates.map((coord) => coord[1]);
+      if (coordinatesToUse.length > 0) {
+        try {
+          const lons = coordinatesToUse.map((coord) => coord[0]);
+          const lats = coordinatesToUse.map((coord) => coord[1]);
 
           const minLon = Math.min(...lons);
           const maxLon = Math.max(...lons);
@@ -41,9 +43,8 @@ export function useMapCapture(
           const lonDiff = maxLon - minLon;
           const latDiff = maxLat - minLat;
 
-          // 더 큰 차원을 기준으로 정사각형에 맞춰 패딩 설정
           const maxDiff = Math.max(lonDiff, latDiff);
-          const padding = maxDiff * BOUNDS_PADDING; // 60% 패딩
+          const padding = maxDiff * BOUNDS_PADDING;
 
           const lonPadding = padding;
           const latPadding = padding;
@@ -59,19 +60,20 @@ export function useMapCapture(
           } as any);
 
           await new Promise((resolve) => setTimeout(resolve, TIMEOUT));
+        } catch (error) {
+          console.warn('카메라 조정 실패:', error);
         }
-      } catch (error) {
-        console.warn('카메라 조정 실패:', error);
       }
-    }
 
-    const uri = await mapRef.current.takeSnap(true);
-    if (!uri) {
-      throw new Error('맵 캡처에 실패했습니다.');
-    }
+      const uri = await mapRef.current.takeSnap(true);
+      if (!uri) {
+        throw new Error('맵 캡처에 실패했습니다.');
+      }
 
-    setIsCapturing(false);
-    return uri;
+      return uri;
+    } finally {
+      setIsCapturing(false);
+    }
   };
 
   const processImage = async (): Promise<ImageProcessResult> => {

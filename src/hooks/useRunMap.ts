@@ -5,14 +5,13 @@ import { useLocationManager } from '@/hooks/useLocationManager';
 import useRunStore from '@/store/run';
 
 export function useRunMap(
-  cameraRef?: React.RefObject<Mapbox.Camera>,
+  cameraRef?: React.RefObject<Mapbox.Camera | null>,
   location?: Position | null,
   routeCoordinates?: Position[],
 ) {
   const { courseTopology, isLocked } = useRunStore();
   const { fitToCoordinates } = useLocationManager();
 
-  const mapRef = useRef<Mapbox.MapView>(null);
   const internalCameraRef = useRef<Mapbox.Camera>(null);
   const finalCameraRef = cameraRef || internalCameraRef;
 
@@ -53,7 +52,6 @@ export function useRunMap(
   }, [courseTopology, fitToCoordinates, finalCameraRef]);
 
   return {
-    mapRef,
     cameraRef: finalCameraRef,
     location,
     routeGeoJSON,

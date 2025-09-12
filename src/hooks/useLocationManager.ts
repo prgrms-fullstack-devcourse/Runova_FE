@@ -13,7 +13,10 @@ export function useLocationManager() {
 
   useEffect(() => {
     if (initialLocation) {
-      currentUserLocation.current = initialLocation;
+      currentUserLocation.current = [
+        initialLocation.coords.longitude,
+        initialLocation.coords.latitude,
+      ];
     }
   }, [initialLocation]);
 

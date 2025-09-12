@@ -9,7 +9,6 @@ import {
   Settings,
 } from 'lucide-react-native';
 
-import CommunityList from '@/pages/CommunityList';
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
 import RouteStackNavigator from '@/navigation/RouteStackNavigator';

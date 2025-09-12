@@ -21,4 +21,11 @@ export type WebToRNMessage =
   | { type: 'PING' }
   | { type: 'REFRESH_TOKEN' }
   | { type: 'LOG'; payload?: unknown }
+  | {
+      type: 'NAVIGATE';
+      payload: {
+        screen: 'ROUTE_LIST' | 'ROUTE_DETAIL' | 'PROFILE';
+        params?: Record<string, unknown>;
+      };
+    }
   | { type: string; payload?: unknown };

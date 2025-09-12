@@ -10,6 +10,7 @@ export interface Post {
   liked?: boolean;
   likeCount?: number;
   imageUrls?: string[];
+  imageUrl?: string;
   routeId?: number;
   createdAt: string;
   updatedAt: string;

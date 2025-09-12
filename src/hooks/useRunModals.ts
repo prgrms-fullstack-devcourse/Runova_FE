@@ -1,18 +1,31 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import Toast from 'react-native-toast-message';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RefObject } from 'react';
+import type Mapbox from '@rnmapbox/maps';
 import type { TabParamList } from '@/types/navigation.types';
 import useRunStore from '@/store/run';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useRunApi } from '@/hooks/api/useRunApi';
+import { useMapCapture } from '@/hooks/useMapCapture';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import useAuthStore from '@/store/auth';
 import type { RunningRecordRequest } from '@/types/run.types';
 import type { AxiosErrorResponse } from '@/types/api.types';
 
 type Props = {
   navigation: NativeStackNavigationProp<TabParamList, 'Run'>;
+  mapRef?: RefObject<Mapbox.MapView | null>;
+  cameraRef?: RefObject<Mapbox.Camera | null>;
+  courseId?: number;
 };
 
-export function useRunModals({ navigation }: Props) {
+export function useRunModals({
+  navigation,
+  mapRef,
+  cameraRef,
+  courseId,
+}: Props) {
   const {
     showExitModal,
     showBackModal,
@@ -26,16 +39,31 @@ export function useRunModals({ navigation }: Props) {
 
   const { routeCoordinates, resetLocationTracking } = useLocationTracking();
   const { saveRunningRecord } = useRunApi();
+  const { accessToken } = useAuthStore();
+
+  const internalMapRef = useRef<Mapbox.MapView | null>(null);
+  const internalCameraRef = useRef<Mapbox.Camera | null>(null);
+
+  const finalMapRef = mapRef || internalMapRef;
+  const finalCameraRef = cameraRef || internalCameraRef;
+
+  const { captureMap } = useMapCapture(finalMapRef, finalCameraRef);
+  const { uploadImage } = useImageUpload();
 
   const handleBackPress = useCallback(() => {
     setModal('back');
   }, [setModal]);
 
-  const handleConfirmBack = useCallback(() => {
+  // 공통 정리 및 뒤로가기 로직
+  const cleanupAndGoBack = useCallback(() => {
     resetLocationTracking();
     resetRunState();
+    // courseId 파라미터 초기화
+    navigation.setParams({ courseId: undefined });
     navigation.goBack();
   }, [resetLocationTracking, resetRunState, navigation]);
+
+  const handleConfirmBack = cleanupAndGoBack;
 
   const handleCancelBack = useCallback(() => {
     setModal(null);
@@ -48,9 +76,7 @@ export function useRunModals({ navigation }: Props) {
 
   const handleConfirmExit = useCallback(async () => {
     if (!startTime || routeCoordinates.length === 0) {
-      resetLocationTracking();
-      resetRunState();
-      navigation.goBack();
+      cleanupAndGoBack();
       return;
     }
 
@@ -60,9 +86,10 @@ export function useRunModals({ navigation }: Props) {
 
       const endTime = new Date();
 
-      const path: [number, number][] = routeCoordinates.map(
-        (coord: [number, number]) => [coord[0], coord[1]],
-      );
+      const path: [number, number][] = routeCoordinates.map((coord) => [
+        coord[0],
+        coord[1],
+      ]);
 
       const paceValue = stats.pace;
 
@@ -74,15 +101,36 @@ export function useRunModals({ navigation }: Props) {
         throw new Error('종료 시간이 시작 시간보다 이전입니다.');
       }
 
+      let imageUrl: string | undefined;
+      try {
+        if (accessToken && routeCoordinates.length > 0) {
+          const capturedImageUri = await captureMap(routeCoordinates);
+
+          const publicImageUrl = await uploadImage(
+            capturedImageUri,
+            accessToken,
+          );
+          imageUrl = publicImageUrl;
+        }
+      } catch (imageError) {
+        console.warn('이미지 처리 실패:', imageError);
+        Toast.show({
+          type: 'info',
+          text1: '이미지 저장 실패',
+          text2: '경로 이미지를 저장하지 못했지만, 런닝 기록은 저장되었습니다.',
+        });
+      }
+
       const runningRecord: RunningRecordRequest = {
         path,
         startAt: startTime,
         endAt: endTime,
         pace: Math.max(0, paceValue),
         calories: Math.max(0, stats.calories),
+        imageUrl,
       };
 
-      await saveRunningRecord(runningRecord);
+      await saveRunningRecord(runningRecord, courseId);
 
       Toast.show({
         type: 'success',
@@ -90,9 +138,7 @@ export function useRunModals({ navigation }: Props) {
         text2: '런닝 기록이 성공적으로 저장되었습니다.',
       });
 
-      resetLocationTracking();
-      resetRunState();
-      navigation.goBack();
+      cleanupAndGoBack();
     } catch (error: unknown) {
       let errorMessage = '런닝 기록 저장에 실패했습니다.';
 
@@ -126,10 +172,12 @@ export function useRunModals({ navigation }: Props) {
     stats,
     setUI,
     setError,
-    resetLocationTracking,
-    resetRunState,
     saveRunningRecord,
-    navigation,
+    accessToken,
+    captureMap,
+    uploadImage,
+    courseId,
+    cleanupAndGoBack,
   ]);
 
   const handleRetryExit = useCallback(() => {

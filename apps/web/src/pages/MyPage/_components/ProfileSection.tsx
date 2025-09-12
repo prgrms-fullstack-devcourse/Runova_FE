@@ -18,7 +18,7 @@ export default function ProfileSection({
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const name = profile?.nickname ?? '러너';
+  const name = profile?.nickname ?? '불러오는 중...';
   const serverAvatar = profile?.avatarUrl ?? '';
 
   const [avatarSrc, setAvatarSrc] = useState(serverAvatar);

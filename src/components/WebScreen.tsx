@@ -1,20 +1,31 @@
 import styled from '@emotion/native';
-import { useMemo } from 'react';
+import type { NavigatorScreenParams } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 
+import type { NativeScreen } from '@/hooks/useWebViewMessenger';
 import { useWebViewMessenger } from '@/hooks/useWebViewMessenger';
+import type {
+  RootStackParamList,
+  TabParamList,
+} from '@/types/navigation.types';
 
 type Props = {
   origin: string | undefined;
   path: string;
-  /** 탭바 높이 등 추가로 더할 하단 인셋 (기본 60) */
   bottomInsetExtra?: number;
-  /** WebView에 그대로 전달할 추가 props (원하면 확장) */
   webViewProps?: Partial<React.ComponentProps<typeof WebView>>;
 };
 
 const DEFAULT_TAB_BAR_HEIGHT = 60;
+
+const TAB_TARGET = {
+  ROUTE_LIST: 'Route',
+  PROFILE: 'Settings',
+} as const;
 
 export default function WebScreen({
   origin,
@@ -23,14 +34,51 @@ export default function WebScreen({
   webViewProps,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const { webRef, onLoadEnd, onMessage } = useWebViewMessenger();
 
-  const uri = useMemo(() => {
-    const o = origin ?? '';
-    return `${o}${path}`;
-  }, [origin, path]);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  // 안전: originWhitelist는 허용 오리진만 (origin이 설정돼 있지 않으면 * 로)
+  const handleNavigate = useCallback(
+    (screen: NativeScreen, params?: Record<string, unknown>) => {
+      switch (screen) {
+        case 'ROUTE_LIST': {
+          const nested: NavigatorScreenParams<TabParamList> = {
+            screen: TAB_TARGET.ROUTE_LIST,
+            params: {},
+          };
+          navigation.navigate('TabNavigator', nested);
+          break;
+        }
+        case 'PROFILE': {
+          const nested: NavigatorScreenParams<TabParamList> = {
+            screen: TAB_TARGET.PROFILE,
+            params: {},
+          };
+          navigation.navigate('TabNavigator', nested);
+          break;
+        }
+
+        case 'ROUTE_DETAIL': {
+          const id =
+            typeof params?.id === 'string'
+              ? params.id
+              : String(params?.id ?? '');
+          navigation.navigate('Details', { id });
+          break;
+        }
+
+        default:
+          break;
+      }
+    },
+    [navigation],
+  );
+
+  const { webRef, onLoadEnd, onMessage } = useWebViewMessenger({
+    onNavigate: handleNavigate,
+  });
+
+  const uri = useMemo(() => `${origin ?? ''}${path}`, [origin, path]);
   const originWhitelist = useMemo(() => (origin ? [origin] : ['*']), [origin]);
 
   return (
@@ -41,13 +89,12 @@ export default function WebScreen({
       <StyledWebView
         ref={webRef}
         source={{ uri }}
-        onLoadEnd={onLoadEnd} // RN → Web : 로그인정보/토큰 보내기
-        onMessage={onMessage} // Web → RN : 메시지 받기
+        onLoadEnd={onLoadEnd}
+        onMessage={onMessage}
         javaScriptEnabled
         domStorageEnabled
         sharedCookiesEnabled
         originWhitelist={originWhitelist}
-        // 안드로이드에서 WebView가 탭바를 덮는 현상 방지
         {...webViewProps}
       />
     </Container>
