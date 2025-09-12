@@ -4,6 +4,7 @@ export interface RunningRecordRequest {
   endAt: Date;
   pace: number;
   calories: number;
+  imageUrl?: string;
 }
 
 export interface RunningRecordResponse {
