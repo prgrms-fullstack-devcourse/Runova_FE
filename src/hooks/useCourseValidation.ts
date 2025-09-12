@@ -12,6 +12,7 @@ interface UseCourseValidationOptions {
   validationOptions?: CourseValidationOptions;
   enableRealTimeValidation?: boolean;
   validationInterval?: number; // 밀리초
+  courseId?: number; // 코스 ID 추가
 }
 
 export function useCourseValidation(options: UseCourseValidationOptions = {}) {
@@ -19,6 +20,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
     validationOptions = { tolerance: 50, enableDistanceCalculation: true },
     enableRealTimeValidation = true,
     validationInterval = 5000, // 5초마다 검증
+    courseId,
   } = options;
 
   const {
@@ -40,6 +42,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
   // 실시간 위치 검증 (트래킹 중이고 좌표가 실제로 이동했을 때만)
   const validateCurrentLocation = useCallback(() => {
     if (
+      !courseId ||
       !location ||
       !location.coords ||
       !courseTopology ||
@@ -79,21 +82,12 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
       validationOptions,
     );
 
-    // 디버깅 로그
-    console.log('🔍 [CourseValidation] 검증 실행:', {
-      currentPosition,
-      isTracking,
-      routeCoordinatesLength: routeCoordinates.length,
-      isDeviating: deviationResult.isDeviating,
-      severity: deviationResult.deviationSeverity,
-      distance: deviationResult.validationResult.distanceFromCourse,
-    });
-
     // 검증 결과 업데이트
     updateCourseValidation(deviationResult.validationResult);
 
     return deviationResult;
   }, [
+    courseId,
     location,
     courseTopology,
     isTracking,
@@ -105,7 +99,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
 
   // 안전 거리 계산
   const getSafetyDistance = useCallback(() => {
-    if (!location || !location.coords || !courseTopology) {
+    if (!courseId || !location || !location.coords || !courseTopology) {
       return null;
     }
 
@@ -114,7 +108,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
       location.coords.latitude,
     ];
     return calculateSafetyDistance(currentPosition, courseTopology);
-  }, [location, courseTopology]);
+  }, [courseId, location, courseTopology]);
 
   // 코스 복귀 여부 확인
   const checkCourseReturn = useCallback(() => {
@@ -160,6 +154,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
   // routeCoordinates 변경 시에만 검증 실행 (트래킹 중일 때만)
   useEffect(() => {
     if (
+      !courseId ||
       !enableRealTimeValidation ||
       !courseTopology ||
       !location ||
@@ -172,6 +167,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
     // routeCoordinates가 변경될 때만 검증 실행
     validateCurrentLocation();
   }, [
+    courseId,
     enableRealTimeValidation,
     courseTopology,
     location,
@@ -181,7 +177,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
 
   // 코스 변경 시 검증 히스토리 초기화 및 즉시 검증 실행 (트래킹 중일 때만)
   useEffect(() => {
-    if (courseTopology) {
+    if (courseId && courseTopology) {
       clearValidationHistory();
       // 이전 좌표 ref 초기화
       lastValidatedCoordinateRef.current = null;
@@ -196,6 +192,7 @@ export function useCourseValidation(options: UseCourseValidationOptions = {}) {
       }
     }
   }, [
+    courseId,
     courseTopology,
     clearValidationHistory,
     location,
