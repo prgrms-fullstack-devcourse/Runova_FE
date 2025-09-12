@@ -34,14 +34,6 @@ export function useLocationTracking() {
   useEffect(() => {
     if (initialLocation && !location) {
       setLocation(initialLocation);
-      console.log(
-        '📍 [LocationTracking] Run 스크린 접속 시 현재 위치 가져옴:',
-        {
-          latitude: initialLocation.coords.latitude,
-          longitude: initialLocation.coords.longitude,
-          timestamp: new Date().toISOString(),
-        },
-      );
     }
   }, [initialLocation, location]);
 
@@ -150,11 +142,6 @@ export function useLocationTracking() {
       if (fetchedLocation) {
         setLocation(fetchedLocation);
         setLocationErrorMsg(null);
-        console.log('📍 [LocationTracking] 위치 새로고침:', {
-          latitude: fetchedLocation.coords.latitude,
-          longitude: fetchedLocation.coords.longitude,
-          timestamp: new Date().toISOString(),
-        });
       } else {
         setLocationErrorMsg('현재 위치를 가져올 수 없습니다.');
       }

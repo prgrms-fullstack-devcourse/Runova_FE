@@ -11,15 +11,21 @@ import {
   LocateFixed,
 } from 'lucide-react-native';
 import useRunStore from '@/store/run';
-import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { calculateRunStats } from '@/utils/runStats';
+import type { Position } from 'geojson';
 
 interface ControlContainerProps {
   onCurrentLocationPress: () => void;
+  isTracking: boolean;
+  toggleTracking: () => void;
+  routeCoordinates: Position[];
 }
 
 const ControlContainer: React.FC<ControlContainerProps> = ({
   onCurrentLocationPress,
+  isTracking,
+  toggleTracking,
+  routeCoordinates,
 }) => {
   const {
     isLocked,
@@ -31,8 +37,6 @@ const ControlContainer: React.FC<ControlContainerProps> = ({
     resumeRun,
     toggleLock,
   } = useRunStore();
-  const { isTracking, toggleTracking, routeCoordinates } =
-    useLocationTracking();
 
   const handleLockPress = () => {
     toggleLock();

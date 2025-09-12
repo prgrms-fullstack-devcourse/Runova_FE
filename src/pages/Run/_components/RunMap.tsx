@@ -5,17 +5,20 @@ import { theme } from '@/styles/theme';
 import Map from '@/components/Map';
 import { LockOverlay } from '@/components/Overlay';
 import { useRunMap } from '@/hooks/useRunMap';
-import { useLocationTracking } from '@/hooks/useLocationTracking';
+import type { Position } from 'geojson';
+import * as Location from 'expo-location';
 
 export default function RunMap({
   mapRef: externalMapRef,
   cameraRef: externalCameraRef,
+  routeCoordinates,
+  locationObject,
 }: {
   mapRef?: React.RefObject<Mapbox.MapView | null>;
   cameraRef?: React.RefObject<Mapbox.Camera | null>;
+  routeCoordinates: Position[];
+  locationObject: Location.LocationObject | null;
 }) {
-  const { routeCoordinates, location: locationObject } = useLocationTracking();
-
   // 트래킹 중일 때는 routeCoordinates의 마지막 위치를 사용, 그렇지 않으면 현재 위치 사용
   // 실시간 위치 업데이트를 위해 locationObject를 우선 사용
   const location =

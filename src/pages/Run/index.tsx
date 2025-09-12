@@ -32,6 +32,7 @@ export default function Run({ route, navigation }: Props) {
     errorMsg,
     locationLoading,
     refreshLocation,
+    toggleTracking,
   } = useLocationTracking();
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
@@ -159,7 +160,12 @@ export default function Run({ route, navigation }: Props) {
           </LocationLoadingContainer>
         ) : location && location.coords ? (
           <>
-            <RunMap mapRef={mapRef} cameraRef={cameraRef} />
+            <RunMap
+              mapRef={mapRef}
+              cameraRef={cameraRef}
+              routeCoordinates={routeCoordinates}
+              locationObject={location}
+            />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
             {topologyError && (
               <ErrorOverlay
@@ -187,7 +193,12 @@ export default function Run({ route, navigation }: Props) {
         )}
       </StyledContainer>
       <StatsContainer />
-      <ControlContainer onCurrentLocationPress={handleCurrentLocationPress} />
+      <ControlContainer
+        onCurrentLocationPress={handleCurrentLocationPress}
+        isTracking={isTracking}
+        toggleTracking={toggleTracking}
+        routeCoordinates={routeCoordinates}
+      />
       <Modal
         visible={showExitModal}
         title={saveError ? '저장 실패' : '종료하시겠습니까?'}
