@@ -31,6 +31,8 @@ interface RunningState {
 // 코스 데이터 그룹
 interface CourseState {
   courseTopology: CourseTopologyResponse | null;
+  currentCourseId: number | null;
+  currentCourseData: any | null;
 }
 
 // 위치 추적 상태 그룹
@@ -79,6 +81,8 @@ interface RunState
 
   // 코스 액션들
   setCourseTopology: (topology: CourseTopologyResponse | null) => void;
+  setCurrentCourse: (courseId: number, courseData: any) => void;
+  clearCurrentCourse: () => void;
 
   // 위치 추적 액션들
   setRouteCoordinates: (coords: Position[]) => void;
@@ -127,6 +131,8 @@ const initialRunningState: RunningState = {
 
 const initialCourseState: CourseState = {
   courseTopology: null,
+  currentCourseId: null,
+  currentCourseData: null,
 };
 
 const initialLocationTrackingState: LocationTrackingState = {
@@ -215,6 +221,12 @@ const useRunStore = create<RunState>((set, get) => ({
   // 코스 액션들
   setCourseTopology: (courseTopology) => set({ courseTopology }),
 
+  setCurrentCourse: (courseId, courseData) =>
+    set({ currentCourseId: courseId, currentCourseData: courseData }),
+
+  clearCurrentCourse: () =>
+    set({ currentCourseId: null, currentCourseData: null }),
+
   // 위치 추적 액션들
   setRouteCoordinates: (coords) => set({ routeCoordinates: coords }),
   setLocation: (location) => set({ location }),
@@ -234,7 +246,6 @@ const useRunStore = create<RunState>((set, get) => ({
       errorMsg: null,
       location: null,
     });
-    console.log();
   },
 
   // 코스 검증 액션들
@@ -271,14 +282,15 @@ const useRunStore = create<RunState>((set, get) => ({
     }),
 
   resetRunState: () => {
-    set({
+    set((state) => ({
       ...initialUIState,
       ...initialErrorState,
       ...initialRunningState,
-      ...initialCourseState,
+      // 코스 데이터는 유지 (currentCourseId, currentCourseData 보존)
+      courseTopology: null,
       ...initialLocationTrackingState,
       ...initialCourseValidationState,
-    });
+    }));
   },
 }));
 
