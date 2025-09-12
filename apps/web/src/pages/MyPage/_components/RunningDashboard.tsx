@@ -2,17 +2,9 @@ import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { getRunningDashboard, type RunningDashboardRes } from '@/api/running';
 import SectionHeader from '@/components/common/SectionHeader';
+import { fmtDuration } from '@/lib/format';
 
 const nf = (n: number) => new Intl.NumberFormat().format(n);
-const fmtDuration = (sec: number) => {
-  if (!sec) return '0s';
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = Math.floor(sec % 60);
-  return [h ? `${h}h` : '', m ? `${m}m` : '', s ? `${s}s` : '']
-    .filter(Boolean)
-    .join(' ');
-};
 
 export default function RunningDashboard() {
   const [data, setData] = useState<RunningDashboardRes | null>(null);

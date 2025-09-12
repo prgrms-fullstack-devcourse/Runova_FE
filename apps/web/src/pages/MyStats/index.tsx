@@ -5,20 +5,21 @@ import styled from '@emotion/styled';
 import AppLayout from '@/components/layout/AppLayout';
 import { getRunningDashboard, type RunningDashboardRes } from '@/api/running';
 import { useBack } from '@/hooks/useBack';
+import { fmtDuration } from '@/lib/format';
 
 const nf = (n: number) => new Intl.NumberFormat().format(n);
 const toISO = (d: Date) => d.toISOString().split('T')[0];
 
 function usePresetRanges() {
   const today = new Date();
-  const d7 = new Date();
-  d7.setDate(today.getDate() - 6);
-  const d30 = new Date();
-  d30.setDate(today.getDate() - 29);
+  const daySeven = new Date();
+  daySeven.setDate(today.getDate() - 6);
+  const dayThirty = new Date();
+  dayThirty.setDate(today.getDate() - 29);
   const yStart = new Date(today.getFullYear(), 0, 1);
   return {
-    주: { since: toISO(d7), until: toISO(today) },
-    월: { since: toISO(d30), until: toISO(today) },
+    주: { since: toISO(daySeven), until: toISO(today) },
+    월: { since: toISO(dayThirty), until: toISO(today) },
     년: { since: toISO(yStart), until: toISO(today) },
     전체: { since: undefined, until: undefined },
   };
@@ -26,21 +27,22 @@ function usePresetRanges() {
 
 export default function MyStats() {
   const presets = usePresetRanges();
-  const [sp, setSp] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [data, setData] = useState<RunningDashboardRes | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const goBack = useBack('/mypage');
 
-  const since = sp.get('since') || undefined;
-  const until = sp.get('until') || undefined;
+  const since = searchParams.get('since') || undefined;
+  const until = searchParams.get('until') || undefined;
 
   const applyRange = (since?: string, until?: string) => {
     const next = new URLSearchParams();
     if (since) next.set('since', since);
     if (until) next.set('until', until);
-    setSp(next, { replace: true });
+    setSearchParams(next, { replace: true });
   };
 
   useEffect(() => {
@@ -48,8 +50,14 @@ export default function MyStats() {
     (async () => {
       try {
         setLoading(true);
+        setError(null);
         const res = await getRunningDashboard({ since, until });
         if (mounted) setData(res);
+      } catch (error) {
+        if (mounted) {
+          setError(`통계를 불러오지 못했습니다. ${error}, ${since}, ${until}`);
+          setData(null);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -94,7 +102,8 @@ export default function MyStats() {
         </Filters>
 
         {loading && <Hint>불러오는 중…</Hint>}
-        {!loading && data && (
+        {!loading && error && <ErrorMsg>{error}</ErrorMsg>}
+        {!loading && !error && data && (
           <Summary>
             <StatBox>
               <Label>달린 거리</Label>
@@ -103,7 +112,7 @@ export default function MyStats() {
             </StatBox>
             <StatBox>
               <Label>달린 시간</Label>
-              <Value>{nf(data.totalDuration)}s</Value>
+              <Value>{fmtDuration(data.totalDuration)}</Value>
             </StatBox>
             <StatBox>
               <Label>완주 횟수</Label>
@@ -136,10 +145,10 @@ const Filters = styled.div`
 const SegmentGroup = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 주/월/년/전체 4등분 */
+  grid-template-columns: repeat(4, 1fr);
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 10px;
-  overflow: hidden; /* 둥근 모서리 안에서 버튼들이 이어져 보이도록 */
+  overflow: hidden;
   background: ${({ theme }) => theme.colors.surface};
 `;
 const SegBtn = styled.button`
@@ -202,4 +211,9 @@ const Value = styled.div`
 const Unit = styled.div`
   font-size: 11px;
   color: ${({ theme }) => theme.colors.subtext};
+`;
+const ErrorMsg = styled.div`
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: 14px;
+  padding: 8px 0;
 `;
