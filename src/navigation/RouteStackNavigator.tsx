@@ -3,12 +3,19 @@ import Route from '@/pages/Route';
 import Draw from '@/pages/Draw';
 import RouteSave from '@/pages/RouteSave';
 import Detail from '@/pages/Detail';
+import type {
+  BookmarkedCourseItem,
+  CourseSearchItem,
+} from '@/types/courses.types';
 
 export type RouteStackParamList = {
-  RouteMain: Record<string, never>;
-  Draw: Record<string, never>;
-  RouteSave: Record<string, never>;
-  Detail: { courseId: number };
+  RouteMain: undefined;
+  Draw: undefined;
+  RouteSave: undefined;
+  Detail: {
+    courseId: number;
+    courseData?: BookmarkedCourseItem | CourseSearchItem | null;
+  };
 };
 
 const Stack = createNativeStackNavigator<RouteStackParamList>();

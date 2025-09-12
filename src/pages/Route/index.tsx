@@ -10,6 +10,10 @@ import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId, TabParamList } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
+import type {
+  BookmarkedCourseItem,
+  CourseSearchItem,
+} from '@/types/courses.types';
 import useRouteStore from '@/store/route';
 import {
   useRouteData,
@@ -41,7 +45,20 @@ export default function Route({ navigation }: Props) {
   const { loadCompletedCourses } = useCompletedCourses();
 
   const handleRouteCardPress = (courseId: number) => {
-    navigation.navigate('Run', { courseId });
+    // 현재 탭의 데이터에서 해당 courseId 찾기
+    let courseData: BookmarkedCourseItem | CourseSearchItem | null = null;
+
+    if (activeTab === 'created') {
+      courseData = courses.find((course) => course.id === courseId) || null;
+    } else if (activeTab === 'liked') {
+      courseData =
+        bookmarkedCourses.find((course) => course.id === courseId) || null;
+    } else if (activeTab === 'completed') {
+      // completed 탭의 경우 courseData는 null로 전달
+      courseData = null;
+    }
+
+    navigation.navigate('Detail', { courseId, courseData });
   };
 
   useEffect(() => {
@@ -53,7 +70,7 @@ export default function Route({ navigation }: Props) {
   const handleSettingsPress = () => {};
 
   const handleCreatePress = () => {
-    navigation.navigate('Draw', {});
+    navigation.navigate('Draw', undefined);
   };
 
   const handleTabPress = (tabId: RouteTabId) => {
