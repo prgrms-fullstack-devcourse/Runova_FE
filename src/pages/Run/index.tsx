@@ -11,7 +11,6 @@ import { useLocationManager } from '@/hooks/useLocationManager';
 import { useRunStats } from '@/hooks/useRunStats';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
-import { useRunMap } from '@/hooks/useRunMap';
 import useRunStore from '@/store/run';
 import RunMap from './_components/RunMap';
 import StatsContainer from './_components/StatsContainer';
@@ -38,8 +37,6 @@ export default function Run({ route, navigation }: Props) {
     : null;
 
   const mapRef = useRef<Mapbox.MapView>(null);
-
-  useRunMap(cameraRef, locationPosition, routeCoordinates);
 
   const {
     loading,
