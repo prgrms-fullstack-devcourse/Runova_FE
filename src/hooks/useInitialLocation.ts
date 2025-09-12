@@ -42,7 +42,6 @@ export function useInitialLocation(options: UseInitialLocationOptions = {}) {
         if (!fetchedLocation) {
           fetchedLocation = await Location.getCurrentPositionAsync({});
         }
-        console.log('fetchedLocation', fetchedLocation);
       } catch (error) {
         console.error('위치 가져오기 오류', error);
       }
