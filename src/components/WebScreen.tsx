@@ -1,4 +1,3 @@
-// WebScreen.tsx
 import styled from '@emotion/native';
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
@@ -25,7 +24,7 @@ const DEFAULT_TAB_BAR_HEIGHT = 60;
 
 const TAB_TARGET = {
   ROUTE_LIST: 'Route',
-  PROFILE: 'Settings', // 필요에 맞게 바꾸세요 ('Profile' 탭이 따로 있으면 그 이름)
+  PROFILE: 'Settings',
 } as const;
 
 export default function WebScreen({
@@ -36,19 +35,15 @@ export default function WebScreen({
 }: Props) {
   const insets = useSafeAreaInsets();
 
-  // ✅ 네비게이션을 루트 스택 기준으로 타입 지정
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  // ✅ Web → Native 브릿지에서 온 네비게이션 요청 처리
   const handleNavigate = useCallback(
     (screen: NativeScreen, params?: Record<string, unknown>) => {
       switch (screen) {
-        // 탭 내 특정 화면으로 이동 (중첩 네비게이션)
         case 'ROUTE_LIST': {
           const nested: NavigatorScreenParams<TabParamList> = {
             screen: TAB_TARGET.ROUTE_LIST,
-            // TabParamList 각 스크린 파라미터가 Record<string, never>라면 반드시 빈 객체 필요
             params: {},
           };
           navigation.navigate('TabNavigator', nested);
@@ -63,9 +58,7 @@ export default function WebScreen({
           break;
         }
 
-        // 루트 스택 화면으로 이동
         case 'ROUTE_DETAIL': {
-          // 예: RootStackParamList['Details']가 { id: string }
           const id =
             typeof params?.id === 'string'
               ? params.id
@@ -75,7 +68,6 @@ export default function WebScreen({
         }
 
         default:
-          // 정의되지 않은 스크린은 무시
           break;
       }
     },
