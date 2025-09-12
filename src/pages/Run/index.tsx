@@ -10,6 +10,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
+import Header from '@/components/Header';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useLocationManager } from '@/hooks/useLocationManager';
@@ -23,7 +24,6 @@ import StatsContainer from './_components/StatsContainer';
 import ControlContainer from './_components/ControlContainer';
 import Modal from '@/components/Modal';
 import Mapbox from '@rnmapbox/maps';
-import FloatingButton from '@/components/FloatingButton';
 
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
@@ -127,6 +127,7 @@ export default function Run({ route, navigation }: Props) {
 
   return (
     <StyledPage>
+      <Header leftIcon={ArrowLeft} onLeftPress={handleBackPress} title="러닝" />
       <StyledContainer>
         {errorMsg ? (
           <Text>{errorMsg}</Text>
@@ -162,27 +163,7 @@ export default function Run({ route, navigation }: Props) {
         )}
       </StyledContainer>
       <StatsContainer />
-      <ControlContainer />
-      <FloatingButton
-        icon={ArrowLeft}
-        onPress={handleBackPress}
-        style={{
-          position: 'absolute',
-          top: 60,
-          left: 20,
-          zIndex: 999,
-        }}
-      />
-      <FloatingButton
-        icon={LocateFixed}
-        onPress={handleCurrentLocationPress}
-        style={{
-          position: 'absolute',
-          top: 60,
-          right: 20,
-          zIndex: 999,
-        }}
-      />
+      <ControlContainer onCurrentLocationPress={handleCurrentLocationPress} />
       <Modal
         visible={showExitModal}
         title={saveError ? '저장 실패' : '종료하시겠습니까?'}

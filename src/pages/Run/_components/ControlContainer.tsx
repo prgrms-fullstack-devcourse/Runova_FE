@@ -1,12 +1,26 @@
+import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { theme } from '@/styles/theme';
-import { Lock, Unlock, Play, Pause, Square } from 'lucide-react-native';
+import {
+  Lock,
+  Unlock,
+  Play,
+  Pause,
+  Square,
+  LocateFixed,
+} from 'lucide-react-native';
 import useRunStore from '@/store/run';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { calculateRunStats } from '@/utils/runStats';
 
-export default function ControlContainer() {
+interface ControlContainerProps {
+  onCurrentLocationPress: () => void;
+}
+
+const ControlContainer: React.FC<ControlContainerProps> = ({
+  onCurrentLocationPress,
+}) => {
   const {
     isLocked,
     startTime,
@@ -75,16 +89,24 @@ export default function ControlContainer() {
           <Square size={20} color={theme.colors.gray[600]} />
         </ControlButton>
       </ControlButtonGroup>
+      <LocationButton onPress={onCurrentLocationPress}>
+        <LocateFixed size={20} color={theme.colors.gray[600]} />
+      </LocationButton>
     </ControlContainerWrapper>
   );
-}
+};
+
+export default ControlContainer;
 
 const ControlContainerWrapper = styled.View({
   position: 'absolute',
   bottom: 220,
-  left: 20,
-  right: 20,
+  left: 0,
+  right: 0,
+  flexDirection: 'row',
   alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 20,
 });
 
 const ControlButtonGroup = styled.View(({ theme }) => ({
@@ -111,4 +133,20 @@ const ControlButton = styled.TouchableOpacity<{
   justifyContent: 'center',
   alignItems: 'center',
   marginHorizontal: 4,
+}));
+
+const LocationButton = styled.TouchableOpacity(({ theme }) => ({
+  position: 'absolute',
+  right: 20,
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  shadowColor: theme.colors.gray[900],
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.15,
+  shadowRadius: 8,
+  elevation: 8,
 }));
