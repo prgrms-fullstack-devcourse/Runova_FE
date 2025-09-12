@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Text } from 'react-native';
+import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
 import { ArrowLeft, LocateFixed } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -28,14 +28,6 @@ export default function Run({ route, navigation }: Props) {
     useLocationTracking();
   const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
   const cameraRef = useRef<Mapbox.Camera>(null!);
-
-  const locationPosition = location
-    ? ([location.coords.longitude, location.coords.latitude] as [
-        number,
-        number,
-      ])
-    : null;
-
   const mapRef = useRef<Mapbox.MapView>(null);
 
   const {
@@ -50,16 +42,6 @@ export default function Run({ route, navigation }: Props) {
   useRunStats(routeCoordinates, isTracking);
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
-  useFocusEffect(
-    useCallback(() => {
-      resetLocationTracking();
-      resetRunState();
-      if (courseId) {
-        loadCourseTopology();
-      }
-    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
-  );
-
   const {
     showExitModal,
     showBackModal,
@@ -70,6 +52,33 @@ export default function Run({ route, navigation }: Props) {
     handleRetryExit,
     handleConfirmExit,
   } = useRunModals({ navigation, mapRef, cameraRef, courseId });
+
+  useFocusEffect(
+    useCallback(() => {
+      resetLocationTracking();
+      resetRunState();
+      if (courseId) {
+        loadCourseTopology();
+      }
+    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
+  );
+
+  // 하드웨어 뒤로가기 버튼 제어
+  useFocusEffect(
+    useCallback(() => {
+      const handleHardwareBackPress = () => {
+        handleBackPress();
+        return true; // 기본 뒤로가기 동작을 막음
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleHardwareBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [handleBackPress]),
+  );
 
   const handleCurrentLocationPress = () => {
     flyToCurrentUserLocation(cameraRef);
