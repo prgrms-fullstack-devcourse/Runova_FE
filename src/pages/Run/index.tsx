@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Text } from 'react-native';
+import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
 import { ArrowLeft, LocateFixed } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -64,12 +64,25 @@ export default function Run({ route, navigation }: Props) {
     showExitModal,
     showBackModal,
     handleBackPress,
+    handleHardwareBackPress,
     handleConfirmBack,
     handleCancelBack,
     handleCancelExit,
     handleRetryExit,
     handleConfirmExit,
   } = useRunModals({ navigation, mapRef, cameraRef, courseId });
+
+  // 하드웨어 뒤로가기 버튼 제어
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleHardwareBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [handleHardwareBackPress]),
+  );
 
   const handleCurrentLocationPress = () => {
     flyToCurrentUserLocation(cameraRef);

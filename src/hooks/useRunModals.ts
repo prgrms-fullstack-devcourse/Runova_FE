@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { BackHandler } from 'react-native';
 import Toast from 'react-native-toast-message';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RefObject } from 'react';
@@ -54,13 +55,22 @@ export function useRunModals({
     setModal('back');
   }, [setModal]);
 
-  const handleConfirmBack = useCallback(() => {
+  // 하드웨어 뒤로가기 버튼 제어
+  const handleHardwareBackPress = useCallback(() => {
+    handleBackPress();
+    return true; // 기본 뒤로가기 동작을 막음
+  }, [handleBackPress]);
+
+  // 공통 정리 및 뒤로가기 로직
+  const cleanupAndGoBack = useCallback(() => {
     resetLocationTracking();
     resetRunState();
     // courseId 파라미터 초기화
     navigation.setParams({ courseId: undefined });
     navigation.goBack();
   }, [resetLocationTracking, resetRunState, navigation]);
+
+  const handleConfirmBack = cleanupAndGoBack;
 
   const handleCancelBack = useCallback(() => {
     setModal(null);
@@ -73,11 +83,7 @@ export function useRunModals({
 
   const handleConfirmExit = useCallback(async () => {
     if (!startTime || routeCoordinates.length === 0) {
-      resetLocationTracking();
-      resetRunState();
-      // courseId 파라미터 초기화
-      navigation.setParams({ courseId: undefined });
-      navigation.goBack();
+      cleanupAndGoBack();
       return;
     }
 
@@ -139,11 +145,7 @@ export function useRunModals({
         text2: '런닝 기록이 성공적으로 저장되었습니다.',
       });
 
-      resetLocationTracking();
-      resetRunState();
-      // courseId 파라미터 초기화
-      navigation.setParams({ courseId: undefined });
-      navigation.goBack();
+      cleanupAndGoBack();
     } catch (error: unknown) {
       let errorMessage = '런닝 기록 저장에 실패했습니다.';
 
@@ -177,14 +179,12 @@ export function useRunModals({
     stats,
     setUI,
     setError,
-    resetLocationTracking,
-    resetRunState,
     saveRunningRecord,
-    navigation,
     accessToken,
     captureMap,
     uploadImage,
     courseId,
+    cleanupAndGoBack,
   ]);
 
   const handleRetryExit = useCallback(() => {
@@ -196,6 +196,7 @@ export function useRunModals({
     showExitModal,
     showBackModal,
     handleBackPress,
+    handleHardwareBackPress,
     handleConfirmBack,
     handleCancelBack,
     handleCancelExit,
