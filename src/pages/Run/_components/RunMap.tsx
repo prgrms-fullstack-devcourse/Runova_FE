@@ -27,16 +27,17 @@ export default function RunMap({
   const { routeGeoJSON, courseShapeGeoJSON, courseShapePolygons, isLocked } =
     useRunMap(externalCameraRef, location, routeCoordinates);
 
-  const mapRef = externalMapRef as React.RefObject<Mapbox.MapView | null>;
-  const cameraRef = externalCameraRef as React.RefObject<Mapbox.Camera | null>;
-
-  if (!location) {
+  if (!location || !externalMapRef || !externalCameraRef) {
     return null;
   }
 
   return (
     <StyledContainer>
-      <Map mapRef={mapRef} cameraRef={cameraRef} initialLocation={location}>
+      <Map
+        mapRef={externalMapRef}
+        cameraRef={externalCameraRef}
+        initialLocation={location}
+      >
         {routeGeoJSON.geometry.coordinates.length > 1 && (
           <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
             <Mapbox.LineLayer
