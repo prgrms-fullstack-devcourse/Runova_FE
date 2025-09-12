@@ -57,6 +57,8 @@ export function useRunModals({
   const handleConfirmBack = useCallback(() => {
     resetLocationTracking();
     resetRunState();
+    // courseId 파라미터 초기화
+    navigation.setParams({ courseId: undefined });
     navigation.goBack();
   }, [resetLocationTracking, resetRunState, navigation]);
 
@@ -73,6 +75,8 @@ export function useRunModals({
     if (!startTime || routeCoordinates.length === 0) {
       resetLocationTracking();
       resetRunState();
+      // courseId 파라미터 초기화
+      navigation.setParams({ courseId: undefined });
       navigation.goBack();
       return;
     }
@@ -137,6 +141,8 @@ export function useRunModals({
 
       resetLocationTracking();
       resetRunState();
+      // courseId 파라미터 초기화
+      navigation.setParams({ courseId: undefined });
       navigation.goBack();
     } catch (error: unknown) {
       let errorMessage = '런닝 기록 저장에 실패했습니다.';
