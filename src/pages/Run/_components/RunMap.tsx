@@ -17,14 +17,15 @@ export default function RunMap({
   const { routeCoordinates, location: locationObject } = useLocationTracking();
 
   // 트래킹 중일 때는 routeCoordinates의 마지막 위치를 사용, 그렇지 않으면 현재 위치 사용
+  // 실시간 위치 업데이트를 위해 locationObject를 우선 사용
   const location =
-    routeCoordinates.length > 0
-      ? (routeCoordinates[routeCoordinates.length - 1] as [number, number])
-      : locationObject
-        ? ([
-            locationObject.coords.longitude,
-            locationObject.coords.latitude,
-          ] as [number, number])
+    locationObject && locationObject.coords
+      ? ([locationObject.coords.longitude, locationObject.coords.latitude] as [
+          number,
+          number,
+        ])
+      : routeCoordinates.length > 0
+        ? (routeCoordinates[routeCoordinates.length - 1] as [number, number])
         : null;
 
   const { routeGeoJSON, courseShapeGeoJSON, courseShapePolygons, isLocked } =

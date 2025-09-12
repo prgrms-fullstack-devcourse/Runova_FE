@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
 import { ArrowLeft, AlertTriangle } from 'lucide-react-native';
@@ -30,6 +30,8 @@ export default function Run({ route, navigation }: Props) {
     resetLocationTracking,
     location,
     errorMsg,
+    locationLoading,
+    refreshLocation,
   } = useLocationTracking();
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
@@ -53,13 +55,14 @@ export default function Run({ route, navigation }: Props) {
     isDeviating,
     deviationSeverity,
     distanceFromCourse,
+    validateCurrentLocation,
   } = useCourseValidation({
     validationOptions: {
       tolerance: 5, // 5미터 허용 오차 (매우 엄격하게)
       enableDistanceCalculation: true,
     },
     enableRealTimeValidation: true, // 실시간 검증 활성화
-    validationInterval: 1000, // 1초마다 검증 (매우 자주)
+    validationInterval: 1000, // 1초마다 검증
   });
 
   const {
@@ -84,6 +87,17 @@ export default function Run({ route, navigation }: Props) {
     }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
   );
 
+  // 위치가 로드되지 않았을 때 자동으로 새로고침
+  useEffect(() => {
+    if (!location && !errorMsg && !locationLoading) {
+      const timer = setTimeout(() => {
+        refreshLocation();
+      }, 2000); // 2초 후에 새로고침 시도
+
+      return () => clearTimeout(timer);
+    }
+  }, [location, errorMsg, locationLoading, refreshLocation]);
+
   // 하드웨어 뒤로가기 버튼 제어
   useFocusEffect(
     useCallback(() => {
@@ -106,7 +120,7 @@ export default function Run({ route, navigation }: Props) {
     if (routeCoordinates.length > 0) {
       const lastCoordinate = routeCoordinates[routeCoordinates.length - 1];
       cameraRef.current?.flyTo(lastCoordinate, 1000);
-    } else if (location) {
+    } else if (location && location.coords) {
       const currentPosition = [
         location.coords.longitude,
         location.coords.latitude,
@@ -115,8 +129,8 @@ export default function Run({ route, navigation }: Props) {
     }
   };
 
-  // 코스 이탈 상태에 따른 메시지 생성
-  const getDeviationMessage = () => {
+  // 코스 이탈 상태에 따른 메시지 생성 (실시간 업데이트)
+  const deviationMessage = useMemo(() => {
     if (!isDeviating) return null;
 
     const distance = distanceFromCourse ? Math.round(distanceFromCourse) : 0;
@@ -131,7 +145,7 @@ export default function Run({ route, navigation }: Props) {
       default:
         return '경로를 벗어났습니다.';
     }
-  };
+  }, [isDeviating, distanceFromCourse, deviationSeverity]);
 
   return (
     <StyledPage>
@@ -139,7 +153,11 @@ export default function Run({ route, navigation }: Props) {
       <StyledContainer>
         {errorMsg ? (
           <Text>{errorMsg}</Text>
-        ) : location ? (
+        ) : locationLoading ? (
+          <LocationLoadingContainer>
+            <Text>Getting location...</Text>
+          </LocationLoadingContainer>
+        ) : location && location.coords ? (
           <>
             <RunMap mapRef={mapRef} cameraRef={cameraRef} />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
@@ -154,13 +172,18 @@ export default function Run({ route, navigation }: Props) {
               <DeviationOverlay severity={deviationSeverity}>
                 <DeviationAlert severity={deviationSeverity}>
                   <AlertTriangle size={24} color="#ffffff" />
-                  <DeviationText>{getDeviationMessage()}</DeviationText>
+                  <DeviationText>{deviationMessage}</DeviationText>
                 </DeviationAlert>
               </DeviationOverlay>
             )}
           </>
         ) : (
-          <Text>Getting location...</Text>
+          <LocationLoadingContainer>
+            <Text>위치를 가져올 수 없습니다</Text>
+            <RefreshButton onPress={refreshLocation}>
+              <Text style={{ color: '#007AFF', marginTop: 8 }}>새로고침</Text>
+            </RefreshButton>
+          </LocationLoadingContainer>
         )}
       </StyledContainer>
       <StatsContainer />
@@ -257,4 +280,18 @@ const DeviationText = styled.Text({
   marginLeft: 12,
   flex: 1,
   textAlign: 'center',
+});
+
+const LocationLoadingContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+});
+
+const RefreshButton = styled.TouchableOpacity({
+  padding: 12,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#007AFF',
 });
