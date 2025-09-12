@@ -30,7 +30,7 @@ export default function Auth() {
       const { accessToken, user } = await signInWithGoogle();
 
       setAuth(accessToken, user);
-      navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
+      // navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
     } catch (error: unknown) {
       console.error('로그인 오류:', error);
 

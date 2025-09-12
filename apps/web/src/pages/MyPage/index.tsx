@@ -9,12 +9,16 @@ import CertItem from '@/components/common/CertItem';
 import type { RoutePreview, PostPreview, CertPreview } from '@/types/mypage';
 import { getMeOverview, getReadableUserError } from '@/api/mypage';
 import type { UserProfileRes } from '@/api/mypage';
-import { useNativeBridgeStore } from '@/stores/nativeBridgeStore'; // ✅ 토큰 구독
-import { openNativeRouteList } from '@/lib/nativeBridge';
+import { useNativeBridgeStore } from '@/stores/nativeBridgeStore';
+import {
+  openNativeRouteList,
+  isNativeWebView,
+  requestLogout,
+} from '@/lib/nativeBridge';
 import RunningDashboard from './_components/RunningDashboard';
 
 export default function MyPage() {
-  const token = useNativeBridgeStore((s) => s.token); // ✅ 브릿지 토큰
+  const token = useNativeBridgeStore((s) => s.token);
   const [profile, setProfile] = useState<UserProfileRes | null>(null);
   const [routes, setRoutes] = useState<RoutePreview[]>([]);
   const [posts, setPosts] = useState<PostPreview[]>([]);
@@ -117,6 +121,17 @@ export default function MyPage() {
           emptyText="등록된 인증 사진이 없습니다."
           renderItem={(c) => <CertItem key={c.id} data={c} />}
         />
+        <BtnContainer>
+          <LogoutBtn
+            onClick={() => {
+              if (isNativeWebView()) {
+                requestLogout();
+              }
+            }}
+          >
+            로그아웃
+          </LogoutBtn>
+        </BtnContainer>
       </Main>
     </Wrap>
   );
@@ -136,4 +151,21 @@ const Hint = styled.div`
   ${({ theme }) => theme.typography.small};
   color: ${({ theme }) => theme.colors.subtext};
   padding: 8px 16px 0;
+`;
+
+const BtnContainer = styled.div`
+  padding: 12px 16px;
+  width: 100%;
+`;
+
+const LogoutBtn = styled.button`
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.danger};
+  background: ${({ theme }) => theme.colors.danger};
+  color: ${({ theme }) => theme.colors.surface};
+  ${({ theme }) => theme.typography.title};
+  cursor: pointer;
+  display: block;
 `;

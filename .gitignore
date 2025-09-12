@@ -44,3 +44,5 @@ yarn-error.*
 
 credentials.js
 app.apk
+.idea/
+*.iml
