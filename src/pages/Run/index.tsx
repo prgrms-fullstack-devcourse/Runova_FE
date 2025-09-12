@@ -1,14 +1,13 @@
 import { useRef, useCallback } from 'react';
 import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
-import { ArrowLeft, LocateFixed, AlertTriangle } from 'lucide-react-native';
+import { ArrowLeft, AlertTriangle } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
 import Header from '@/components/Header';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
-import { useLocationManager } from '@/hooks/useLocationManager';
 import { useRunStats } from '@/hooks/useRunStats';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
@@ -25,9 +24,13 @@ type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 export default function Run({ route, navigation }: Props) {
   const courseId = route.params?.courseId;
 
-  const { routeCoordinates, isTracking, resetLocationTracking } =
-    useLocationTracking();
-  const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
+  const {
+    routeCoordinates,
+    isTracking,
+    resetLocationTracking,
+    location,
+    errorMsg,
+  } = useLocationTracking();
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
 
@@ -99,7 +102,17 @@ export default function Run({ route, navigation }: Props) {
   );
 
   const handleCurrentLocationPress = () => {
-    flyToCurrentUserLocation(cameraRef);
+    // 트래킹 중일 때는 routeCoordinates의 마지막 위치로, 그렇지 않으면 현재 위치로 이동
+    if (routeCoordinates.length > 0) {
+      const lastCoordinate = routeCoordinates[routeCoordinates.length - 1];
+      cameraRef.current?.flyTo(lastCoordinate, 1000);
+    } else if (location) {
+      const currentPosition = [
+        location.coords.longitude,
+        location.coords.latitude,
+      ] as [number, number];
+      cameraRef.current?.flyTo(currentPosition, 1000);
+    }
   };
 
   // 코스 이탈 상태에 따른 메시지 생성
