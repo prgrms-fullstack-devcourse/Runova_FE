@@ -8,14 +8,15 @@ import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useLocationManager } from '@/hooks/useLocationManager';
 
 export default function RunMap({
+  mapRef: externalMapRef,
   cameraRef: externalCameraRef,
 }: {
-  cameraRef?: React.RefObject<Mapbox.Camera>;
+  mapRef?: React.RefObject<Mapbox.MapView | null>;
+  cameraRef?: React.RefObject<Mapbox.Camera | null>;
 }) {
   const { routeCoordinates } = useLocationTracking();
   const { location: locationObject } = useLocationManager();
 
-  // LocationObject를 Position으로 변환
   const location = locationObject
     ? ([locationObject.coords.longitude, locationObject.coords.latitude] as [
         number,
@@ -23,14 +24,11 @@ export default function RunMap({
       ])
     : null;
 
-  const {
-    mapRef,
-    cameraRef,
-    routeGeoJSON,
-    courseShapeGeoJSON,
-    courseShapePolygons,
-    isLocked,
-  } = useRunMap(externalCameraRef, location, routeCoordinates);
+  const { routeGeoJSON, courseShapeGeoJSON, courseShapePolygons, isLocked } =
+    useRunMap(externalCameraRef, location, routeCoordinates);
+
+  const mapRef = externalMapRef as React.RefObject<Mapbox.MapView | null>;
+  const cameraRef = externalCameraRef as React.RefObject<Mapbox.Camera | null>;
 
   if (!location) {
     return null;

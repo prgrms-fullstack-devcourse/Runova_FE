@@ -29,6 +29,15 @@ export default function Run({ route, navigation }: Props) {
   const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
   const cameraRef = useRef<Mapbox.Camera>(null!);
 
+  const locationPosition = location
+    ? ([location.coords.longitude, location.coords.latitude] as [
+        number,
+        number,
+      ])
+    : null;
+
+  const mapRef = useRef<Mapbox.MapView>(null);
+
   const {
     loading,
     savingRecord,
@@ -38,15 +47,18 @@ export default function Run({ route, navigation }: Props) {
     startTime,
   } = useRunStore();
 
+  useRunStats(routeCoordinates, isTracking);
+  const { loadCourseTopology } = useCourseTopologyApi(courseId);
+
   useFocusEffect(
     useCallback(() => {
       resetLocationTracking();
       resetRunState();
-    }, [resetLocationTracking, resetRunState]),
+      if (courseId) {
+        loadCourseTopology();
+      }
+    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
   );
-
-  useRunStats(routeCoordinates, isTracking);
-  const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
   const {
     showExitModal,
@@ -57,7 +69,7 @@ export default function Run({ route, navigation }: Props) {
     handleCancelExit,
     handleRetryExit,
     handleConfirmExit,
-  } = useRunModals({ navigation });
+  } = useRunModals({ navigation, mapRef, cameraRef, courseId });
 
   const handleCurrentLocationPress = () => {
     flyToCurrentUserLocation(cameraRef);
@@ -70,7 +82,7 @@ export default function Run({ route, navigation }: Props) {
           <Text>{errorMsg}</Text>
         ) : location ? (
           <>
-            <RunMap cameraRef={cameraRef} />
+            <RunMap mapRef={mapRef} cameraRef={cameraRef} />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
             {topologyError && (
               <ErrorOverlay
