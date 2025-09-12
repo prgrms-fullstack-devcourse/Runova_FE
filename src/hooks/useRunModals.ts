@@ -111,6 +111,11 @@ export function useRunModals({
         }
       } catch (imageError) {
         console.warn('이미지 처리 실패:', imageError);
+        Toast.show({
+          type: 'info',
+          text1: '이미지 저장 실패',
+          text2: '경로 이미지를 저장하지 못했지만, 런닝 기록은 저장되었습니다.',
+        });
       }
 
       const runningRecord: RunningRecordRequest = {
