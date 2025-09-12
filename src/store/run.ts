@@ -5,7 +5,6 @@ import type { CourseTopologyResponse } from '@/types/courses.types';
 import type { RunStats } from '@/utils/runStats';
 import type { CourseValidationResult } from '@/types/courseValidation.types';
 
-// UI 상태 그룹
 interface UIState {
   isLocked: boolean;
   showExitModal: boolean;
@@ -14,13 +13,11 @@ interface UIState {
   savingRecord: boolean;
 }
 
-// 에러 상태 그룹
 interface ErrorState {
   topologyError: string | null;
   saveError: string | null;
 }
 
-// 런닝 상태 그룹
 interface RunningState {
   startTime: Date | null;
   pausedTime: number;
@@ -28,12 +25,10 @@ interface RunningState {
   stats: RunStats;
 }
 
-// 코스 데이터 그룹
 interface CourseState {
   courseTopology: CourseTopologyResponse | null;
 }
 
-// 위치 추적 상태 그룹
 interface LocationTrackingState {
   routeCoordinates: Position[];
   location: Location.LocationObject | null;
@@ -42,7 +37,6 @@ interface LocationTrackingState {
   errorMsg: string | null;
 }
 
-// 코스 검증 상태 그룹
 interface CourseValidationState {
   isOnCourse: boolean;
   courseDeviation: {
@@ -61,26 +55,18 @@ interface RunState
     CourseState,
     LocationTrackingState,
     CourseValidationState {
-  // UI 액션들
   setUI: (ui: Partial<UIState>) => void;
   setModal: (modal: 'exit' | 'back' | null) => void;
   toggleLock: () => void;
-
-  // 에러 액션들
   setError: (type: 'topology' | 'save', error: string | null) => void;
   clearErrors: () => void;
-
-  // 런닝 액션들
   setRunning: (running: Partial<RunningState>) => void;
   startRun: () => void;
   pauseRun: () => void;
   resumeRun: () => void;
   stopRun: () => void;
-
-  // 코스 액션들
+  toggleRun: () => void;
   setCourseTopology: (topology: CourseTopologyResponse | null) => void;
-
-  // 위치 추적 액션들
   setRouteCoordinates: (coords: Position[]) => void;
   setLocation: (location: Location.LocationObject | null) => void;
   setIsTracking: (tracking: boolean) => void;
@@ -88,13 +74,9 @@ interface RunState
   setLocationErrorMsg: (msg: string | null) => void;
   clearRouteCoordinates: () => void;
   resetLocationTracking: () => void;
-
-  // 코스 검증 액션들
   setCourseValidation: (validation: Partial<CourseValidationState>) => void;
   updateCourseValidation: (result: CourseValidationResult) => void;
   clearValidationHistory: () => void;
-
-  // 전체 리셋
   resetRunState: () => void;
 }
 
@@ -149,15 +131,12 @@ const initialCourseValidationState: CourseValidationState = {
 };
 
 const useRunStore = create<RunState>((set, get) => ({
-  // 초기 상태
   ...initialUIState,
   ...initialErrorState,
   ...initialRunningState,
   ...initialCourseState,
   ...initialLocationTrackingState,
   ...initialCourseValidationState,
-
-  // UI 액션들
   setUI: (ui) => set((state) => ({ ...state, ...ui })),
 
   setModal: (modal) =>
@@ -167,16 +146,12 @@ const useRunStore = create<RunState>((set, get) => ({
     }),
 
   toggleLock: () => set((state) => ({ isLocked: !state.isLocked })),
-
-  // 에러 액션들
   setError: (type, error) =>
     set({
       [`${type}Error`]: error,
     }),
 
   clearErrors: () => set(initialErrorState),
-
-  // 런닝 액션들
   setRunning: (running) => set((state) => ({ ...state, ...running })),
 
   startRun: () =>
@@ -212,10 +187,31 @@ const useRunStore = create<RunState>((set, get) => ({
       stats: initialStats,
     }),
 
-  // 코스 액션들
+  toggleRun: () =>
+    set((state) => {
+      if (!state.startTime) {
+        return {
+          startTime: new Date(),
+          pausedTime: 0,
+          pauseStartTime: null,
+          isTracking: true,
+        };
+      } else if (state.pauseStartTime) {
+        const pauseDuration =
+          (new Date().getTime() - state.pauseStartTime.getTime()) / 1000;
+        return {
+          pausedTime: state.pausedTime + pauseDuration,
+          pauseStartTime: null,
+          isTracking: true,
+        };
+      } else {
+        return {
+          pauseStartTime: new Date(),
+          isTracking: false,
+        };
+      }
+    }),
   setCourseTopology: (courseTopology) => set({ courseTopology }),
-
-  // 위치 추적 액션들
   setRouteCoordinates: (coords) => set({ routeCoordinates: coords }),
   setLocation: (location) => set({ location }),
   setIsTracking: (tracking) => set({ isTracking: tracking }),
@@ -234,17 +230,14 @@ const useRunStore = create<RunState>((set, get) => ({
       errorMsg: null,
       location: null,
     });
-    console.log();
   },
-
-  // 코스 검증 액션들
   setCourseValidation: (validation) =>
     set((state) => ({ ...state, ...validation })),
 
   updateCourseValidation: (result) =>
     set((state) => {
       const now = new Date();
-      const newHistory = [...state.validationHistory, result].slice(-50); // 최근 50개만 유지
+      const newHistory = [...state.validationHistory, result].slice(-50);
 
       return {
         isOnCourse: result.isOnCourse,
@@ -269,7 +262,6 @@ const useRunStore = create<RunState>((set, get) => ({
       validationHistory: [],
       lastValidationTime: null,
     }),
-
   resetRunState: () => {
     set({
       ...initialUIState,

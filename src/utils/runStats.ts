@@ -11,24 +11,20 @@ export interface RunStats {
 export const calculateRunStats = (
   routeCoordinates: Position[],
   startTime: Date | null,
-  isTracking: boolean = true,
   pausedTime: number = 0,
   pauseStartTime: Date | null = null,
 ): RunStats => {
-  // 달린 시간 계산 (일시중지 시간 제외)
   const currentTime = new Date();
   const totalElapsedTime = startTime
     ? (currentTime.getTime() - startTime.getTime()) / 1000
     : 0;
 
-  // 현재 일시정지 중인 시간 계산
   const currentPauseTime = pauseStartTime
     ? (currentTime.getTime() - pauseStartTime.getTime()) / 1000
     : 0;
 
   const totalPausedTime = pausedTime + currentPauseTime;
 
-  // 실제 달린 시간 = 총 경과 시간 - 총 일시정지 시간
   const actualRunningTime = Math.max(0, totalElapsedTime - totalPausedTime);
 
   const hours = Math.floor(actualRunningTime / 3600);
@@ -36,7 +32,6 @@ export const calculateRunStats = (
   const seconds = Math.floor(actualRunningTime % 60);
   const runningTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-  // 거리 계산 (경로 좌표가 2개 이상일 때만)
   let totalDistance = 0;
   if (routeCoordinates.length >= 2) {
     for (let i = 1; i < routeCoordinates.length; i++) {
@@ -48,10 +43,8 @@ export const calculateRunStats = (
     }
   }
 
-  // TODO:칼로리 계산 로직 고도화 필요
   const calories = Math.round((totalDistance / 1000) * 50);
 
-  // 페이스 계산 (km당 초) - 실제 달린 시간 기준
   const distanceKm = totalDistance / 1000;
   const pace = distanceKm > 0 ? actualRunningTime / distanceKm : 0;
 

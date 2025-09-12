@@ -46,7 +46,7 @@ export default function Run({ route, navigation }: Props) {
     startTime,
   } = useRunStore();
 
-  useRunStats(routeCoordinates, isTracking);
+  useRunStats(routeCoordinates);
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
   // 코스 검증 훅
@@ -79,13 +79,11 @@ export default function Run({ route, navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      resetLocationTracking();
-      resetRunState();
-      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
+      // 코스 데이터만 로드하고 상태는 초기화하지 않음
       if (courseId) {
         loadCourseTopology();
       }
-    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
+    }, [courseId, loadCourseTopology]),
   );
 
   // 위치가 로드되지 않았을 때 자동으로 새로고침

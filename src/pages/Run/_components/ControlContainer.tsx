@@ -30,11 +30,9 @@ const ControlContainer: React.FC<ControlContainerProps> = ({
   const {
     isLocked,
     startTime,
+    pauseStartTime,
     setModal,
-    setRunning,
-    startRun,
-    pauseRun,
-    resumeRun,
+    toggleRun,
     toggleLock,
   } = useRunStore();
 
@@ -43,18 +41,8 @@ const ControlContainer: React.FC<ControlContainerProps> = ({
   };
 
   const handleToggleTracking = () => {
-    if (!isTracking && !startTime) {
-      startRun();
-      const initialStats = calculateRunStats([], new Date(), true, 0, null);
-      setRunning({ stats: initialStats });
-      toggleTracking();
-    } else if (!isTracking && startTime) {
-      resumeRun();
-      toggleTracking();
-    } else if (isTracking) {
-      pauseRun();
-      toggleTracking();
-    }
+    // 런닝 상태와 위치 추적 상태를 함께 토글
+    toggleRun();
   };
 
   const handleExitPress = () => {
@@ -78,7 +66,7 @@ const ControlContainer: React.FC<ControlContainerProps> = ({
           disabled={isLocked}
           style={{ opacity: isLocked ? 0.5 : 1 }}
         >
-          {isTracking ? (
+          {isTracking && !pauseStartTime ? (
             <Pause size={20} color="#ffffff" />
           ) : (
             <Play size={20} color="#ffffff" />

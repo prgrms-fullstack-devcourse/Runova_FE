@@ -26,11 +26,9 @@ export function useLocationTracking() {
     resetLocationTracking,
   } = useRunStore();
 
-  // useInitialLocation 훅 사용 (Run 스크린 접속 시마다 새로 실행됨, 권한 상태 체크 후 필요시에만 요청)
   const { location: initialLocation, loading: locationLoading } =
     useInitialLocation({ requestPermission: true });
 
-  // 초기 위치를 store에 설정
   useEffect(() => {
     if (initialLocation && !location) {
       setLocation(initialLocation);
@@ -40,7 +38,8 @@ export function useLocationTracking() {
   const startTracking = useCallback(async () => {
     if (isTracking) return;
 
-    if (location) {
+    const currentCoords = useRunStore.getState().routeCoordinates;
+    if (currentCoords.length === 0 && location) {
       const { latitude, longitude } = location.coords;
       setRouteCoordinates([[longitude, latitude]]);
     }
@@ -53,13 +52,6 @@ export function useLocationTracking() {
       },
       (newLocation) => {
         const { latitude, longitude } = newLocation.coords;
-
-        // 디버깅 로그
-        console.log('📍 [LocationTracking] 위치 업데이트:', {
-          latitude,
-          longitude,
-          timestamp: new Date().toISOString(),
-        });
 
         setLocation(newLocation);
 
@@ -75,9 +67,6 @@ export function useLocationTracking() {
         } else {
           setRouteCoordinates([...currentCoords, newCoordinate]);
         }
-
-        // 위치 업데이트 시 즉시 코스 검증 실행을 위한 플래그 설정
-        // useCourseValidation의 useEffect가 이를 감지하여 검증 실행
       },
     );
 
@@ -118,11 +107,9 @@ export function useLocationTracking() {
   }, [isTracking, pauseTracking, startTracking]);
 
   const refreshLocation = useCallback(async () => {
-    // 권한 상태 체크
     const { status: currentStatus } =
       await Location.getForegroundPermissionsAsync();
 
-    // 권한이 없으면 권한 요청
     if (currentStatus !== 'granted') {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -132,7 +119,6 @@ export function useLocationTracking() {
     }
 
     try {
-      // useInitialLocation과 동일한 로직 사용
       let fetchedLocation: Location.LocationObject | null = null;
       fetchedLocation = await Location.getLastKnownPositionAsync({});
       if (!fetchedLocation) {
@@ -150,6 +136,14 @@ export function useLocationTracking() {
       setLocationErrorMsg('현재 위치를 가져올 수 없습니다.');
     }
   }, [setLocationErrorMsg, setLocation]);
+
+  useEffect(() => {
+    if (isTracking) {
+      startTracking();
+    } else {
+      pauseTracking();
+    }
+  }, [isTracking, startTracking, pauseTracking]);
 
   return {
     routeCoordinates,
