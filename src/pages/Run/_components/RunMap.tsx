@@ -1,3 +1,4 @@
+import React from 'react';
 import { View } from 'react-native';
 import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
@@ -8,16 +9,18 @@ import { useRunMap } from '@/hooks/useRunMap';
 import type { Position } from 'geojson';
 import * as Location from 'expo-location';
 
-export default function RunMap({
+function RunMap({
   mapRef: externalMapRef,
   cameraRef: externalCameraRef,
   routeCoordinates,
   locationObject,
+  courseId,
 }: {
   mapRef?: React.RefObject<Mapbox.MapView | null>;
   cameraRef?: React.RefObject<Mapbox.Camera | null>;
   routeCoordinates: Position[];
   locationObject: Location.LocationObject | null;
+  courseId?: number;
 }) {
   // 트래킹 중일 때는 routeCoordinates의 마지막 위치를 사용, 그렇지 않으면 현재 위치 사용
   // 실시간 위치 업데이트를 위해 locationObject를 우선 사용
@@ -32,7 +35,7 @@ export default function RunMap({
         : null;
 
   const { routeGeoJSON, courseShapeGeoJSON, courseShapePolygons, isLocked } =
-    useRunMap(externalCameraRef, location, routeCoordinates);
+    useRunMap(externalCameraRef, location, routeCoordinates, courseId);
 
   if (!location || !externalMapRef || !externalCameraRef) {
     return null;
@@ -60,8 +63,8 @@ export default function RunMap({
           </Mapbox.ShapeSource>
         )}
 
-        {/* 선택해서 읽어온 코스 shape 표시 */}
-        {courseShapePolygons.length > 0 && (
+        {/* 선택해서 읽어온 코스 shape 표시 - courseId가 있을 때만 */}
+        {courseId && courseShapePolygons.length > 0 && (
           <Mapbox.ShapeSource id="courseShapeSource" shape={courseShapeGeoJSON}>
             <Mapbox.FillLayer
               id="courseShapeLayer"
@@ -130,3 +133,5 @@ const StyledContainer = styled.View({
   width: '100%',
   position: 'relative',
 });
+
+export default React.memo(RunMap);

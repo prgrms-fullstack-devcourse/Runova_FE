@@ -33,6 +33,7 @@ export function useRunModals({
     setError,
     setUI,
     resetRunState,
+    clearCurrentCourse,
     startTime,
     stats,
   } = useRunStore();
@@ -58,10 +59,11 @@ export function useRunModals({
   const cleanupAndGoBack = useCallback(() => {
     resetLocationTracking();
     resetRunState();
+    clearCurrentCourse(); // currentCourseId를 undefined로 초기화
     // courseId 파라미터 초기화
     navigation.setParams({ courseId: undefined });
     navigation.goBack();
-  }, [resetLocationTracking, resetRunState, navigation]);
+  }, [resetLocationTracking, resetRunState, clearCurrentCourse, navigation]);
 
   const handleConfirmBack = cleanupAndGoBack;
 
@@ -113,7 +115,6 @@ export function useRunModals({
           imageUrl = publicImageUrl;
         }
       } catch (imageError) {
-        console.warn('이미지 처리 실패:', imageError);
         Toast.show({
           type: 'info',
           text1: '이미지 저장 실패',

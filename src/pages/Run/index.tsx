@@ -1,5 +1,5 @@
 import { useRef, useCallback, useMemo, useEffect } from 'react';
-import { Text, BackHandler } from 'react-native';
+import { Text, View, BackHandler } from 'react-native';
 import styled from '@emotion/native';
 import { ArrowLeft, AlertTriangle } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -8,7 +8,6 @@ import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
 import Header from '@/components/Header';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
-import { useRunStats } from '@/hooks/useRunStats';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
 import { useCourseValidation } from '@/hooks/useCourseValidation';
@@ -22,7 +21,9 @@ import Mapbox from '@rnmapbox/maps';
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
 export default function Run({ route, navigation }: Props) {
-  const courseId = route.params?.courseId;
+  // 전역 Store에서 현재 코스 데이터 가져오기
+  const { currentCourseId, currentCourseData } = useRunStore();
+  const courseId = currentCourseId || route.params?.courseId;
 
   const {
     routeCoordinates,
@@ -34,6 +35,7 @@ export default function Run({ route, navigation }: Props) {
     refreshLocation,
     toggleTracking,
   } = useLocationTracking();
+
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
 
@@ -46,7 +48,8 @@ export default function Run({ route, navigation }: Props) {
     startTime,
   } = useRunStore();
 
-  useRunStats(routeCoordinates, isTracking);
+  // useRunStats는 StatsContainer에서 처리
+
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
   // 코스 검증 훅
@@ -58,6 +61,7 @@ export default function Run({ route, navigation }: Props) {
     distanceFromCourse,
     validateCurrentLocation,
   } = useCourseValidation({
+    courseId,
     validationOptions: {
       tolerance: 5, // 5미터 허용 오차 (매우 엄격하게)
       enableDistanceCalculation: true,
@@ -81,7 +85,7 @@ export default function Run({ route, navigation }: Props) {
     useCallback(() => {
       resetLocationTracking();
       resetRunState();
-      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
+      // courseId가 있을 때만 경로 데이터를 로드
       if (courseId) {
         loadCourseTopology();
       }
@@ -165,6 +169,7 @@ export default function Run({ route, navigation }: Props) {
               cameraRef={cameraRef}
               routeCoordinates={routeCoordinates}
               locationObject={location}
+              courseId={courseId}
             />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
             {topologyError && (
@@ -173,8 +178,8 @@ export default function Run({ route, navigation }: Props) {
                 onRetry={loadCourseTopology}
               />
             )}
-            {/* 코스 이탈 알림 */}
-            {isDeviating && (
+            {/* 코스 이탈 알림 - courseId가 있을 때만 */}
+            {courseId && isDeviating && (
               <DeviationOverlay severity={deviationSeverity}>
                 <DeviationAlert severity={deviationSeverity}>
                   <AlertTriangle size={24} color="#ffffff" />

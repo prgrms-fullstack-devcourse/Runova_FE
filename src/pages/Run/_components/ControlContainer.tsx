@@ -100,7 +100,7 @@ const ControlContainer: React.FC<ControlContainerProps> = ({
   );
 };
 
-export default ControlContainer;
+export default React.memo(ControlContainer);
 
 const ControlContainerWrapper = styled.View({
   position: 'absolute',

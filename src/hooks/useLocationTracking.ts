@@ -54,13 +54,6 @@ export function useLocationTracking() {
       (newLocation) => {
         const { latitude, longitude } = newLocation.coords;
 
-        // 디버깅 로그
-        console.log('📍 [LocationTracking] 위치 업데이트:', {
-          latitude,
-          longitude,
-          timestamp: new Date().toISOString(),
-        });
-
         setLocation(newLocation);
 
         const newCoordinate: Position = [longitude, latitude];
@@ -146,7 +139,6 @@ export function useLocationTracking() {
         setLocationErrorMsg('현재 위치를 가져올 수 없습니다.');
       }
     } catch (error) {
-      console.error('위치 새로고침 오류', error);
       setLocationErrorMsg('현재 위치를 가져올 수 없습니다.');
     }
   }, [setLocationErrorMsg, setLocation]);

@@ -43,7 +43,7 @@ export function useInitialLocation(options: UseInitialLocationOptions = {}) {
           fetchedLocation = await Location.getCurrentPositionAsync({});
         }
       } catch (error) {
-        console.error('위치 가져오기 오류', error);
+        // 위치 가져오기 실패 시 무시
       }
 
       if (fetchedLocation) {
