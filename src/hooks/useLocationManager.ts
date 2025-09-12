@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import type { Position } from 'geojson';
 import type Mapbox from '@rnmapbox/maps';
+import * as Location from 'expo-location';
 import { useInitialLocation } from '@/hooks/useInitialLocation';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { FLY_TO_USER_LOCATION_DURATION } from '@/constants/draw';
@@ -13,7 +14,11 @@ export function useLocationManager() {
 
   useEffect(() => {
     if (initialLocation) {
-      currentUserLocation.current = initialLocation;
+      // LocationObject를 Position으로 변환
+      currentUserLocation.current = [
+        initialLocation.coords.longitude,
+        initialLocation.coords.latitude,
+      ];
     }
   }, [initialLocation]);
 
