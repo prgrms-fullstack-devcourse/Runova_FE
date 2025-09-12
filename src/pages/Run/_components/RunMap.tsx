@@ -1,28 +1,35 @@
+import { View } from 'react-native';
 import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import { theme } from '@/styles/theme';
 import Map from '@/components/Map';
 import { LockOverlay } from '@/components/Overlay';
 import { useRunMap } from '@/hooks/useRunMap';
-import { useLocationTracking } from '@/hooks/useLocationTracking';
-import { useLocationManager } from '@/hooks/useLocationManager';
+import type { Position } from 'geojson';
+import * as Location from 'expo-location';
 
 export default function RunMap({
   mapRef: externalMapRef,
   cameraRef: externalCameraRef,
+  routeCoordinates,
+  locationObject,
 }: {
   mapRef?: React.RefObject<Mapbox.MapView | null>;
   cameraRef?: React.RefObject<Mapbox.Camera | null>;
+  routeCoordinates: Position[];
+  locationObject: Location.LocationObject | null;
 }) {
-  const { routeCoordinates } = useLocationTracking();
-  const { location: locationObject } = useLocationManager();
-
-  const location = locationObject
-    ? ([locationObject.coords.longitude, locationObject.coords.latitude] as [
-        number,
-        number,
-      ])
-    : null;
+  // 트래킹 중일 때는 routeCoordinates의 마지막 위치를 사용, 그렇지 않으면 현재 위치 사용
+  // 실시간 위치 업데이트를 위해 locationObject를 우선 사용
+  const location =
+    locationObject && locationObject.coords
+      ? ([locationObject.coords.longitude, locationObject.coords.latitude] as [
+          number,
+          number,
+        ])
+      : routeCoordinates.length > 0
+        ? (routeCoordinates[routeCoordinates.length - 1] as [number, number])
+        : null;
 
   const { routeGeoJSON, courseShapeGeoJSON, courseShapePolygons, isLocked } =
     useRunMap(externalCameraRef, location, routeCoordinates);
@@ -37,6 +44,7 @@ export default function RunMap({
         mapRef={externalMapRef}
         cameraRef={externalCameraRef}
         initialLocation={location}
+        showUserLocation={false}
       >
         {routeGeoJSON.geometry.coordinates.length > 1 && (
           <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
@@ -72,6 +80,25 @@ export default function RunMap({
             />
           </Mapbox.ShapeSource>
         )}
+
+        {/* 현재 위치 마커 - 트래킹 폴리라인과 동일한 위치 사용 */}
+        <Mapbox.PointAnnotation id="currentLocation" coordinate={location}>
+          <View
+            style={{
+              width: 16,
+              height: 16,
+              borderRadius: 8,
+              backgroundColor: theme.colors.secondary[500],
+              borderWidth: 3,
+              borderColor: '#ffffff',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          />
+        </Mapbox.PointAnnotation>
 
         {/* 코스 노드 표시 */}
         {/* {courseTopology?.nodes.map((node, index) => (

@@ -1,32 +1,39 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
-import { ArrowLeft, LocateFixed } from 'lucide-react-native';
+import { ArrowLeft, AlertTriangle } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
+import Header from '@/components/Header';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
-import { useLocationManager } from '@/hooks/useLocationManager';
 import { useRunStats } from '@/hooks/useRunStats';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
+import { useCourseValidation } from '@/hooks/useCourseValidation';
 import useRunStore from '@/store/run';
 import RunMap from './_components/RunMap';
 import StatsContainer from './_components/StatsContainer';
 import ControlContainer from './_components/ControlContainer';
 import Modal from '@/components/Modal';
 import Mapbox from '@rnmapbox/maps';
-import FloatingButton from '@/components/FloatingButton';
 
 type Props = NativeStackScreenProps<TabParamList, 'Run'>;
 
 export default function Run({ route, navigation }: Props) {
   const courseId = route.params?.courseId;
 
-  const { routeCoordinates, isTracking, resetLocationTracking } =
-    useLocationTracking();
-  const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
+  const {
+    routeCoordinates,
+    isTracking,
+    resetLocationTracking,
+    location,
+    errorMsg,
+    locationLoading,
+    refreshLocation,
+    toggleTracking,
+  } = useLocationTracking();
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
 
@@ -41,6 +48,23 @@ export default function Run({ route, navigation }: Props) {
 
   useRunStats(routeCoordinates, isTracking);
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
+
+  // 코스 검증 훅
+  const {
+    isOnCourse,
+    courseDeviation,
+    isDeviating,
+    deviationSeverity,
+    distanceFromCourse,
+    validateCurrentLocation,
+  } = useCourseValidation({
+    validationOptions: {
+      tolerance: 5, // 5미터 허용 오차 (매우 엄격하게)
+      enableDistanceCalculation: true,
+    },
+    enableRealTimeValidation: true, // 실시간 검증 활성화
+    validationInterval: 1000, // 1초마다 검증
+  });
 
   const {
     showExitModal,
@@ -57,11 +81,23 @@ export default function Run({ route, navigation }: Props) {
     useCallback(() => {
       resetLocationTracking();
       resetRunState();
+      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
       if (courseId) {
         loadCourseTopology();
       }
     }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
   );
+
+  // 위치가 로드되지 않았을 때 자동으로 새로고침
+  useEffect(() => {
+    if (!location && !errorMsg && !locationLoading) {
+      const timer = setTimeout(() => {
+        refreshLocation();
+      }, 2000); // 2초 후에 새로고침 시도
+
+      return () => clearTimeout(timer);
+    }
+  }, [location, errorMsg, locationLoading, refreshLocation]);
 
   // 하드웨어 뒤로가기 버튼 제어
   useFocusEffect(
@@ -81,17 +117,55 @@ export default function Run({ route, navigation }: Props) {
   );
 
   const handleCurrentLocationPress = () => {
-    flyToCurrentUserLocation(cameraRef);
+    // 트래킹 중일 때는 routeCoordinates의 마지막 위치로, 그렇지 않으면 현재 위치로 이동
+    if (routeCoordinates.length > 0) {
+      const lastCoordinate = routeCoordinates[routeCoordinates.length - 1];
+      cameraRef.current?.flyTo(lastCoordinate, 1000);
+    } else if (location && location.coords) {
+      const currentPosition = [
+        location.coords.longitude,
+        location.coords.latitude,
+      ] as [number, number];
+      cameraRef.current?.flyTo(currentPosition, 1000);
+    }
   };
+
+  // 코스 이탈 상태에 따른 메시지 생성 (실시간 업데이트)
+  const deviationMessage = useMemo(() => {
+    if (!isDeviating) return null;
+
+    const distance = distanceFromCourse ? Math.round(distanceFromCourse) : 0;
+
+    switch (deviationSeverity) {
+      case 'high':
+        return `경로에서 ${distance}m 이탈했습니다. 경로로 돌아가세요.`;
+      case 'medium':
+        return `경로에서 ${distance}m 벗어났습니다.`;
+      case 'low':
+        return `경로 근처에서 ${distance}m 떨어져 있습니다.`;
+      default:
+        return '경로를 벗어났습니다.';
+    }
+  }, [isDeviating, distanceFromCourse, deviationSeverity]);
 
   return (
     <StyledPage>
+      <Header leftIcon={ArrowLeft} onLeftPress={handleBackPress} title="러닝" />
       <StyledContainer>
         {errorMsg ? (
           <Text>{errorMsg}</Text>
-        ) : location ? (
+        ) : locationLoading ? (
+          <LocationLoadingContainer>
+            <Text>Getting location...</Text>
+          </LocationLoadingContainer>
+        ) : location && location.coords ? (
           <>
-            <RunMap mapRef={mapRef} cameraRef={cameraRef} />
+            <RunMap
+              mapRef={mapRef}
+              cameraRef={cameraRef}
+              routeCoordinates={routeCoordinates}
+              locationObject={location}
+            />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
             {topologyError && (
               <ErrorOverlay
@@ -99,32 +173,31 @@ export default function Run({ route, navigation }: Props) {
                 onRetry={loadCourseTopology}
               />
             )}
+            {/* 코스 이탈 알림 */}
+            {isDeviating && (
+              <DeviationOverlay severity={deviationSeverity}>
+                <DeviationAlert severity={deviationSeverity}>
+                  <AlertTriangle size={24} color="#ffffff" />
+                  <DeviationText>{deviationMessage}</DeviationText>
+                </DeviationAlert>
+              </DeviationOverlay>
+            )}
           </>
         ) : (
-          <Text>Getting location...</Text>
+          <LocationLoadingContainer>
+            <Text>위치를 가져올 수 없습니다</Text>
+            <RefreshButton onPress={refreshLocation}>
+              <Text style={{ color: '#007AFF', marginTop: 8 }}>새로고침</Text>
+            </RefreshButton>
+          </LocationLoadingContainer>
         )}
       </StyledContainer>
       <StatsContainer />
-      <ControlContainer />
-      <FloatingButton
-        icon={ArrowLeft}
-        onPress={handleBackPress}
-        style={{
-          position: 'absolute',
-          top: 60,
-          left: 20,
-          zIndex: 999,
-        }}
-      />
-      <FloatingButton
-        icon={LocateFixed}
-        onPress={handleCurrentLocationPress}
-        style={{
-          position: 'absolute',
-          top: 60,
-          right: 20,
-          zIndex: 999,
-        }}
+      <ControlContainer
+        onCurrentLocationPress={handleCurrentLocationPress}
+        isTracking={isTracking}
+        toggleTracking={toggleTracking}
+        routeCoordinates={routeCoordinates}
       />
       <Modal
         visible={showExitModal}
@@ -164,4 +237,72 @@ const StyledPage = styled.View(({ theme }) => ({
 const StyledContainer = styled.View({
   flex: 1,
   width: '100%',
+});
+
+const DeviationOverlay = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
+  ({ severity }) => ({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor:
+      severity === 'high'
+        ? 'rgba(239, 68, 68, 0.15)' // 빨간색 오버레이
+        : severity === 'medium'
+          ? 'rgba(245, 158, 11, 0.1)' // 주황색 오버레이
+          : 'rgba(59, 130, 246, 0.05)', // 파란색 오버레이
+    zIndex: 999,
+    pointerEvents: 'none', // 터치 이벤트 통과
+  }),
+);
+
+const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
+  ({ severity }) => ({
+    position: 'absolute',
+    top: 10,
+    left: 20,
+    right: 20,
+    backgroundColor:
+      severity === 'high'
+        ? '#ef4444'
+        : severity === 'medium'
+          ? '#f59e0b'
+          : '#3b82f6',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  }),
+);
+
+const DeviationText = styled.Text({
+  color: '#ffffff',
+  fontSize: 16,
+  fontWeight: '700',
+  marginLeft: 12,
+  flex: 1,
+  textAlign: 'center',
+});
+
+const LocationLoadingContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+});
+
+const RefreshButton = styled.TouchableOpacity({
+  padding: 12,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#007AFF',
 });
