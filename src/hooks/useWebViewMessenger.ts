@@ -127,17 +127,13 @@ export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
 
         case 'LOGOUT': {
           try {
-            try {
-              await signOut();
-            } catch (error) {
-              console.log(error);
-            }
-
-            clearAuth();
-
-            postJson({ type: 'NATIVE_LOGOUT' });
+            await signOut();
           } catch (error) {
-            console.log(error);
+            console.log(
+              'Google signOut failed, but proceeding with app logout:',
+              error,
+            );
+          } finally {
             clearAuth();
             postJson({ type: 'NATIVE_LOGOUT' });
           }
