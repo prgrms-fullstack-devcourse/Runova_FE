@@ -22,7 +22,7 @@ export default function DataSection<T>({
   items,
   emptyText,
   renderItem,
-  onMoreClick, // ✅
+  onMoreClick,
 }: DataSectionProps<T>) {
   return (
     <Section>

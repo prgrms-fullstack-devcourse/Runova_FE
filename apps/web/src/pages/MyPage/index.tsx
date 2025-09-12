@@ -11,6 +11,7 @@ import { getMeOverview, getReadableUserError } from '@/api/mypage';
 import type { UserProfileRes } from '@/api/mypage';
 import { useNativeBridgeStore } from '@/stores/nativeBridgeStore'; // ✅ 토큰 구독
 import { openNativeRouteList } from '@/lib/nativeBridge';
+import RunningDashboard from './_components/RunningDashboard';
 
 export default function MyPage() {
   const token = useNativeBridgeStore((s) => s.token); // ✅ 브릿지 토큰
@@ -54,36 +55,30 @@ export default function MyPage() {
     }
   };
 
-  // const handleMoreRoutes = () => {
-  //   if (window.ReactNativeWebView) {
-  //     postToNative({
-  //       type: 'NAVIGATE',
-  //       payload: { screen: 'ROUTE_LIST', params: { initialTab: 'ALL' } },
-  //     });
-  //   }
-  // };
-
   return (
     <Wrap>
       <Header title="마이페이지" />
       <Main>
         {!token && <Hint>로그인 정보를 수신 중…</Hint>}
-
-        <ProfileSection
-          profile={
-            profile
-              ? {
-                  nickname: profile.nickname,
-                  avatarUrl: profile.imageUrl,
-                  createdAt: profile.createdAt,
-                }
-              : undefined
-          }
-          onAvatarUpdated={(newUrl) =>
-            setProfile((prev) => (prev ? { ...prev, imageUrl: newUrl } : prev))
-          }
-        />
-
+        {token && (
+          <ProfileSection
+            profile={
+              profile
+                ? {
+                    nickname: profile.nickname,
+                    avatarUrl: profile.imageUrl,
+                    createdAt: profile.createdAt,
+                  }
+                : undefined
+            }
+            onAvatarUpdated={(newUrl) =>
+              setProfile((prev) =>
+                prev ? { ...prev, imageUrl: newUrl } : prev,
+              )
+            }
+          />
+        )}
+        <RunningDashboard />
         <DataSection
           title="나의 경로"
           to="/mypage/routes"
