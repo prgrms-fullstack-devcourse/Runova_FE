@@ -1,12 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
-import {
-  ArrowLeft,
-  LocateFixed,
-  AlertTriangle,
-  CheckCircle,
-} from 'lucide-react-native';
+import { ArrowLeft, LocateFixed, AlertTriangle } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
@@ -150,13 +145,6 @@ export default function Run({ route, navigation }: Props) {
                 </DeviationAlert>
               </DeviationOverlay>
             )}
-            {/* 코스 내부 상태 표시 */}
-            {isOnCourse && !isDeviating && (
-              <OnCourseIndicator>
-                <CheckCircle size={16} color="#10b981" />
-                <OnCourseText>경로 내부</OnCourseText>
-              </OnCourseIndicator>
-            )}
           </>
         ) : (
           <Text>Getting location...</Text>
@@ -225,7 +213,7 @@ const DeviationOverlay = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
 const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
   ({ severity }) => ({
     position: 'absolute',
-    top: 100,
+    top: 10,
     left: 20,
     right: 20,
     backgroundColor:
@@ -239,6 +227,7 @@ const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 1000,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -255,29 +244,4 @@ const DeviationText = styled.Text({
   marginLeft: 12,
   flex: 1,
   textAlign: 'center',
-});
-
-const OnCourseIndicator = styled.View({
-  position: 'absolute',
-  top: 100,
-  right: 20,
-  backgroundColor: '#ffffff',
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 20,
-  flexDirection: 'row',
-  alignItems: 'center',
-  zIndex: 1000,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.2,
-  shadowRadius: 2,
-  elevation: 3,
-});
-
-const OnCourseText = styled.Text({
-  color: '#10b981',
-  fontSize: 12,
-  fontWeight: '600',
-  marginLeft: 4,
 });
