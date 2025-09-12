@@ -4,9 +4,7 @@ import CommunityFeed from './pages/Community/CommunityFeed';
 import CommunityDetail from '@/pages/Community/CommunityDetail';
 import CommunityEdit from '@/pages/Community/CommunityEdit';
 import MyPage from './pages/MyPage';
-import RoutesPage from './pages/MyRoutesPage';
-import PostsPage from './pages/MyPostsPage';
-import CertsPage from './pages/MyCertsPage';
+import MyStats from './pages/MyStats';
 
 export default function App() {
   return (
@@ -19,9 +17,7 @@ export default function App() {
         <Route path="/community/edit" element={<CommunityEdit />} />
         <Route path="/community/edit/:id" element={<CommunityEdit />} />
         <Route path="/mypage" element={<MyPage />} />
-        <Route path="/mypage/routes" element={<RoutesPage />} />
-        <Route path="/mypage/posts" element={<PostsPage />} />
-        <Route path="/mypage/certs" element={<CertsPage />} />
+        <Route path="/mypage/stats" element={<MyStats />} />
       </Routes>
     </BrowserRouter>
   );

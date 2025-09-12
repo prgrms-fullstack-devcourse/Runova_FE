@@ -22,11 +22,14 @@ export function useRunApi() {
   );
 
   const saveRunningRecord = useCallback(
-    async (data: RunningRecordRequest): Promise<RunningRecordResponse> => {
+    async (
+      data: RunningRecordRequest,
+      courseId?: number,
+    ): Promise<RunningRecordResponse> => {
       if (!accessToken) {
         throw new Error('로그인이 필요합니다.');
       }
-      return await createRunningRecord(data, accessToken);
+      return await createRunningRecord(data, accessToken, courseId);
     },
     [accessToken],
   );

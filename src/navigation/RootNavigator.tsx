@@ -1,18 +1,28 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import Auth from '@/pages/Auth';
+import useAuthStore from '@/store/auth';
+
 import type { RootStackParamList } from '../types/navigation.types';
 import TabNavigator from './TabNavigator';
-import Auth from '@/pages/Auth';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const user = useAuthStore((s) => s.user);
+  const isAuthed = !!accessToken && !!user;
+
   return (
     <Stack.Navigator
-      screenOptions={{ headerShadowVisible: false, headerShown: false }}
-      initialRouteName="Auth"
+      key={isAuthed ? 'app' : 'auth'}
+      screenOptions={{ headerShown: false }}
     >
-      <Stack.Screen name="Auth" component={Auth} />
-      <Stack.Screen name="TabNavigator" component={TabNavigator} />
+      {isAuthed ? (
+        <Stack.Screen name="TabNavigator" component={TabNavigator} />
+      ) : (
+        <Stack.Screen name="Auth" component={Auth} />
+      )}
     </Stack.Navigator>
   );
 }

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 
 import { refreshToken } from '@/services/auth.service';
+import { signOut } from '@/services/auth.service';
 import useAuthStore from '@/store/auth';
 import type { User } from '@/types/user.types';
 
@@ -24,12 +25,14 @@ type NativeMessage =
   | { type: 'NATIVE_INIT'; payload: NativeInitPayload }
   | { type: 'NATIVE_TOKEN'; payload: string }
   | { type: 'NATIVE_TOKEN_ERROR' }
+  | { type: 'NATIVE_LOGOUT' }
   | { type: 'PONG' }
   | { type: string; payload?: unknown };
 
 type WebToNativeMessage =
   | { type: 'PING' }
   | { type: 'REFRESH_TOKEN' }
+  | { type: 'LOGOUT' }
   | { type: 'LOG'; payload?: unknown }
   | {
       type: 'NAVIGATE';
@@ -115,13 +118,27 @@ export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
           break;
 
         case 'NAVIGATE':
-          // payload는 타입으로 강제됨
           opts?.onNavigate?.(msg.payload.screen, msg.payload.params);
           break;
 
         case 'LOG':
           console.log('[Web LOG]', msg.payload);
           break;
+
+        case 'LOGOUT': {
+          try {
+            await signOut();
+          } catch (error) {
+            console.log(
+              'Google signOut failed, but proceeding with app logout:',
+              error,
+            );
+          } finally {
+            clearAuth();
+            postJson({ type: 'NATIVE_LOGOUT' });
+          }
+          break;
+        }
 
         default:
           break;

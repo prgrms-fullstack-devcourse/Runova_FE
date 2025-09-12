@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Text } from 'react-native';
+import { Text, BackHandler } from 'react-native';
 import styled from '@emotion/native';
 import {
   ArrowLeft,
@@ -34,6 +34,7 @@ export default function Run({ route, navigation }: Props) {
     useLocationTracking();
   const { location, errorMsg, flyToCurrentUserLocation } = useLocationManager();
   const cameraRef = useRef<Mapbox.Camera>(null!);
+  const mapRef = useRef<Mapbox.MapView>(null);
 
   const {
     loading,
@@ -46,17 +47,6 @@ export default function Run({ route, navigation }: Props) {
 
   useRunStats(routeCoordinates, isTracking);
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
-
-  useFocusEffect(
-    useCallback(() => {
-      resetLocationTracking();
-      resetRunState();
-      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
-      if (courseId) {
-        loadCourseTopology();
-      }
-    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
-  );
 
   // 코스 검증 훅
   const {
@@ -83,7 +73,35 @@ export default function Run({ route, navigation }: Props) {
     handleCancelExit,
     handleRetryExit,
     handleConfirmExit,
-  } = useRunModals({ navigation });
+  } = useRunModals({ navigation, mapRef, cameraRef, courseId });
+
+  useFocusEffect(
+    useCallback(() => {
+      resetLocationTracking();
+      resetRunState();
+      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
+      if (courseId) {
+        loadCourseTopology();
+      }
+    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
+  );
+
+  // 하드웨어 뒤로가기 버튼 제어
+  useFocusEffect(
+    useCallback(() => {
+      const handleHardwareBackPress = () => {
+        handleBackPress();
+        return true; // 기본 뒤로가기 동작을 막음
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleHardwareBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [handleBackPress]),
+  );
 
   const handleCurrentLocationPress = () => {
     flyToCurrentUserLocation(cameraRef);
@@ -114,7 +132,7 @@ export default function Run({ route, navigation }: Props) {
           <Text>{errorMsg}</Text>
         ) : location ? (
           <>
-            <RunMap cameraRef={cameraRef} />
+            <RunMap mapRef={mapRef} cameraRef={cameraRef} />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
             {topologyError && (
               <ErrorOverlay

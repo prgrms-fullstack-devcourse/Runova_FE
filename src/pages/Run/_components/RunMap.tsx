@@ -8,14 +8,15 @@ import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useLocationManager } from '@/hooks/useLocationManager';
 
 export default function RunMap({
+  mapRef: externalMapRef,
   cameraRef: externalCameraRef,
 }: {
-  cameraRef?: React.RefObject<Mapbox.Camera>;
+  mapRef?: React.RefObject<Mapbox.MapView | null>;
+  cameraRef?: React.RefObject<Mapbox.Camera | null>;
 }) {
   const { routeCoordinates } = useLocationTracking();
   const { location: locationObject } = useLocationManager();
 
-  // LocationObject를 Position으로 변환
   const location = locationObject
     ? ([locationObject.coords.longitude, locationObject.coords.latitude] as [
         number,
@@ -23,22 +24,20 @@ export default function RunMap({
       ])
     : null;
 
-  const {
-    mapRef,
-    cameraRef,
-    routeGeoJSON,
-    courseShapeGeoJSON,
-    courseShapePolygons,
-    isLocked,
-  } = useRunMap(externalCameraRef, location, routeCoordinates);
+  const { routeGeoJSON, courseShapeGeoJSON, courseShapePolygons, isLocked } =
+    useRunMap(externalCameraRef, location, routeCoordinates);
 
-  if (!location) {
+  if (!location || !externalMapRef || !externalCameraRef) {
     return null;
   }
 
   return (
     <StyledContainer>
-      <Map mapRef={mapRef} cameraRef={cameraRef} initialLocation={location}>
+      <Map
+        mapRef={externalMapRef}
+        cameraRef={externalCameraRef}
+        initialLocation={location}
+      >
         {routeGeoJSON.geometry.coordinates.length > 1 && (
           <Mapbox.ShapeSource id="routeSource" shape={routeGeoJSON}>
             <Mapbox.LineLayer
