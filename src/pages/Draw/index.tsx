@@ -85,14 +85,14 @@ export default function Draw() {
         path: validation.data.path,
       });
 
-      navigation.navigate('RouteSave', {});
+      navigation.navigate('RouteSave');
     } catch (error: unknown) {
       let errorMessage = '경로 저장에 실패했습니다.';
       showCourseSaveError(errorMessage);
     }
   };
 
-  if (locationLoading || !initialLocation) {
+  if (locationLoading) {
     return <LoadingIndicator />;
   }
 

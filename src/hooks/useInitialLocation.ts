@@ -38,12 +38,17 @@ export function useInitialLocation(options: UseInitialLocationOptions = {}) {
 
       let fetchedLocation: Location.LocationObject | null = null;
       try {
-        fetchedLocation = await Location.getLastKnownPositionAsync({});
-        if (!fetchedLocation) {
-          fetchedLocation = await Location.getCurrentPositionAsync({});
-        }
+        // 먼저 현재 위치를 가져오려고 시도
+        fetchedLocation = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
       } catch (error) {
-        // 위치 가져오기 실패 시 무시
+        try {
+          // 현재 위치 실패 시 마지막 알려진 위치 시도
+          fetchedLocation = await Location.getLastKnownPositionAsync({});
+        } catch (lastKnownError) {
+          // 모든 시도 실패 시 무시
+        }
       }
 
       if (fetchedLocation) {

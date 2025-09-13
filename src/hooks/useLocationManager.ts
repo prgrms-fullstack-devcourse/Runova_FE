@@ -74,8 +74,8 @@ export function useLocationManager() {
   };
 
   return {
-    initialLocation,
-    locationLoading,
+    initialLocation: currentUserLocation.current || [127.0276, 37.4979], // 기본값: 서울
+    locationLoading: locationLoading || !currentUserLocation.current,
     location,
     errorMsg,
     refreshLocation,

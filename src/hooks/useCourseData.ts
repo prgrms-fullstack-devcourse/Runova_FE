@@ -71,7 +71,12 @@ export function useCourseData({
         setData(courseData);
         if ('departure' in courseData && courseData.departure) {
           await loadAddress(courseData.departure);
-        } else if ('path' in courseData && courseData.path) {
+        } else if (
+          'path' in courseData &&
+          courseData.path &&
+          Array.isArray(courseData.path) &&
+          courseData.path.length > 0
+        ) {
           await loadAddress(courseData.path);
         }
         return;

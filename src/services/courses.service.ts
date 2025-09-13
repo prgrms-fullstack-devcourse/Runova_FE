@@ -66,14 +66,12 @@ export async function searchBookmarkedCourses(
 
 export async function searchCompletedCourses(
   params: {
-    since?: string;
-    until?: string;
     cursor?: { id: number } | null;
     limit?: number;
   },
   accessToken: string,
 ): Promise<CompletedCourseResponse> {
-  const response = await api.get('/api/running/records', {
+  const response = await api.get('/api/courses/search/completed', {
     params,
     headers: {
       Authorization: `Bearer ${accessToken}`,

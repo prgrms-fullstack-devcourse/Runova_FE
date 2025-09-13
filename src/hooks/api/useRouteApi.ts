@@ -32,9 +32,13 @@ export function useRouteData() {
       setError(null);
 
       try {
-        const currentCursor = reset ? null : cursor;
+        // cursor를 함수 내부에서 직접 가져오기
+        const currentCursor = reset ? null : useRouteStore.getState().cursor;
         const response = await searchUserCourses(
-          { cursor: currentCursor, limit: 10 },
+          {
+            cursor: currentCursor ? { id: currentCursor } : null,
+            limit: 10,
+          },
           accessToken,
         );
 
@@ -53,7 +57,7 @@ export function useRouteData() {
         }
 
         setCursor(nextCursor);
-        setHasMore(response.results.length === 10);
+        setHasMore(response.results.length >= 10);
       } catch (error: unknown) {
         let errorMessage = '경로를 불러오는데 실패했습니다.';
 
@@ -80,7 +84,6 @@ export function useRouteData() {
     },
     [
       accessToken,
-      cursor,
       loading,
       setCourses,
       setLoading,
@@ -143,7 +146,10 @@ export function useBookmarkedCourses() {
 
       try {
         const currentCursor = reset ? null : cursor;
-        const params = { cursor: currentCursor, limit: 10 };
+        const params = {
+          cursor: currentCursor ? { id: currentCursor } : null,
+          limit: 10,
+        };
         const response = await searchBookmarkedCourses(params, accessToken);
 
         if (reset) {
@@ -264,15 +270,19 @@ export function useCompletedCourses() {
         }
 
         let nextCursor = null;
-        if (response.results.length > 0) {
-          const minId = Math.min(
-            ...response.results.map((course) => course.id),
-          );
-          nextCursor = minId;
+        if (response.nextCursor) {
+          // 새로운 API는 nextCursor를 문자열로 반환하므로,
+          // 마지막 아이템의 ID를 숫자로 변환하여 저장
+          if (response.results.length > 0) {
+            const minId = Math.min(
+              ...response.results.map((course) => course.id),
+            );
+            nextCursor = minId;
+          }
         }
 
         setCursor(nextCursor);
-        setHasMore(response.results.length === 10);
+        setHasMore(!!response.nextCursor);
       } catch (error: unknown) {
         let errorMessage = '완주한 경로를 불러오는데 실패했습니다.';
 
