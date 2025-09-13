@@ -91,11 +91,13 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
         const completedItem = item as CompletedCourseItem;
         return (
           <Card
+            imageSource={{ uri: completedItem.imageUrl }}
             content={{
-              title: `완주 기록 #${completedItem.id}`,
+              title: completedItem.title,
               subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
+              hasStar: completedItem.bookmarked,
             }}
-            mode="only-text"
+            mode="only-image"
             onPress={() => onRouteCardPress(completedItem.id)}
           />
         );
@@ -133,8 +135,8 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
 
   const keyExtractor = useCallback(
     (item: CourseSearchItem | BookmarkedCourseItem | CompletedCourseItem) =>
-      item.id.toString(),
-    [],
+      `${activeTab}-${item.id}`,
+    [activeTab],
   );
 
   if (error && currentData.length === 0) {

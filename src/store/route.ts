@@ -54,33 +54,76 @@ const useRouteStore = create<RouteState>((set) => ({
   },
 
   setCourses: (courses: CourseSearchItem[]) => {
-    set({ courses });
+    set((state) => {
+      // 중복 제거를 위해 ID 기준으로 유니크한 아이템만 유지
+      const uniqueCourses = courses.filter(
+        (course, index, self) =>
+          index === self.findIndex((c) => c.id === course.id),
+      );
+      return { courses: uniqueCourses };
+    });
   },
 
   appendCourses: (courses: CourseSearchItem[]) => {
-    set((state) => ({
-      courses: [...state.courses, ...courses],
-    }));
+    set((state) => {
+      const existingIds = new Set(state.courses.map((course) => course.id));
+      const newCourses = courses.filter(
+        (course) => !existingIds.has(course.id),
+      );
+      return {
+        courses: [...state.courses, ...newCourses],
+      };
+    });
   },
 
   setBookmarkedCourses: (courses: BookmarkedCourseItem[]) => {
-    set({ bookmarkedCourses: courses });
+    set((state) => {
+      // 중복 제거를 위해 ID 기준으로 유니크한 아이템만 유지
+      const uniqueCourses = courses.filter(
+        (course, index, self) =>
+          index === self.findIndex((c) => c.id === course.id),
+      );
+      return { bookmarkedCourses: uniqueCourses };
+    });
   },
 
   appendBookmarkedCourses: (courses: BookmarkedCourseItem[]) => {
-    set((state) => ({
-      bookmarkedCourses: [...state.bookmarkedCourses, ...courses],
-    }));
+    set((state) => {
+      const existingIds = new Set(
+        state.bookmarkedCourses.map((course) => course.id),
+      );
+      const newCourses = courses.filter(
+        (course) => !existingIds.has(course.id),
+      );
+      return {
+        bookmarkedCourses: [...state.bookmarkedCourses, ...newCourses],
+      };
+    });
   },
 
   setCompletedCourses: (courses: CompletedCourseItem[]) => {
-    set({ completedCourses: courses });
+    set((state) => {
+      // 중복 제거를 위해 ID 기준으로 유니크한 아이템만 유지
+      const uniqueCourses = courses.filter(
+        (course, index, self) =>
+          index === self.findIndex((c) => c.id === course.id),
+      );
+      return { completedCourses: uniqueCourses };
+    });
   },
 
   appendCompletedCourses: (courses: CompletedCourseItem[]) => {
-    set((state) => ({
-      completedCourses: [...state.completedCourses, ...courses],
-    }));
+    set((state) => {
+      const existingIds = new Set(
+        state.completedCourses.map((course) => course.id),
+      );
+      const newCourses = courses.filter(
+        (course) => !existingIds.has(course.id),
+      );
+      return {
+        completedCourses: [...state.completedCourses, ...newCourses],
+      };
+    });
   },
 
   setLoading: (loading: boolean) => {

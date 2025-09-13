@@ -31,7 +31,7 @@ export type CourseSaveResult = {
 };
 
 export interface CourseSearchRequest {
-  cursor?: number | null;
+  cursor?: { id: number } | null;
   limit?: number;
 }
 
@@ -77,18 +77,23 @@ export interface BookmarkedCourseResponse {
 // 완주한 경로 API 타입
 export interface CompletedCourseItem {
   id: number;
-  path: [number, number][];
-  artUrl: string | null;
+  title: string;
+  imageUrl: string;
+  departure: [number, number];
+  length: number;
+  time: number;
+  createdAt: string;
+  author: {
+    nickname: string;
+    imageUrl: string;
+  };
+  bookmarked: boolean;
   distance: number;
-  startAt: string;
-  endAt: string;
-  duration: number;
-  pace: number;
-  calories: number;
 }
 
 export interface CompletedCourseResponse {
   results: CompletedCourseItem[];
+  nextCursor: string;
 }
 
 export interface CourseTopologyNode {
