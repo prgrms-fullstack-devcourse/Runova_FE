@@ -3,10 +3,12 @@ import {
   searchUserCourses,
   searchBookmarkedCourses,
   searchCompletedCourses,
+  searchAdjacentCourses,
 } from '@/services/courses.service';
 import useAuthStore from '@/store/auth';
 import useRouteStore from '@/store/route';
 import type { AxiosErrorResponse } from '@/types/api.types';
+import type { Position } from 'geojson';
 
 export function useRouteData() {
   const { accessToken } = useAuthStore();
@@ -345,4 +347,33 @@ export function useCompletedCourses() {
     handleRetry,
     handleRefresh,
   };
+}
+
+export function useAdjacentCourses() {
+  const { accessToken } = useAuthStore();
+
+  const searchAdjacent = useCallback(
+    async (location: Position, radius: number = 1000) => {
+      if (!accessToken) return [];
+
+      try {
+        const locationString = `${location[0]},${location[1]}`;
+        const response = await searchAdjacentCourses(
+          {
+            location: locationString,
+            radius,
+            limit: 3,
+          },
+          accessToken,
+        );
+        return response.results;
+      } catch (error) {
+        console.error('주변 경로 검색 실패:', error);
+        return [];
+      }
+    },
+    [accessToken],
+  );
+
+  return { searchAdjacent };
 }

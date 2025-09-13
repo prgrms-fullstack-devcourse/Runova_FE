@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Bell } from 'lucide-react-native';
 import Header from '@/components/Header';
 import FloatingImageContainer from './_components/FloatingImageContainer';
-import CardContainer from './_components/CardContainer';
 
 export default function Home() {
   const handleLocationPress = () => {
@@ -12,10 +11,6 @@ export default function Home() {
 
   const handleNotificationPress = () => {
     console.log('알림 버튼 클릭');
-  };
-
-  const handleRecommendationPress = (item: RecommendationData) => {
-    console.log('추천 경로 클릭:', item.title);
   };
 
   return (
@@ -37,15 +32,13 @@ export default function Home() {
 
         <ScrollContainer>
           <ContentContainer>
-            <CardContainer onRecommendationPress={handleRecommendationPress} />
+            {/* 추천 경로는 바로가기 화면으로 이동됨 */}
           </ContentContainer>
         </ScrollContainer>
       </GradientBackground>
     </Screen>
   );
 }
-
-import type { RecommendationData } from '@/types/card.types';
 
 const Screen = styled.View({
   flex: 1,

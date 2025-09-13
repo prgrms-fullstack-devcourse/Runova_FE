@@ -21,6 +21,7 @@ interface CardProps {
   onPress?: () => void;
   style?: ViewStyle;
   fullWidth?: boolean;
+  variant?: 'default' | 'light';
 }
 
 export default function Card({
@@ -31,6 +32,7 @@ export default function Card({
   onPress,
   style,
   fullWidth = false,
+  variant = 'default',
 }: CardProps) {
   const { width: screenWidth } = Dimensions.get('window');
   const [imageError, setImageError] = useState(false);
@@ -52,6 +54,7 @@ export default function Card({
       <CardContainer
         fullWidth={fullWidth}
         mode={finalMode}
+        variant={variant}
         onPress={onPress}
         style={style}
         activeOpacity={0.8}
@@ -86,16 +89,19 @@ export default function Card({
 
   if (finalMode === 'image-with-text') {
     const contentWidth = screenWidth - 64;
-    const imageSize = contentWidth * 0.45;
+    const imageSize = contentWidth * 0.36; // 0.45에서 0.36으로 변경 (약 20% 감소)
     return (
       <CardContainer
         fullWidth={fullWidth}
         mode={finalMode}
+        variant={variant}
         onPress={onPress}
         style={style}
         activeOpacity={0.8}
       >
-        {content?.cardTitle && <CardTitle>{content.cardTitle}</CardTitle>}
+        {content?.cardTitle && (
+          <CardTitle variant={variant}>{content.cardTitle}</CardTitle>
+        )}
         <ContentRow>
           {imageSource && (
             <CardImage
@@ -107,14 +113,18 @@ export default function Card({
           )}
           {content && (
             <CardContentContainer>
-              {content.title && <Title>{content.title}</Title>}
-              {content.subtitle && <Subtitle>{content.subtitle}</Subtitle>}
+              {content.title && (
+                <Title variant={variant}>{content.title}</Title>
+              )}
+              {content.subtitle && (
+                <Subtitle variant={variant}>{content.subtitle}</Subtitle>
+              )}
               {content.stats && (
                 <StatsContainer>
                   {content.stats.map((stat, index) => (
                     <StatItem key={index}>
-                      <StatLabel>{stat.label}</StatLabel>
-                      <StatValue>{stat.value}</StatValue>
+                      <StatLabel variant={variant}>{stat.label}</StatLabel>
+                      <StatValue variant={variant}>{stat.value}</StatValue>
                     </StatItem>
                   ))}
                 </StatsContainer>
@@ -130,6 +140,7 @@ export default function Card({
     <CardContainer
       fullWidth={fullWidth}
       mode={finalMode}
+      variant={variant}
       onPress={onPress}
       style={style}
       activeOpacity={0.8}
@@ -142,9 +153,11 @@ export default function Card({
 const CardContainer = styled(TouchableOpacity)<{
   fullWidth: boolean;
   mode: CardMode;
-}>(({ fullWidth, mode }) => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  borderColor: 'rgba(255, 255, 255, 0.2)',
+  variant: 'default' | 'light';
+}>(({ fullWidth, mode, variant }) => ({
+  backgroundColor: variant === 'light' ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+  borderColor:
+    variant === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.2)',
   borderWidth: 1,
   borderRadius: 12,
   padding: mode === 'only-image' ? 0 : 16,
@@ -153,12 +166,14 @@ const CardContainer = styled(TouchableOpacity)<{
   aspectRatio: fullWidth ? undefined : 1,
 }));
 
-const CardTitle = styled.Text({
-  color: '#ffffff',
-  fontSize: 16,
-  fontWeight: '600',
-  marginBottom: 8,
-});
+const CardTitle = styled.Text<{ variant?: 'default' | 'light' }>(
+  ({ variant }) => ({
+    color: variant === 'light' ? '#000000' : '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  }),
+);
 
 const ContentRow = styled.View({
   flexDirection: 'row',
@@ -185,18 +200,21 @@ const CardContentContainer = styled.View({
   flex: 1,
 });
 
-const Title = styled.Text({
-  color: '#ffffff',
+const Title = styled.Text<{ variant?: 'default' | 'light' }>(({ variant }) => ({
+  color: variant === 'light' ? '#000000' : '#ffffff',
   fontSize: 18,
   fontWeight: 'bold',
   marginBottom: 4,
-});
+}));
 
-const Subtitle = styled.Text({
-  color: 'rgba(255, 255, 255, 0.7)',
-  fontSize: 14,
-  marginBottom: 8,
-});
+const Subtitle = styled.Text<{ variant?: 'default' | 'light' }>(
+  ({ variant }) => ({
+    color:
+      variant === 'light' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    marginBottom: 8,
+  }),
+);
 
 const StatsContainer = styled.View({
   flexDirection: 'row',
@@ -207,17 +225,23 @@ const StatItem = styled.View({
   alignItems: 'center',
 });
 
-const StatLabel = styled.Text({
-  color: 'rgba(255, 255, 255, 0.8)',
-  fontSize: 12,
-  marginBottom: 2,
-});
+const StatLabel = styled.Text<{ variant?: 'default' | 'light' }>(
+  ({ variant }) => ({
+    color:
+      variant === 'light' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
+    marginBottom: 2,
+  }),
+);
 
-const StatValue = styled.Text({
-  color: 'rgba(255, 255, 255, 0.8)',
-  fontSize: 14,
-  fontWeight: '600',
-});
+const StatValue = styled.Text<{ variant?: 'default' | 'light' }>(
+  ({ variant }) => ({
+    color:
+      variant === 'light' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    fontWeight: '600',
+  }),
+);
 
 const StarIcon = styled(Star)({
   position: 'absolute',

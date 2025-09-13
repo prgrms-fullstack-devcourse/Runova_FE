@@ -25,6 +25,7 @@ import {
 
 type Props = {
   navigation: any;
+  onStartRun?: (courseId: number) => void;
 };
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [

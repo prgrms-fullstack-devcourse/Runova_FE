@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Animated } from 'react-native';
 import styled from '@emotion/native';
 import { Play } from 'lucide-react-native';
@@ -10,12 +10,15 @@ import TabNavigation from '@/components/TabNavigation';
 import Header from '@/components/Header';
 import { useLocationManager } from '@/hooks/useLocationManager';
 import { useLongPress } from '@/hooks/useLongPress';
+import { useAdjacentCourses } from '@/hooks/api/useRouteApi';
+import type { CourseSearchItem } from '@/types/courses.types';
 
 import Route from '@/pages/Route';
 import Draw from '@/pages/Draw';
 import RouteSave from '@/pages/RouteSave';
 import Detail from '@/pages/Detail';
 import Run from '@/pages/Run';
+import RecommendationContainer from '@/pages/Run/_components/RecommendationContainer';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +32,9 @@ const tabs: Array<{ id: RunTabId; title: string }> = [
 // 바로가기 메인 컴포넌트
 function QuickStartMain({ navigation }: { navigation: any }) {
   const [activeTab, setActiveTab] = useState<RunTabId>('quickstart');
+  const [recommendations, setRecommendations] = useState<CourseSearchItem[]>(
+    [],
+  );
   const mapRef = useRef<Mapbox.MapView>(null);
   const cameraRef = useRef<Mapbox.Camera>(null);
 
@@ -40,23 +46,48 @@ function QuickStartMain({ navigation }: { navigation: any }) {
     refreshLocation,
   } = useLocationManager();
 
-  // 탭이 포커스될 때마다 위치 새로고침
+  const { searchAdjacent } = useAdjacentCourses();
+
+  // 추천 경로 로드 함수
+  const loadRecommendations = useCallback(async () => {
+    if (initialLocation) {
+      try {
+        const results = await searchAdjacent(initialLocation, 1000);
+        setRecommendations(results);
+      } catch (error) {
+        console.error('추천 경로 로드 실패:', error);
+      }
+    }
+  }, [initialLocation, searchAdjacent]);
+
+  // 탭이 포커스될 때마다 위치 새로고침 및 추천 경로 로드
   useFocusEffect(
     useCallback(() => {
       if (!initialLocation && !locationLoading) {
         refreshLocation();
       }
-    }, [initialLocation, locationLoading, refreshLocation]),
+      if (initialLocation) {
+        loadRecommendations();
+      }
+    }, [
+      initialLocation,
+      locationLoading,
+      refreshLocation,
+      loadRecommendations,
+    ]),
   );
 
   const handleStartPress = () => {
     navigation.navigate('Run', {});
   };
 
-  const { isPressing, pressProgress, animatedValue, startPress, stopPress } =
-    useLongPress({
-      onComplete: handleStartPress,
-    });
+  const handleRecommendationPress = (item: CourseSearchItem) => {
+    navigation.navigate('Run', { courseId: item.id });
+  };
+
+  const { isPressing, animatedValue, startPress, stopPress } = useLongPress({
+    onComplete: handleStartPress,
+  });
 
   const handleTabPress = (tabId: RunTabId) => {
     setActiveTab(tabId);
@@ -82,6 +113,10 @@ function QuickStartMain({ navigation }: { navigation: any }) {
               <Mapbox.UserLocation onUpdate={handleUserLocationUpdate} />
             </MapView>
           )}
+          <RecommendationContainer
+            onRecommendationPress={handleRecommendationPress}
+            recommendations={recommendations}
+          />
           <StartButtonContainer>
             <StartButton
               onPressIn={startPress}

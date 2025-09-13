@@ -43,7 +43,10 @@ export interface CourseSearchItem {
   length: number;
   time: number;
   createdAt: string;
-  author: string;
+  author: {
+    nickname: string;
+    imageUrl: string;
+  };
   bookmarked: boolean;
   completed: boolean;
 }
