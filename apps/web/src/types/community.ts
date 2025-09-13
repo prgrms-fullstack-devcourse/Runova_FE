@@ -1,5 +1,7 @@
 export type Category = 'ALL' | 'FREE' | 'PROOF' | 'SHARE' | 'MATE';
 
+type AuthorObj = { id: number; nickname: string; imageUrl?: string | null };
+
 export interface Post {
   id: string;
   category: Exclude<Category, 'ALL'>;
@@ -14,6 +16,7 @@ export interface Post {
   routeId?: number;
   createdAt: string;
   updatedAt: string;
+  authorInfo: AuthorObj;
 }
 
 export interface Comment {

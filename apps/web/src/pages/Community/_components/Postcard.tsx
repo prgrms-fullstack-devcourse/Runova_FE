@@ -12,13 +12,13 @@ export default function PostCard({ post }: PostCardProps) {
 
   const {
     id,
-    author,
     content,
     liked,
     likeCount,
     commentsCount,
     imageUrl,
     createdAt,
+    authorInfo,
   } = post;
 
   return (
@@ -28,9 +28,9 @@ export default function PostCard({ post }: PostCardProps) {
       onClick={() => navigate(`/community/${id}`)}
     >
       <ProfileHeader
-        userName={author}
+        userName={authorInfo?.nickname ?? ''}
         postDate={createdAt.slice(0, 10)}
-        imageUrl={`https://picsum.photos/48?random=${id}`}
+        imageUrl={authorInfo?.imageUrl ?? ''}
       />
 
       {imageUrl && imageUrl !== '{}' && (

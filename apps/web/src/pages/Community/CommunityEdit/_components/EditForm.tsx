@@ -12,7 +12,7 @@ export type EditPatch = Partial<{
   category: Category;
   title: string;
   content: string;
-  imageUrls: string[];
+  imageUrl: string;
   routeId: number | undefined;
 }>;
 
@@ -41,7 +41,17 @@ export default function EditForm({
   submitLabel?: string;
   footerSlot?: React.ReactNode;
 }) {
-  const showPicker = category === 'SHARE' || category === 'PROOF';
+  // SHARE에서만 목록 픽커 노출, PROOF/FREE/MATE는 숨김
+  const showPicker = category === 'SHARE';
+
+  const handlePick = (it: SelectableItem) => {
+    if (submitting) return;
+    onSelectItem?.(it.id);
+    if (category === 'SHARE') {
+      const rid = Number(it.id);
+      onChange({ routeId: Number.isNaN(rid) ? undefined : rid });
+    }
+  };
 
   return (
     <Body aria-busy={submitting}>
@@ -69,11 +79,9 @@ export default function EditForm({
         />
       </Field>
 
-      {showPicker && (
+      {showPicker ? (
         <Field>
-          <Label>
-            {category === 'PROOF' ? '인증샷 선택' : '공유할 항목 선택'}
-          </Label>
+          <Label>공유할 항목 선택</Label>
           <Picker role="listbox" aria-label="선택 리스트">
             {items.length !== 0 &&
               items.map((it) => {
@@ -84,7 +92,7 @@ export default function EditForm({
                     role="option"
                     aria-selected={active}
                     $active={active}
-                    onClick={() => !submitting && onSelectItem?.(it.id)}
+                    onClick={() => handlePick(it)}
                     disabled={submitting}
                   >
                     <Thumb>
@@ -98,9 +106,13 @@ export default function EditForm({
                   </PickerItem>
                 );
               })}
+            {/* SHARE에서는 Picker 내부 하단에 footerSlot */}
             {footerSlot}
           </Picker>
         </Field>
+      ) : (
+        // PROOF/FREE/MATE에서는 Picker 대신 별도 영역으로 footerSlot 노출
+        footerSlot && <Field>{footerSlot}</Field>
       )}
 
       <Field>
@@ -184,6 +196,11 @@ const PickerItem = styled.button<{ $active?: boolean }>`
   i {
     font-size: 18px;
     color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 

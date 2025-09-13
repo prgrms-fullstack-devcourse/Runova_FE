@@ -29,7 +29,7 @@ export default function PostHeader({
         </ButtonContainer>
       </Row>
       <Title>{post.title}</Title>
-      <Author>{post.author}</Author>
+      <Author>{post.authorInfo?.nickname}</Author>
     </Container>
   );
 }
