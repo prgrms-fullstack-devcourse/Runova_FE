@@ -14,7 +14,7 @@ import type { RunningRecordRequest } from '@/types/run.types';
 import type { AxiosErrorResponse } from '@/types/api.types';
 
 type Props = {
-  navigation: NativeStackNavigationProp<TabParamList, 'Run'>;
+  navigation: NativeStackNavigationProp<TabParamList, 'RunTab'>;
   mapRef?: RefObject<Mapbox.MapView | null>;
   cameraRef?: RefObject<Mapbox.Camera | null>;
   courseId?: number;
