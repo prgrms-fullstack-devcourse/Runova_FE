@@ -418,7 +418,7 @@ const DrawButtonProgress = styled(Animated.View)({
   top: 0,
   left: 0,
   height: '100%',
-  backgroundColor: '#4ECDC4',
+  backgroundColor: '#000000',
   borderRadius: 8,
 });
 
