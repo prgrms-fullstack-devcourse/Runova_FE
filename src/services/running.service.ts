@@ -3,6 +3,12 @@ import type {
   RunningRecordRequest,
   RunningRecordResponse,
 } from '@/types/run.types';
+import type {
+  RunningRecordsRequest,
+  RunningRecordsResponse,
+  RunningDashboard,
+  RunningDashboardRequest,
+} from '@/types/records.types';
 
 export async function createRunningRecord(
   data: RunningRecordRequest,
@@ -29,4 +35,30 @@ export async function createRunningRecord(
   } catch (error: unknown) {
     throw error;
   }
+}
+
+export async function searchRunningRecords(
+  params: RunningRecordsRequest,
+  accessToken: string,
+): Promise<RunningRecordsResponse> {
+  const response = await api.get('/api/running/records', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function getRunningDashboard(
+  params: RunningDashboardRequest,
+  accessToken: string,
+): Promise<RunningDashboard> {
+  const response = await api.get('/api/running/dashboards', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
 }
