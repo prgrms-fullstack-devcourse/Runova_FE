@@ -255,7 +255,7 @@ export default function CommunityDetail() {
     );
   }
 
-  const images = (post.imageUrls ?? []).filter(Boolean);
+  const imageUrl = post.imageUrl;
   const hasMore = comments.length < cTotal;
 
   return (
@@ -267,16 +267,11 @@ export default function CommunityDetail() {
       />
 
       <Content>
-        {images.length > 0 && (
-          <ImageList>
-            {images.map((src, idx) => (
-              <li key={`${src}-${idx}`}>
-                <img src={src} alt={`${post.title || 'post'}-${idx + 1}`} />
-              </li>
-            ))}
-          </ImageList>
+        {imageUrl && imageUrl !== '{}' && (
+          <PostImageContainer>
+            <PostImage src={imageUrl} alt="post image" />
+          </PostImageContainer>
         )}
-
         <Article>{post.content || '내용이 없습니다.'}</Article>
 
         <LikeBar>
@@ -287,7 +282,6 @@ export default function CommunityDetail() {
         </LikeBar>
       </Content>
 
-      {/* ✅ 댓글 목록 + 수정/삭제 핸들러 전달 */}
       <CommentList
         comments={comments}
         onEdit={handleEditComment}
@@ -322,19 +316,17 @@ const Content = styled.section`
   line-height: 1.6;
 `;
 
-const ImageList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0 0 12px 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    display: block;
-  }
+const PostImageContainer = styled.div`
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const PostImage = styled.img`
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
 `;
 
 const Article = styled.div`
