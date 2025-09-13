@@ -50,38 +50,60 @@ export default function RecommendationContainer({
     }
   }, [recommendations, geocodedAddresses]);
 
+  // 안내 카드 데이터
+  const guideCard = {
+    id: 'guide',
+    title: '🏃‍♂️ 런닝을 시작해보세요!',
+    subtitle:
+      '바로 달리기 또는 추천 경로를 선택하여 런닝을 시작할 수 있습니다.',
+  };
+
+  // 데이터 배열 생성 (안내 카드 + 추천 경로)
+  const data = [guideCard, ...recommendations];
+
   return (
-    <RecommendationOverlay
-      style={{ opacity: recommendations.length > 0 ? 1 : 0 }}
-    >
-      {recommendations.length > 0 && (
-        <FlatList
-          data={recommendations}
-          renderItem={({ item }) => {
-            const address = geocodedAddresses[item.id] || '로딩 중...';
+    <RecommendationOverlay>
+      <FlatList
+        data={data}
+        renderItem={({ item, index }) => {
+          // 첫 번째 카드는 안내 문구
+          if (index === 0) {
+            const guideItem = item as typeof guideCard;
             return (
-              <Card
-                imageSource={{ uri: item.imageUrl }}
-                content={{
-                  title: item.title,
-                  subtitle: `${address} • ${Math.floor(item.length)}m • ${Math.floor(item.time)}분`,
-                }}
-                mode="image-with-text"
-                variant="light"
-                onPress={() => onRecommendationPress(item)}
-                fullWidth={true}
-                style={{ width: screenWidth - 32, marginRight: 32 }}
-              />
+              <GuideCard style={{ width: screenWidth - 32, marginRight: 32 }}>
+                <GuideTitle>{guideItem.title}</GuideTitle>
+                <GuideSubtitle>{guideItem.subtitle}</GuideSubtitle>
+              </GuideCard>
             );
-          }}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled={true}
-          snapToInterval={screenWidth}
-          decelerationRate="fast"
-        />
-      )}
+          }
+
+          // 추천 경로 카드
+          const courseItem = item as CourseSearchItem;
+          const address = geocodedAddresses[courseItem.id] || '로딩 중...';
+          return (
+            <Card
+              imageSource={{ uri: courseItem.imageUrl }}
+              content={{
+                title: courseItem.title,
+                subtitle: `${address} • ${Math.floor(courseItem.length)}m • ${Math.floor(courseItem.time)}분`,
+              }}
+              mode="image-with-text"
+              variant="light"
+              onPress={() => onRecommendationPress(courseItem)}
+              fullWidth={true}
+              style={{ width: screenWidth - 32, marginRight: 32 }}
+            />
+          );
+        }}
+        keyExtractor={(item, index) =>
+          index === 0 ? 'guide' : item.id.toString()
+        }
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled={true}
+        snapToInterval={screenWidth}
+        decelerationRate="fast"
+      />
     </RecommendationOverlay>
   );
 }
@@ -93,4 +115,37 @@ const RecommendationOverlay = styled.View({
   right: 0,
   zIndex: 1000,
   paddingHorizontal: 16,
+});
+
+const GuideCard = styled.View({
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  borderRadius: 16,
+  padding: 24,
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 120,
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  elevation: 5,
+});
+
+const GuideTitle = styled.Text({
+  fontSize: 20,
+  fontWeight: '700',
+  color: '#2d2d2d',
+  textAlign: 'center',
+  marginBottom: 12,
+});
+
+const GuideSubtitle = styled.Text({
+  fontSize: 14,
+  fontWeight: '400',
+  color: '#666666',
+  textAlign: 'center',
+  lineHeight: 20,
 });

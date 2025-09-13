@@ -161,9 +161,9 @@ const CardContainer = styled(TouchableOpacity)<{
   borderWidth: 1,
   borderRadius: 12,
   padding: mode === 'only-image' ? 0 : 16,
-  flex: fullWidth ? undefined : mode === 'only-image' ? 1 : 1,
+  flex: fullWidth ? undefined : mode === 'only-image' ? 1 : undefined,
   width: fullWidth ? '100%' : undefined,
-  aspectRatio: fullWidth ? undefined : 1,
+  minHeight: mode === 'image-with-text' ? 96 : undefined, // 80px 이미지 + 16px 패딩
 }));
 
 const CardTitle = styled.Text<{ variant?: 'default' | 'light' }>(
@@ -190,8 +190,8 @@ const ImageContainer = styled.View({
 const CardImage = styled(Image)<{
   mode: CardMode;
 }>(({ mode }) => ({
-  width: mode === 'only-image' ? '100%' : 100,
-  height: mode === 'only-image' ? '100%' : 100,
+  width: mode === 'only-image' ? '100%' : 80,
+  height: mode === 'only-image' ? '100%' : 80,
   borderRadius: mode === 'only-image' ? 12 : 8,
   marginRight: mode === 'image-with-text' ? 12 : 0,
 }));
