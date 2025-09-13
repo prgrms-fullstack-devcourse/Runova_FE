@@ -44,6 +44,7 @@ export default function Draw() {
     locationLoading,
     flyToCurrentUserLocation,
     handleUserLocationUpdate,
+    refreshLocation,
   } = useLocationManager();
   const { composedGesture } = useMapGestures(mapRef);
   const { processImage } = useMapCapture(mapRef, cameraRef);
@@ -52,7 +53,11 @@ export default function Draw() {
   useFocusEffect(
     useCallback(() => {
       clearAll();
-    }, [clearAll]),
+      // 위치가 없으면 강제로 위치 요청
+      if (!initialLocation && !locationLoading) {
+        refreshLocation();
+      }
+    }, [clearAll, initialLocation, locationLoading, refreshLocation]),
   );
 
   const handleBackPress = () => {

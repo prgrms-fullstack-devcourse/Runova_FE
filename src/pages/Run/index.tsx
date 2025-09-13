@@ -18,7 +18,7 @@ import ControlContainer from './_components/ControlContainer';
 import Modal from '@/components/Modal';
 import Mapbox from '@rnmapbox/maps';
 
-type Props = NativeStackScreenProps<TabParamList, 'Run'>;
+type Props = NativeStackScreenProps<any, 'Run'>;
 
 export default function Run({ route, navigation }: Props) {
   // 전역 Store에서 현재 코스 데이터 가져오기
@@ -79,7 +79,12 @@ export default function Run({ route, navigation }: Props) {
     handleCancelExit,
     handleRetryExit,
     handleConfirmExit,
-  } = useRunModals({ navigation, mapRef, cameraRef, courseId });
+  } = useRunModals({
+    navigation: navigation as any,
+    mapRef,
+    cameraRef,
+    courseId,
+  });
 
   useFocusEffect(
     useCallback(() => {

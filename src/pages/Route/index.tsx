@@ -10,6 +10,8 @@ import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId, TabParamList } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type {
   BookmarkedCourseItem,
   CourseSearchItem,
@@ -21,10 +23,10 @@ import {
   useCompletedCourses,
 } from '@/hooks/api/useRouteApi';
 
-type Props = CompositeScreenProps<
-  NativeStackScreenProps<RouteStackParamList, 'RouteMain'>,
-  BottomTabScreenProps<TabParamList>
->;
+type Props = {
+  navigation: any;
+  onStartRun?: (courseId: number) => void;
+};
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'created', title: '생성한 경로' },
@@ -32,7 +34,7 @@ const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'liked', title: '좋아요한 경로' },
 ];
 
-export default function Route({ navigation }: Props) {
+export default function Route({ navigation, onStartRun }: Props) {
   const {
     activeTab,
     setActiveTab,
@@ -73,6 +75,12 @@ export default function Route({ navigation }: Props) {
     navigation.navigate('Draw', undefined);
   };
 
+  const handleStartRun = (courseId: number) => {
+    if (onStartRun) {
+      onStartRun(courseId);
+    }
+  };
+
   const handleTabPress = (tabId: RouteTabId) => {
     setActiveTab(tabId);
 
@@ -88,17 +96,15 @@ export default function Route({ navigation }: Props) {
 
   return (
     <Screen>
-      <Header
-        title="Runova"
-        rightIcon={Settings}
-        onRightPress={handleSettingsPress}
-      />
       <TabNavigation<RouteTabId>
         tabs={tabs}
         activeTab={activeTab}
         onTabPress={handleTabPress}
       />
-      <RouteGrid onRouteCardPress={handleRouteCardPress} />
+      <RouteGrid
+        onRouteCardPress={handleRouteCardPress}
+        onStartRun={handleStartRun}
+      />
       <FloatingButton icon={PenTool} onPress={handleCreatePress} />
     </Screen>
   );

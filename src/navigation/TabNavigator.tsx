@@ -1,17 +1,12 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  Star,
-  AudioWaveform,
-  Play,
-  Laugh,
-  Settings,
-} from 'lucide-react-native';
+import { Star, FileText, Play, Laugh, Settings } from 'lucide-react-native';
 
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
-import RouteStackNavigator from '@/navigation/RouteStackNavigator';
+import Records from '@/pages/Records';
+import RunTabNavigator from '@/navigation/RunTabNavigator';
 import Run from '@/pages/Run';
 
 import type { TabParamList } from '@/types/navigation.types';
@@ -58,17 +53,26 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Route"
-        component={RouteStackNavigator}
+        name="Records"
+        component={Records}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FileText color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="RunTab"
+        component={RunTabNavigator}
         options={({ route }) => {
-          const routeName = getFocusedRouteNameFromRoute(route) ?? 'RouteMain';
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? 'QuickStartMain';
           return {
-            tabBarIcon: ({ color, size }) => (
-              <AudioWaveform color={color} size={size} />
-            ),
+            tabBarIcon: ({ color, size }) => <Play color={color} size={size} />,
             tabBarStyle: {
               ...baseTabBarStyle,
               display:
+                routeName === 'Run' ||
                 routeName === 'Draw' ||
                 routeName === 'RouteSave' ||
                 routeName === 'Detail'
@@ -76,17 +80,6 @@ export default function TabNavigator() {
                   : 'flex',
             },
           };
-        }}
-      />
-      <Tab.Screen
-        name="Run"
-        component={Run}
-        options={{
-          tabBarIcon: ({ color, size }) => <Play color={color} size={size} />,
-          tabBarStyle: {
-            ...baseTabBarStyle,
-            display: 'none',
-          },
         }}
       />
       <Tab.Screen

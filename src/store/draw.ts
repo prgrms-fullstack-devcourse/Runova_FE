@@ -66,6 +66,7 @@ const useDrawStore = create<DrawState>((set) => ({
       completedDrawings: [],
       drawnCoordinates: [],
       drawMode: 'none',
+      isLoading: false,
     }),
 }));
 

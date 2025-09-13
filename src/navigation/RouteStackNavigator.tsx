@@ -20,10 +20,18 @@ export type RouteStackParamList = {
 
 const Stack = createNativeStackNavigator<RouteStackParamList>();
 
-export default function RouteStackNavigator() {
+interface RouteStackNavigatorProps {
+  onStartRun?: (courseId: number) => void;
+}
+
+export default function RouteStackNavigator({
+  onStartRun,
+}: RouteStackNavigatorProps) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="RouteMain" component={Route} />
+      <Stack.Screen name="RouteMain">
+        {(props) => <Route {...props} onStartRun={onStartRun} />}
+      </Stack.Screen>
       <Stack.Screen name="Draw" component={Draw} />
       <Stack.Screen name="RouteSave" component={RouteSave} />
       <Stack.Screen name="Detail" component={Detail} />

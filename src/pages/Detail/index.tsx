@@ -31,10 +31,10 @@ import type {
   CompletedCourseItem,
 } from '@/types/courses.types';
 
-type Props = CompositeScreenProps<
-  NativeStackScreenProps<RouteStackParamList, 'Detail'>,
-  BottomTabScreenProps<TabParamList>
->;
+type Props = {
+  route: any;
+  navigation: any;
+};
 
 export default function Detail({ route, navigation }: Props) {
   const { courseId } = route.params;
@@ -61,21 +61,8 @@ export default function Detail({ route, navigation }: Props) {
       useRunStore.getState().setCurrentCourse(courseId, courseData);
     }
 
-    try {
-      const routeStackNavigator = navigation.getParent();
-      if (routeStackNavigator && 'jumpTo' in routeStackNavigator) {
-        (routeStackNavigator as any).jumpTo('Run');
-        return;
-      }
-
-      const tabNavigator = navigation.getParent()?.getParent();
-      if (tabNavigator && 'jumpTo' in tabNavigator) {
-        (tabNavigator as any).jumpTo('Run');
-        return;
-      }
-    } catch (error) {
-      // 네비게이션 에러 시 무시
-    }
+    // RunTabNavigator 내부의 Run 스크린으로 이동
+    navigation.navigate('Run', { courseId });
   };
 
   const { isPressing, pressProgress, animatedValue, startPress, stopPress } =

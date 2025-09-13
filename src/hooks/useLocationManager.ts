@@ -78,7 +78,7 @@ export function useLocationManager() {
   };
 
   return {
-    initialLocation: currentUserLocation.current, // 현재 위치가 없으면 null
+    initialLocation: currentUserLocation.current, // 현재 위치만 사용
     locationLoading: locationLoading,
     location,
     errorMsg,

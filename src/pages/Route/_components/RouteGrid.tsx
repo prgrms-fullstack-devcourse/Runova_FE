@@ -5,8 +5,10 @@ import {
   Text,
   TouchableOpacity,
   RefreshControl,
+  View,
 } from 'react-native';
 import { useCallback } from 'react';
+import { Play } from 'lucide-react-native';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
 import {
@@ -22,9 +24,13 @@ import {
 
 interface RouteGridProps {
   onRouteCardPress: (courseId: number) => void;
+  onStartRun: (courseId: number) => void;
 }
 
-export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
+export default function RouteGrid({
+  onRouteCardPress,
+  onStartRun,
+}: RouteGridProps) {
   const {
     activeTab,
     courses,
@@ -90,40 +96,58 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
       if (activeTab === 'completed') {
         const completedItem = item as CompletedCourseItem;
         return (
-          <Card
-            imageSource={{ uri: completedItem.imageUrl }}
-            content={{
-              title: completedItem.title,
-              subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
-              hasStar: completedItem.bookmarked,
-            }}
-            mode="only-image"
-            onPress={() => onRouteCardPress(completedItem.id)}
-          />
+          <CardContainer>
+            <Card
+              imageSource={{ uri: completedItem.imageUrl }}
+              content={{
+                title: completedItem.title,
+                subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
+                hasStar: completedItem.bookmarked,
+              }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(completedItem.id)}
+            />
+            <RunButton onPress={() => onStartRun(completedItem.id)}>
+              <PlayIcon size={16} color="#ffffff" />
+              <RunButtonText>러닝 시작</RunButtonText>
+            </RunButton>
+          </CardContainer>
         );
       } else if (activeTab === 'liked') {
         const bookmarkedItem = item as BookmarkedCourseItem;
         return (
-          <Card
-            imageSource={{ uri: bookmarkedItem.imageUrl }}
-            content={{ hasStar: bookmarkedItem.bookmarked }}
-            mode="only-image"
-            onPress={() => onRouteCardPress(bookmarkedItem.id)}
-          />
+          <CardContainer>
+            <Card
+              imageSource={{ uri: bookmarkedItem.imageUrl }}
+              content={{ hasStar: bookmarkedItem.bookmarked }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(bookmarkedItem.id)}
+            />
+            <RunButton onPress={() => onStartRun(bookmarkedItem.id)}>
+              <PlayIcon size={16} color="#ffffff" />
+              <RunButtonText>러닝 시작</RunButtonText>
+            </RunButton>
+          </CardContainer>
         );
       } else {
         const courseItem = item as CourseSearchItem;
         return (
-          <Card
-            imageSource={{ uri: courseItem.imageUrl }}
-            content={{ hasStar: courseItem.bookmarked }}
-            mode="only-image"
-            onPress={() => onRouteCardPress(courseItem.id)}
-          />
+          <CardContainer>
+            <Card
+              imageSource={{ uri: courseItem.imageUrl }}
+              content={{ hasStar: courseItem.bookmarked }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(courseItem.id)}
+            />
+            <RunButton onPress={() => onStartRun(courseItem.id)}>
+              <PlayIcon size={16} color="#ffffff" />
+              <RunButtonText>러닝 시작</RunButtonText>
+            </RunButton>
+          </CardContainer>
         );
       }
     },
-    [activeTab, onRouteCardPress],
+    [activeTab, onRouteCardPress, onStartRun],
   );
 
   const currentData = getCurrentData();
@@ -259,5 +283,32 @@ const RetryButton = styled(TouchableOpacity)({
 const RetryButtonText = styled.Text({
   color: '#ffffff',
   fontSize: 14,
+  fontWeight: '600',
+});
+
+const CardContainer = styled.View({
+  flex: 1,
+  marginBottom: 16,
+});
+
+const RunButton = styled.TouchableOpacity({
+  backgroundColor: '#ff6b35',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 8,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 4,
+  marginTop: 8,
+});
+
+const PlayIcon = styled(Play)({
+  // styled component for Play icon
+});
+
+const RunButtonText = styled.Text({
+  color: '#ffffff',
+  fontSize: 12,
   fontWeight: '600',
 });
