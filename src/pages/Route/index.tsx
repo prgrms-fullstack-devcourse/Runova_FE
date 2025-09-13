@@ -22,6 +22,7 @@ import {
   useBookmarkedCourses,
   useCompletedCourses,
 } from '@/hooks/api/useRouteApi';
+import { theme } from '@/styles/theme';
 
 type Props = {
   navigation: any;
@@ -96,7 +97,11 @@ export default function Route({ navigation }: Props) {
         onTabPress={handleTabPress}
       />
       <RouteGrid onRouteCardPress={handleRouteCardPress} />
-      <FloatingButton icon={PenTool} onPress={handleCreatePress} />
+      <FloatingButton
+        icon={PenTool}
+        onPress={handleCreatePress}
+        style={styles.defaultButton}
+      />
     </Screen>
   );
 }
@@ -105,3 +110,14 @@ const Screen = styled.View({
   flex: 1,
   backgroundColor: '#ffffff',
 });
+
+const styles = {
+  defaultButton: {
+    backgroundColor: '#111827',
+  },
+  activeButton: {
+    backgroundColor: theme.colors.secondary[500],
+    elevation: 12,
+    shadowOpacity: 0.5,
+  },
+};

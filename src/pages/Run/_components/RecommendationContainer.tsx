@@ -63,9 +63,8 @@ export default function RecommendationContainer({
               <Card
                 imageSource={{ uri: item.imageUrl }}
                 content={{
-                  cardTitle: '추천 경로',
                   title: item.title,
-                  subtitle: `${item.author.nickname} • ${Math.floor(item.length)}m • ${Math.floor(item.time)}분\n\n📍 ${address}`,
+                  subtitle: `${address} • ${Math.floor(item.length)}m • ${Math.floor(item.time)}분`,
                 }}
                 mode="image-with-text"
                 variant="light"

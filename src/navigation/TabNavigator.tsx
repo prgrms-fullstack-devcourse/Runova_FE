@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import { Star, FileText, Play, Laugh, Settings } from 'lucide-react-native';
 
 import WebCommunity from '@/pages/WebCommunity';
@@ -14,13 +15,13 @@ import WebMyPage from '@/pages/WebMyPage';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const TAB_BAR_HEIGHT = 60;
+const TAB_BAR_HEIGHT = 68;
 
 export default function TabNavigator() {
   const insets = useSafeAreaInsets();
 
   const baseTabBarStyle = {
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
@@ -30,6 +31,14 @@ export default function TabNavigator() {
     right: 0,
     height: TAB_BAR_HEIGHT + insets.bottom,
     paddingBottom: insets.bottom,
+    paddingTop: 8,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowRadius: 8,
   };
 
   return (

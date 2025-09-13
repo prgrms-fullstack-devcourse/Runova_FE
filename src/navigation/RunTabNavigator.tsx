@@ -192,7 +192,7 @@ const MapView = styled(Mapbox.MapView)({
 
 const StartButtonContainer = styled.View({
   position: 'absolute',
-  bottom: 100,
+  bottom: 120,
   left: 20,
   right: 20,
 });
