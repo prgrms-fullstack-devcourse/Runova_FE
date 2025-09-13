@@ -197,7 +197,7 @@ export default function Run({ route, navigation }: Props) {
           <LocationLoadingContainer>
             <Text>위치를 가져올 수 없습니다</Text>
             <RefreshButton onPress={refreshLocation}>
-              <Text style={{ color: '#007AFF', marginTop: 8 }}>새로고침</Text>
+              <Text style={{ color: '#2d2d2d', marginTop: 8 }}>새로고침</Text>
             </RefreshButton>
           </LocationLoadingContainer>
         )}
@@ -277,8 +277,8 @@ const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
       severity === 'high'
         ? '#ef4444'
         : severity === 'medium'
-          ? '#f59e0b'
-          : '#3b82f6',
+          ? '#f87171'
+          : '#fca5a5',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 12,
@@ -314,5 +314,5 @@ const RefreshButton = styled.TouchableOpacity({
   padding: 12,
   borderRadius: 8,
   borderWidth: 1,
-  borderColor: '#007AFF',
+  borderColor: '#2d2d2d',
 });

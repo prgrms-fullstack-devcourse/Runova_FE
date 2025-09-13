@@ -1,10 +1,15 @@
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useState, useRef, useCallback } from 'react';
+import { View, Animated } from 'react-native';
 import styled from '@emotion/native';
 import { Play } from 'lucide-react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Mapbox from '@rnmapbox/maps';
 import TabNavigation from '@/components/TabNavigation';
 import Header from '@/components/Header';
+import { useLocationManager } from '@/hooks/useLocationManager';
+import { useLongPress } from '@/hooks/useLongPress';
 
 import Route from '@/pages/Route';
 import Draw from '@/pages/Draw';
@@ -24,31 +29,90 @@ const tabs: Array<{ id: RunTabId; title: string }> = [
 // 바로가기 메인 컴포넌트
 function QuickStartMain({ navigation }: { navigation: any }) {
   const [activeTab, setActiveTab] = useState<RunTabId>('quickstart');
+  const mapRef = useRef<Mapbox.MapView>(null);
+  const cameraRef = useRef<Mapbox.Camera>(null);
+
+  const {
+    initialLocation,
+    locationLoading,
+    flyToCurrentUserLocation,
+    handleUserLocationUpdate,
+    refreshLocation,
+  } = useLocationManager();
+
+  // 탭이 포커스될 때마다 위치 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      if (!initialLocation && !locationLoading) {
+        refreshLocation();
+      }
+    }, [initialLocation, locationLoading, refreshLocation]),
+  );
 
   const handleStartPress = () => {
     navigation.navigate('Run', {});
   };
 
+  const { isPressing, pressProgress, animatedValue, startPress, stopPress } =
+    useLongPress({
+      onComplete: handleStartPress,
+    });
+
   const handleTabPress = (tabId: RunTabId) => {
     setActiveTab(tabId);
-  };
-
-  const handleCourseStart = (courseId: number) => {
-    navigation.navigate('Run', { courseId });
   };
 
   const renderContent = () => {
     if (activeTab === 'quickstart') {
       return (
         <QuickStartContainer>
-          <StartButton onPress={handleStartPress}>
-            <PlayIcon size={32} color="#ffffff" />
-            <StartButtonText>러닝 시작</StartButtonText>
-          </StartButton>
+          {initialLocation && (
+            <MapView
+              ref={mapRef}
+              styleURL={Mapbox.StyleURL.Street}
+              style={{ flex: 1 }}
+            >
+              <Mapbox.Camera
+                ref={cameraRef}
+                defaultSettings={{
+                  centerCoordinate: initialLocation,
+                  zoomLevel: 15,
+                }}
+              />
+              <Mapbox.UserLocation onUpdate={handleUserLocationUpdate} />
+            </MapView>
+          )}
+          <StartButtonContainer>
+            <StartButton
+              onPressIn={startPress}
+              onPressOut={stopPress}
+              activeOpacity={0.8}
+            >
+              <StartButtonGradient
+                colors={['#1a1a1a', '#2d2d2d', '#404040']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              <StartButtonProgress
+                style={{
+                  width: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0%', '100%'],
+                  }),
+                }}
+              />
+              <StartButtonContent>
+                <PlayIcon size={24} color="#ffffff" />
+                <StartButtonText>
+                  {isPressing ? '러닝 시작 중...' : '러닝 시작'}
+                </StartButtonText>
+              </StartButtonContent>
+            </StartButton>
+          </StartButtonContainer>
         </QuickStartContainer>
       );
     } else {
-      return <Route navigation={navigation} onStartRun={handleCourseStart} />;
+      return <Route navigation={navigation} />;
     }
   };
 
@@ -84,24 +148,52 @@ const Container = styled.View({
 
 const QuickStartContainer = styled.View({
   flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#f8f9fa',
+  position: 'relative',
+});
+
+const MapView = styled(Mapbox.MapView)({
+  flex: 1,
+});
+
+const StartButtonContainer = styled.View({
+  position: 'absolute',
+  bottom: 100,
+  left: 20,
+  right: 20,
 });
 
 const StartButton = styled.TouchableOpacity({
-  backgroundColor: '#ff6b35',
-  paddingHorizontal: 48,
-  paddingVertical: 24,
-  borderRadius: 16,
+  height: 56,
+  borderRadius: 8,
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+});
+
+const StartButtonGradient = styled(LinearGradient)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 8,
+});
+
+const StartButtonProgress = styled(Animated.View)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  height: '100%',
+  backgroundColor: '#4ECDC4',
+  borderRadius: 8,
+});
+
+const StartButtonContent = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
-  gap: 12,
-  elevation: 4,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.25,
-  shadowRadius: 4,
+  gap: 8,
+  zIndex: 1,
 });
 
 const PlayIcon = styled(Play)({
@@ -110,6 +202,6 @@ const PlayIcon = styled(Play)({
 
 const StartButtonText = styled.Text({
   color: '#ffffff',
-  fontSize: 18,
-  fontWeight: 'bold',
+  fontSize: 16,
+  fontWeight: '600',
 });

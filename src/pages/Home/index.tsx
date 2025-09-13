@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <Screen>
       <GradientBackground
-        colors={['#181820', '#242431', '#38384A', '#555571', '#646486']}
+        colors={['#1a1a1a', '#2d2d2d', '#404040', '#6b7280', '#9ca3af']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >

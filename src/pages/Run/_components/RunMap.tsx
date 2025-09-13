@@ -54,7 +54,7 @@ function RunMap({
             <Mapbox.LineLayer
               id="routeLayer"
               style={{
-                lineColor: theme.colors.secondary[500],
+                lineColor: '#8b5cf6',
                 lineWidth: 5,
                 lineCap: 'round',
                 lineJoin: 'round',
@@ -69,14 +69,14 @@ function RunMap({
             <Mapbox.FillLayer
               id="courseShapeLayer"
               style={{
-                fillColor: theme.colors.primary[200],
+                fillColor: '#c4b5fd',
                 fillOpacity: 0.3,
               }}
             />
             <Mapbox.LineLayer
               id="courseShapeBorderLayer"
               style={{
-                lineColor: theme.colors.primary[500],
+                lineColor: '#8b5cf6',
                 lineWidth: 2,
                 lineOpacity: 0.8,
               }}
@@ -91,7 +91,7 @@ function RunMap({
               width: 16,
               height: 16,
               borderRadius: 8,
-              backgroundColor: theme.colors.secondary[500],
+              backgroundColor: '#8b5cf6',
               borderWidth: 3,
               borderColor: '#ffffff',
               shadowColor: '#000',

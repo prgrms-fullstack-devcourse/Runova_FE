@@ -46,7 +46,7 @@ const TabButton = styled.TouchableOpacity<{
   alignItems: 'center',
   paddingVertical: 8,
   borderBottomWidth: isActive ? 2 : 0,
-  borderBottomColor: '#ff6b35',
+  borderBottomColor: '#2d2d2d',
 }));
 
 const TabText = styled.Text<{
@@ -54,5 +54,5 @@ const TabText = styled.Text<{
 }>(({ isActive }) => ({
   fontSize: 14,
   fontWeight: isActive ? '600' : '400',
-  color: isActive ? '#ff6b35' : '#666666',
+  color: isActive ? '#2d2d2d' : '#666666',
 }));

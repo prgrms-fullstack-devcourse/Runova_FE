@@ -2,6 +2,7 @@ import styled from '@emotion/native';
 import { LucideIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface FloatingButtonProps {
   icon: LucideIcon;
@@ -20,12 +21,24 @@ export default function FloatingButton({
 }: FloatingButtonProps) {
   const insets = useSafeAreaInsets();
 
+  // style prop에서 backgroundColor가 있는지 확인
+  const hasCustomBackground = Array.isArray(style)
+    ? style.some((s) => s && typeof s === 'object' && 'backgroundColor' in s)
+    : style && typeof style === 'object' && 'backgroundColor' in style;
+
   return (
     <ButtonContainer
       onPress={onPress}
       activeOpacity={0.8}
       style={[{ bottom: insets.bottom + FLOATING_BUTTON_BOTTOM_OFFSET }, style]}
     >
+      {!hasCustomBackground && (
+        <ButtonGradient
+          colors={['#1a1a1a', '#2d2d2d', '#404040']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      )}
       <Icon color={iconColor} size={24} />
     </ButtonContainer>
   );
@@ -36,7 +49,6 @@ const ButtonContainer = styled.TouchableOpacity({
   right: 20,
   width: 56,
   height: 56,
-  backgroundColor: '#ff6b35',
   borderRadius: 28,
   justifyContent: 'center',
   alignItems: 'center',
@@ -46,4 +58,14 @@ const ButtonContainer = styled.TouchableOpacity({
   shadowOpacity: 0.3,
   shadowRadius: 8,
   zIndex: 1000,
+  overflow: 'hidden',
+});
+
+const ButtonGradient = styled(LinearGradient)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 28,
 });

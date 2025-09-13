@@ -45,7 +45,7 @@ export default function DrawMap({
               <Mapbox.LineLayer
                 id="drawn-line"
                 style={{
-                  lineColor: theme.colors.secondary[500],
+                  lineColor: '#8b5cf6',
                   lineWidth: 4,
                   lineOpacity: 0.8,
                   lineDasharray: [2, 2],
@@ -80,7 +80,7 @@ export default function DrawMap({
                 <Mapbox.LineLayer
                   id={`completed-drawing-line-${index}`}
                   style={{
-                    lineColor: theme.colors.secondary[500],
+                    lineColor: '#8b5cf6',
                     lineWidth: 4,
                     lineOpacity: 0.7,
                   }}
@@ -108,7 +108,7 @@ export default function DrawMap({
               <Mapbox.LineLayer
                 id={`matched-line-${index}`}
                 style={{
-                  lineColor: theme.colors.primary[600],
+                  lineColor: '#8b5cf6',
                   lineWidth: 5,
                   lineOpacity: 0.9,
                 }}

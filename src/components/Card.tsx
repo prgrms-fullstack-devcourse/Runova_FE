@@ -77,7 +77,7 @@ export default function Card({
             </LoadingContainer>
           )}
           {content?.hasStar && (
-            <StarIcon size={20} color="#FFD700" fill="#FFD700" />
+            <StarIcon size={20} color="#2d2d2d" fill="#2d2d2d" />
           )}
         </ImageContainer>
       </CardContainer>
@@ -254,7 +254,7 @@ const LoadingContainer = styled.View({
 });
 
 const LoadingText = styled.Text({
-  color: '#007AFF',
+  color: '#2d2d2d',
   fontSize: 12,
   fontWeight: '500',
 });

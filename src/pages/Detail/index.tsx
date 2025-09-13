@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Share, ArrowLeft, Edit3 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import styled from '@emotion/native';
 
 import Header from '@/components/Header';
@@ -94,7 +95,7 @@ export default function Detail({ route, navigation }: Props) {
           title="경로 상세"
         />
         <LoadingContainer>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#2d2d2d" />
           <LoadingText>경로 정보를 불러오는 중...</LoadingText>
         </LoadingContainer>
       </Container>
@@ -164,7 +165,7 @@ export default function Detail({ route, navigation }: Props) {
           )}
           {imageLoading && imageUrl && !imageError && (
             <LoadingImageContainer>
-              <ActivityIndicator size="large" color="#007AFF" />
+              <ActivityIndicator size="large" color="#2d2d2d" />
             </LoadingImageContainer>
           )}
         </ImageContainer>
@@ -248,7 +249,7 @@ export default function Detail({ route, navigation }: Props) {
 
       <BottomContainer paddingBottom={insets.bottom + 16}>
         <ShareButton onPress={shareCourse}>
-          <Share size={24} color="#007AFF" />
+          <Share size={24} color="#2d2d2d" />
         </ShareButton>
 
         <DrawButton
@@ -256,6 +257,11 @@ export default function Detail({ route, navigation }: Props) {
           onPressOut={stopPress}
           activeOpacity={0.8}
         >
+          <DrawButtonGradient
+            colors={['#1a1a1a', '#2d2d2d', '#404040']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
           <DrawButtonProgress
             style={{
               width: animatedValue.interpolate({
@@ -311,7 +317,7 @@ const ErrorText = styled.Text({
 });
 
 const RetryButton = styled(TouchableOpacity)({
-  backgroundColor: '#007AFF',
+  backgroundColor: '#2d2d2d',
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
@@ -392,7 +398,6 @@ const ShareButton = styled(TouchableOpacity)({
 const DrawButton = styled(TouchableOpacity)({
   flex: 1,
   height: 48,
-  backgroundColor: '#f0f0f0',
   borderRadius: 8,
   justifyContent: 'center',
   alignItems: 'center',
@@ -400,17 +405,26 @@ const DrawButton = styled(TouchableOpacity)({
   overflow: 'hidden',
 });
 
+const DrawButtonGradient = styled(LinearGradient)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 8,
+});
+
 const DrawButtonProgress = styled(Animated.View)({
   position: 'absolute',
   top: 0,
   left: 0,
   height: '100%',
-  backgroundColor: '#007AFF',
+  backgroundColor: '#4ECDC4',
   borderRadius: 8,
 });
 
 const DrawButtonText = styled(Text)({
-  color: '#000000',
+  color: '#ffffff',
   fontSize: 16,
   fontWeight: '600',
   zIndex: 1,

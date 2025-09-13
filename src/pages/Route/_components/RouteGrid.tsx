@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import { useCallback } from 'react';
-import { Play } from 'lucide-react-native';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
 import {
@@ -24,13 +23,9 @@ import {
 
 interface RouteGridProps {
   onRouteCardPress: (courseId: number) => void;
-  onStartRun: (courseId: number) => void;
 }
 
-export default function RouteGrid({
-  onRouteCardPress,
-  onStartRun,
-}: RouteGridProps) {
+export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
   const {
     activeTab,
     courses,
@@ -107,10 +102,6 @@ export default function RouteGrid({
               mode="only-image"
               onPress={() => onRouteCardPress(completedItem.id)}
             />
-            <RunButton onPress={() => onStartRun(completedItem.id)}>
-              <PlayIcon size={16} color="#ffffff" />
-              <RunButtonText>러닝 시작</RunButtonText>
-            </RunButton>
           </CardContainer>
         );
       } else if (activeTab === 'liked') {
@@ -123,10 +114,6 @@ export default function RouteGrid({
               mode="only-image"
               onPress={() => onRouteCardPress(bookmarkedItem.id)}
             />
-            <RunButton onPress={() => onStartRun(bookmarkedItem.id)}>
-              <PlayIcon size={16} color="#ffffff" />
-              <RunButtonText>러닝 시작</RunButtonText>
-            </RunButton>
           </CardContainer>
         );
       } else {
@@ -139,15 +126,11 @@ export default function RouteGrid({
               mode="only-image"
               onPress={() => onRouteCardPress(courseItem.id)}
             />
-            <RunButton onPress={() => onStartRun(courseItem.id)}>
-              <PlayIcon size={16} color="#ffffff" />
-              <RunButtonText>러닝 시작</RunButtonText>
-            </RunButton>
           </CardContainer>
         );
       }
     },
-    [activeTab, onRouteCardPress, onStartRun],
+    [activeTab, onRouteCardPress],
   );
 
   const currentData = getCurrentData();
@@ -216,15 +199,15 @@ export default function RouteGrid({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={currentHandlers.handleRefresh}
-          tintColor="#007AFF"
-          colors={['#007AFF']}
+          tintColor="#2d2d2d"
+          colors={['#2d2d2d']}
         />
       }
       ListFooterComponent={() => (
         <>
           {loading && (
             <LoadingContainer>
-              <ActivityIndicator size="large" color="#007AFF" />
+              <ActivityIndicator size="large" color="#2d2d2d" />
             </LoadingContainer>
           )}
           {error && currentData.length > 0 && (
@@ -274,7 +257,7 @@ const ErrorText = styled.Text({
 });
 
 const RetryButton = styled(TouchableOpacity)({
-  backgroundColor: '#007AFF',
+  backgroundColor: '#2d2d2d',
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderRadius: 8,
@@ -289,26 +272,4 @@ const RetryButtonText = styled.Text({
 const CardContainer = styled.View({
   flex: 1,
   marginBottom: 16,
-});
-
-const RunButton = styled.TouchableOpacity({
-  backgroundColor: '#ff6b35',
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 8,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 4,
-  marginTop: 8,
-});
-
-const PlayIcon = styled(Play)({
-  // styled component for Play icon
-});
-
-const RunButtonText = styled.Text({
-  color: '#ffffff',
-  fontSize: 12,
-  fontWeight: '600',
 });

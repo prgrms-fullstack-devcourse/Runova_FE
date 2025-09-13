@@ -133,7 +133,7 @@ const ControlButton = styled.TouchableOpacity<{
   width: 48,
   height: 48,
   borderRadius: 24,
-  backgroundColor: isPrimary ? theme.colors.primary[500] : 'transparent',
+  backgroundColor: isPrimary ? '#2d2d2d' : 'transparent',
   justifyContent: 'center',
   alignItems: 'center',
   marginHorizontal: 4,

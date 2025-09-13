@@ -25,7 +25,6 @@ import {
 
 type Props = {
   navigation: any;
-  onStartRun?: (courseId: number) => void;
 };
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [
@@ -34,7 +33,7 @@ const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'liked', title: '좋아요한 경로' },
 ];
 
-export default function Route({ navigation, onStartRun }: Props) {
+export default function Route({ navigation }: Props) {
   const {
     activeTab,
     setActiveTab,
@@ -75,12 +74,6 @@ export default function Route({ navigation, onStartRun }: Props) {
     navigation.navigate('Draw', undefined);
   };
 
-  const handleStartRun = (courseId: number) => {
-    if (onStartRun) {
-      onStartRun(courseId);
-    }
-  };
-
   const handleTabPress = (tabId: RouteTabId) => {
     setActiveTab(tabId);
 
@@ -101,10 +94,7 @@ export default function Route({ navigation, onStartRun }: Props) {
         activeTab={activeTab}
         onTabPress={handleTabPress}
       />
-      <RouteGrid
-        onRouteCardPress={handleRouteCardPress}
-        onStartRun={handleStartRun}
-      />
+      <RouteGrid onRouteCardPress={handleRouteCardPress} />
       <FloatingButton icon={PenTool} onPress={handleCreatePress} />
     </Screen>
   );
