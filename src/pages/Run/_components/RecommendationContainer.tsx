@@ -29,8 +29,8 @@ export default function RecommendationContainer({
         if (!geocodedAddresses[item.id]) {
           try {
             const result = await reverseGeocode([
-              item.departure.lon,
-              item.departure.lat,
+              item.departure[0],
+              item.departure[1],
             ]);
             newAddresses[item.id] = result.placeName;
           } catch (error) {
