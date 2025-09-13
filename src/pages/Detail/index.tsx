@@ -66,10 +66,9 @@ export default function Detail({ route, navigation }: Props) {
     navigation.navigate('Run', { courseId });
   };
 
-  const { isPressing, pressProgress, animatedValue, startPress, stopPress } =
-    useLongPress({
-      onComplete: handleDrawPress,
-    });
+  const { isPressing, animatedValue, startPress, stopPress } = useLongPress({
+    onComplete: handleDrawPress,
+  });
   const { shareCourse } = useShare({ courseId, courseData });
 
   useEffect(() => {
