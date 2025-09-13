@@ -136,11 +136,7 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
 
 /** --- 서버 → 클라이언트 엔티티 매퍼 --- */
 function mapPostResToEntity(res: PostRes): Post {
-  const author =
-    'author' in res
-      ? (res.author?.nickname ?? String(res.author?.id ?? ''))
-      : String((res as PostResCreate).authorId);
-
+  const author = res.authorInfo.nickname;
   const content = 'content' in res ? res.content : undefined;
 
   return {

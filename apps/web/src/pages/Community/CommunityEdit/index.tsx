@@ -282,7 +282,7 @@ export default function CommunityEdit() {
                 {/* 🔹 PROOF: 업로드 카드만 노출 */}
                 {isProofCategory(category) && (
                   <UploadArea>
-                    <input
+                    <HiddenInput
                       id={uploadInputId}
                       type="file"
                       accept="image/*"
@@ -418,7 +418,6 @@ const PreviewCard = styled.label`
   }
 `;
 
-/** 정사각형으로 가득 채우는 이미지 */
 const PostImage = styled.img`
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -426,7 +425,6 @@ const PostImage = styled.img`
   display: block;
 `;
 
-/** 비어있을 때의 안내문 */
 const EmptyState = styled.div`
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -448,7 +446,11 @@ const OverlayHint = styled.div`
   display: grid;
   place-items: center;
   background: rgba(0, 0, 0, 0.35);
-  color: ${({ theme }) => theme.colors.surface}
+  color: ${({ theme }) => theme.colors.surface};
   font-size: 12px;
   font-weight: 600;
+`;
+
+const HiddenInput = styled.input`
+  display: none;
 `;
