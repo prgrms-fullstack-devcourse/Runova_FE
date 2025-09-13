@@ -17,6 +17,10 @@ export function useLocationManager() {
         initialLocation.coords.longitude,
         initialLocation.coords.latitude,
       ];
+      console.log(
+        '📍 useLocationManager: 위치 업데이트됨',
+        currentUserLocation.current,
+      );
     }
   }, [initialLocation]);
 
@@ -74,8 +78,8 @@ export function useLocationManager() {
   };
 
   return {
-    initialLocation: currentUserLocation.current || [127.0276, 37.4979], // 기본값: 서울
-    locationLoading: locationLoading || !currentUserLocation.current,
+    initialLocation: currentUserLocation.current, // 현재 위치가 없으면 null
+    locationLoading: locationLoading,
     location,
     errorMsg,
     refreshLocation,

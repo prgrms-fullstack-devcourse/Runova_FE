@@ -11,6 +11,6 @@ export interface DrawUIProps {
 export interface DrawMapProps extends DrawUIProps {
   mapRef: RefObject<Mapbox.MapView | null>;
   cameraRef: RefObject<Mapbox.Camera | null>;
-  initialLocation: Position;
+  initialLocation: Position | null;
   onUserLocationUpdate: (location: Mapbox.Location) => void;
 }

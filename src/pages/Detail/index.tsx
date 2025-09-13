@@ -134,13 +134,18 @@ export default function Detail({ route, navigation }: Props) {
     );
   }
 
-  const imageUrl =
-    'imageUrl' in courseData
-      ? courseData.imageUrl
-      : 'artUrl' in courseData
-        ? courseData.artUrl
-        : null;
-  const isCompletedCourse = 'id' in courseData && !('title' in courseData);
+  const imageUrl = (() => {
+    if (courseData && 'imageUrl' in courseData && courseData.imageUrl) {
+      return courseData.imageUrl as string;
+    }
+    if (courseData && 'artUrl' in courseData && courseData.artUrl) {
+      return courseData.artUrl as string;
+    }
+    return null;
+  })();
+
+  const isCompletedCourse =
+    courseData && 'id' in courseData && !('title' in courseData);
 
   return (
     <Container>
@@ -164,8 +169,8 @@ export default function Detail({ route, navigation }: Props) {
           {(imageError || !imageUrl) && (
             <FallbackContainer>
               <FallbackText>
-                {isCompletedCourse
-                  ? `완주 기록 #${courseData.id}`
+                {isCompletedCourse && courseData && 'id' in courseData
+                  ? `완주 기록 #${(courseData as any).id}`
                   : '이미지가 없습니다'}
               </FallbackText>
             </FallbackContainer>
@@ -179,9 +184,11 @@ export default function Detail({ route, navigation }: Props) {
 
         <InfoContainer>
           <Title>
-            {isCompletedCourse
-              ? `완주 기록 #${courseData.id}`
-              : courseData.title || '경로 정보'}
+            {isCompletedCourse && courseData && 'id' in courseData
+              ? `완주 기록 #${(courseData as any).id}`
+              : courseData && 'title' in courseData
+                ? (courseData as any).title || '경로 정보'
+                : '경로 정보'}
           </Title>
 
           {address && (
@@ -204,43 +211,49 @@ export default function Detail({ route, navigation }: Props) {
             </InfoValue>
           </InfoRow>
 
-          {'time' in courseData ? (
+          {courseData && 'time' in courseData ? (
             <InfoRow>
               <InfoLabel>예상 시간</InfoLabel>
-              <InfoValue>{formatTime(courseData.time)}</InfoValue>
+              <InfoValue>{formatTime((courseData as any).time)}</InfoValue>
             </InfoRow>
-          ) : 'duration' in courseData ? (
+          ) : courseData &&
+            'duration' in courseData &&
+            (courseData as any).duration ? (
             <InfoRow>
               <InfoLabel>실제 시간</InfoLabel>
-              <InfoValue>{formatTime(courseData.duration)}</InfoValue>
+              <InfoValue>{formatTime((courseData as any).duration)}</InfoValue>
             </InfoRow>
           ) : null}
 
-          {'createdAt' in courseData ? (
+          {courseData && 'createdAt' in courseData ? (
             <InfoRow>
               <InfoLabel>생성일</InfoLabel>
-              <InfoValue>{formatDate(courseData.createdAt)}</InfoValue>
+              <InfoValue>{formatDate((courseData as any).createdAt)}</InfoValue>
             </InfoRow>
-          ) : 'endAt' in courseData ? (
+          ) : courseData &&
+            'endAt' in courseData &&
+            (courseData as any).endAt ? (
             <InfoRow>
               <InfoLabel>완주일</InfoLabel>
-              <InfoValue>{formatDate(courseData.endAt)}</InfoValue>
+              <InfoValue>{formatDate((courseData as any).endAt)}</InfoValue>
             </InfoRow>
           ) : null}
 
-          {'author' in courseData ? (
+          {courseData && 'author' in courseData ? (
             <InfoRow isLast>
               <InfoLabel>작성자</InfoLabel>
               <InfoValue>
-                {typeof courseData.author === 'string'
-                  ? courseData.author
-                  : courseData.author.nickname}
+                {typeof (courseData as any).author === 'string'
+                  ? (courseData as any).author
+                  : (courseData as any).author.nickname}
               </InfoValue>
             </InfoRow>
-          ) : 'calories' in courseData ? (
+          ) : courseData &&
+            'calories' in courseData &&
+            (courseData as any).calories ? (
             <InfoRow isLast>
               <InfoLabel>칼로리</InfoLabel>
-              <InfoValue>{courseData.calories} kcal</InfoValue>
+              <InfoValue>{(courseData as any).calories} kcal</InfoValue>
             </InfoRow>
           ) : null}
         </InfoContainer>

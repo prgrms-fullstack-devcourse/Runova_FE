@@ -92,7 +92,11 @@ export default function Draw() {
     }
   };
 
-  if (locationLoading) {
+  if (locationLoading || !initialLocation) {
+    console.log('📍 Draw 페이지 로딩 중...', {
+      locationLoading,
+      initialLocation,
+    });
     return <LoadingIndicator />;
   }
 
