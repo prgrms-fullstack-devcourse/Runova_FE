@@ -10,7 +10,7 @@ export type CreatePostReq = {
   type: ServerPostType;
   title: string;
   content: string;
-  imageUrls?: string[];
+  imageUrl: string; // 단일 이미지 URL
   routeId?: number;
 };
 
@@ -18,24 +18,25 @@ export type UpdatePostReq = Partial<{
   type: ServerPostType;
   title: string;
   content: string;
-  imageUrls: string[] | null;
+  imageUrl: string | null; // 단일 이미지 URL 또는 null
   routeId: number | null;
 }>;
 
-type AuthorObj = { id: number; nickname: string; avatarUrl?: string | null };
+type AuthorObj = { id: number; nickname: string; imageUrl?: string | null };
 
 type PostResBase = {
   id: number;
   type: ServerPostType;
   title: string;
-  imageUrls?: string[];
-  imageUrl?: string;
+  imageUrls?: string[]; // 서버가 과거 호환 위해 줄 수 있음
+  imageUrl?: string; // 표준: 단일
   routeId?: number | null;
   likeCount: number;
   commentCount: number;
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
+  authorInfo: AuthorObj;
 };
 
 type PostResCreate = PostResBase & {
@@ -61,7 +62,7 @@ type UpdatePostRes = {
     type: ServerPostType;
     title: string;
     content: string;
-    imageUrls: string[];
+    imageUrl: string; // 서버 표준
     routeId?: number;
     updatedAt: string;
   };
@@ -78,7 +79,6 @@ export type GetPostsQuery = {
 
 /** 목록 아이템 (author 객체 버전) */
 type PostResListItem = PostResBase & {
-  author: AuthorObj;
   content?: string; // 서버가 줄 수도 있어 optional
 };
 
@@ -103,21 +103,21 @@ export type GetPostsCursorQuery = {
   limit?: number;
 };
 
+/** 서버 응답에서 단일 imageUrl 계산 (imageUrl 우선, 없으면 imageUrls[0]) */
+function pickImageUrl(res: {
+  imageUrl?: string;
+  imageUrls?: string[];
+}): string {
+  if (typeof res.imageUrl === 'string' && res.imageUrl.length > 0)
+    return res.imageUrl;
+  if (Array.isArray(res.imageUrls) && res.imageUrls.length > 0)
+    return res.imageUrls[0]!;
+  return '';
+}
+
 /** 목록 아이템 매퍼 (author/authorId 모두 대응) */
 function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
-  const author =
-    'author' in res
-      ? (res.author?.nickname ?? String(res.author?.id ?? ''))
-      : String(res.authorId);
-
-  // imageUrls: 서버가 imageUrl(string)만 주면 배열로 포장
-  const imgs = (
-    Array.isArray(res.imageUrls) && res.imageUrls.length > 0
-      ? res.imageUrls
-      : res.imageUrl
-        ? [res.imageUrl]
-        : []
-  ) as string[];
+  const author = res.authorInfo?.nickname;
 
   return {
     id: String(res.id),
@@ -127,44 +127,36 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
     commentsCount: res.commentCount,
     content: res.content,
     likeCount: res.likeCount,
-    imageUrls: imgs,
+    imageUrl: pickImageUrl(res),
     createdAt: res.createdAt,
     updatedAt: res.updatedAt,
+    authorInfo: res.authorInfo,
   };
 }
 
 /** --- 서버 → 클라이언트 엔티티 매퍼 --- */
 function mapPostResToEntity(res: PostRes): Post {
-  // author 문자열: author.nickname(목록/상세) 또는 authorId(생성)로 대체
-  const author =
-    'author' in res
-      ? (res.author?.nickname ?? String(res.author?.id ?? ''))
-      : String((res as PostResCreate).authorId);
-
-  // content: 목록 응답에는 없음 → undefined
+  const author = res.authorInfo.nickname;
   const content = 'content' in res ? res.content : undefined;
 
   return {
     id: String(res.id),
-    category: res.type, // 'FREE' | 'PROOF' | 'SHARE' | 'MATE'
+    category: res.type,
     title: res.title,
     author,
     commentsCount: res.commentCount,
     content,
     likeCount: res.likeCount,
-    imageUrls: res.imageUrls ?? [],
+    imageUrl: pickImageUrl(res),
     createdAt: res.createdAt,
     updatedAt: res.updatedAt,
-    // liked: 서버 명세에 없음 → 필요 시 별도 me-상태 API로 보강
+    authorInfo: res.authorInfo,
   };
 }
 
 /** --- 게시글 생성 --- */
 export async function createPost(body: CreatePostReq): Promise<Post> {
-  const { data } = await api.post<PostRes>('/community/posts', {
-    ...body,
-    imageUrls: body.imageUrls ?? [],
-  });
+  const { data } = await api.post<PostRes>('/community/posts', body);
   return mapPostResToEntity(data);
 }
 
@@ -178,26 +170,18 @@ export async function getPosts(query: GetPostsQuery = {}): Promise<Post[]> {
     q.push(`type=${encodeURIComponent(query.category as ServerPostType)}`);
   }
 
-  if (typeof query.authorId === 'number') {
-    q.push(`authorId=${query.authorId}`);
-  }
-  if (typeof query.routeId === 'number') {
-    q.push(`routeId=${query.routeId}`);
-  }
-  if (query.sort) {
-    q.push(`sort=${encodeURIComponent(query.sort)}`);
-  }
-  if (typeof query.limit === 'number') {
-    q.push(`limit=${query.limit}`);
-  }
+  if (typeof query.authorId === 'number') q.push(`authorId=${query.authorId}`);
+  if (typeof query.routeId === 'number') q.push(`routeId=${query.routeId}`);
+  if (query.sort) q.push(`sort=${encodeURIComponent(query.sort)}`);
+  if (typeof query.limit === 'number') q.push(`limit=${query.limit}`);
 
   const qs = q.length > 0 ? `?${q.join('&')}` : '';
 
-  const { data } = await api.get<{ items: PostResListItem[] }>(
-    `/community/posts${qs}`,
-  );
+  const { data } = await api.get<{
+    items: (PostResListItem | PostResListItemAlt)[];
+  }>(`/community/posts${qs}`);
 
-  return (data.items ?? []).map(mapPostResToEntity);
+  return (data.items ?? []).map(mapListItemToEntity);
 }
 
 /** 커서 기반 목록 */
@@ -292,4 +276,56 @@ export function getReadablePostError(e: unknown): string {
     }
   }
   return '알 수 없는 오류가 발생했습니다.';
+}
+
+/* -------------------------------------------
+ *   🔽 PROOF 이미지 presign & 업로드 유틸
+ *   (아바타 presign 로직과 동일한 패턴)
+ * ----------------------------------------- */
+
+export type PresignReq = {
+  /** 예: 'community-proof' */
+  type: string;
+  contentType: string;
+  size: number;
+};
+
+export type PresignRes = {
+  /** PUT 대상 URL (S3 presigned URL 등) */
+  url: string;
+};
+
+export async function getProofPresign(req: PresignReq): Promise<PresignRes> {
+  const { data } = await api.post<PresignRes>('/files/presign', req);
+  return data;
+}
+
+export function objectUrlFromPresign(url: string): string {
+  return url.split('?')[0];
+}
+
+/** 파일 업로드(put) 후 public URL(단일) 반환 */
+export async function uploadProofWithFile(file: File): Promise<string> {
+  const contentType = file.type || 'image/jpeg';
+  const size = file.size;
+
+  // 1) presign
+  const presign = await getProofPresign({
+    type: 'verify',
+    contentType,
+    size,
+  });
+
+  // 2) PUT 업로드
+  const putRes = await fetch(presign.url, {
+    method: 'PUT',
+    headers: { 'Content-Type': contentType },
+    body: file,
+  });
+  if (!putRes.ok) {
+    throw new Error(`이미지 업로드 실패: ${putRes.status}`);
+  }
+
+  // 3) 업로드된 public URL 반환
+  return objectUrlFromPresign(presign.url);
 }

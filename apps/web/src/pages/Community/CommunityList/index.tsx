@@ -11,7 +11,6 @@ import { getPosts, getReadablePostError } from '@/api/posts';
 export default function CommunityList() {
   const navigate = useNavigate();
 
-  // 섹션별 상태
   const [runPosts, setRunPosts] = useState<Post[]>([]);
   const [photoPosts, setPhotoPosts] = useState<Post[]>([]);
   const [routePosts, setRoutePosts] = useState<Post[]>([]);
@@ -28,13 +27,9 @@ export default function CommunityList() {
         setError(null);
 
         const [mate, proof, share, latest] = await Promise.all([
-          // 러닝 메이트
           getPosts({ category: 'MATE', limit: 5 }),
-          // 인증샷
           getPosts({ category: 'PROOF', limit: 5 }),
-          // 경로 공유
           getPosts({ category: 'SHARE', limit: 5 }),
-          // 최신 전체
           getPosts({ limit: 5 }),
         ]);
 
