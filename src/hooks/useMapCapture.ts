@@ -19,7 +19,13 @@ export function useMapCapture(
       throw new Error('맵이 준비되지 않았습니다.');
     }
 
+    // 캡처 전에 잠시 대기하여 현재 렌더링이 완료되도록 함
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     setIsCapturing(true);
+
+    // 소스 제거 후 추가 대기
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     try {
       const coordinatesToUse =

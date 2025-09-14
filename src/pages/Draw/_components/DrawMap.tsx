@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import { theme } from '@/styles/theme';
@@ -18,6 +18,21 @@ export default function DrawMap({
   const { drawnCoordinates, completedDrawings, matchedRoutes, isCapturing } =
     useDrawStore();
   const [isMapReady, setIsMapReady] = useState(false);
+  const [showDrawingSources, setShowDrawingSources] = useState(true);
+
+  // 캡처 시작 시 그리기 중인 소스들만 안전하게 숨김 (매칭된 경로는 유지)
+  useEffect(() => {
+    if (isCapturing) {
+      // 캡처 시작 시 그리기 중인 소스들만 즉시 숨김
+      setShowDrawingSources(false);
+    } else {
+      // 캡처 완료 후 약간의 지연을 두고 그리기 소스들을 다시 표시
+      const timer = setTimeout(() => {
+        setShowDrawingSources(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isCapturing]);
 
   return (
     <StyledContainer>
@@ -30,7 +45,7 @@ export default function DrawMap({
         showUserLocation={!isCapturing}
       >
         {isMapReady &&
-          !isCapturing &&
+          showDrawingSources &&
           drawnCoordinates.length > 1 &&
           drawnCoordinates.every(
             (coord) => Array.isArray(coord) && coord.length === 2,
@@ -59,7 +74,7 @@ export default function DrawMap({
           )}
 
         {isMapReady &&
-          !isCapturing &&
+          showDrawingSources &&
           completedDrawings
             .filter(
               (drawing) =>
