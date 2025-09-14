@@ -9,6 +9,7 @@ interface MapProps {
   cameraRef: RefObject<Mapbox.Camera | null>;
   initialLocation: Position | null;
   onUserLocationUpdate?: (location: Mapbox.Location) => void;
+  onMapReady?: () => void;
   children?: React.ReactNode;
   showUserLocation?: boolean;
 }
@@ -18,6 +19,7 @@ export default function Map({
   cameraRef,
   initialLocation,
   onUserLocationUpdate,
+  onMapReady,
   children,
   showUserLocation = true,
 }: MapProps) {
@@ -25,7 +27,11 @@ export default function Map({
   const safeInitialLocation = initialLocation || [127.0276, 37.4979];
 
   return (
-    <StyledMapView ref={mapRef} styleURL={Mapbox.StyleURL.Street}>
+    <StyledMapView
+      ref={mapRef}
+      styleURL={Mapbox.StyleURL.Street}
+      onDidFinishLoadingMap={onMapReady}
+    >
       <Mapbox.Camera
         ref={cameraRef}
         defaultSettings={{

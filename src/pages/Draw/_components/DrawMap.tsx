@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { useState } from 'react';
 import styled from '@emotion/native';
 import Mapbox from '@rnmapbox/maps';
 import { theme } from '@/styles/theme';
@@ -16,6 +17,7 @@ export default function DrawMap({
 }: DrawMapProps) {
   const { drawnCoordinates, completedDrawings, matchedRoutes, isCapturing } =
     useDrawStore();
+  const [isMapReady, setIsMapReady] = useState(false);
 
   return (
     <StyledContainer>
@@ -24,9 +26,11 @@ export default function DrawMap({
         cameraRef={cameraRef}
         initialLocation={initialLocation}
         onUserLocationUpdate={onUserLocationUpdate}
+        onMapReady={() => setIsMapReady(true)}
         showUserLocation={!isCapturing}
       >
-        {!isCapturing &&
+        {isMapReady &&
+          !isCapturing &&
           drawnCoordinates.length > 1 &&
           drawnCoordinates.every(
             (coord) => Array.isArray(coord) && coord.length === 2,
@@ -45,7 +49,7 @@ export default function DrawMap({
               <Mapbox.LineLayer
                 id="drawn-line"
                 style={{
-                  lineColor: '#8b5cf6',
+                  lineColor: '#ff0000',
                   lineWidth: 4,
                   lineOpacity: 0.8,
                   lineDasharray: [2, 2],
@@ -54,7 +58,8 @@ export default function DrawMap({
             </Mapbox.ShapeSource>
           )}
 
-        {!isCapturing &&
+        {isMapReady &&
+          !isCapturing &&
           completedDrawings
             .filter(
               (drawing) =>
@@ -80,7 +85,7 @@ export default function DrawMap({
                 <Mapbox.LineLayer
                   id={`completed-drawing-line-${index}`}
                   style={{
-                    lineColor: '#8b5cf6',
+                    lineColor: '#ff0000',
                     lineWidth: 4,
                     lineOpacity: 0.7,
                   }}
@@ -88,33 +93,34 @@ export default function DrawMap({
               </Mapbox.ShapeSource>
             ))}
 
-        {matchedRoutes
-          .filter(
-            (route) =>
-              route &&
-              route.geometry &&
-              route.geometry.coordinates &&
-              Array.isArray(route.geometry.coordinates) &&
-              route.geometry.coordinates.every(
-                (coord) => Array.isArray(coord) && coord.length === 2,
-              ),
-          )
-          .map((route, index) => (
-            <Mapbox.ShapeSource
-              key={`matched-source-${index}`}
-              id={`matched-source-${index}`}
-              shape={route}
-            >
-              <Mapbox.LineLayer
-                id={`matched-line-${index}`}
-                style={{
-                  lineColor: '#8b5cf6',
-                  lineWidth: 5,
-                  lineOpacity: 0.9,
-                }}
-              />
-            </Mapbox.ShapeSource>
-          ))}
+        {isMapReady &&
+          matchedRoutes
+            .filter(
+              (route) =>
+                route &&
+                route.geometry &&
+                route.geometry.coordinates &&
+                Array.isArray(route.geometry.coordinates) &&
+                route.geometry.coordinates.every(
+                  (coord) => Array.isArray(coord) && coord.length === 2,
+                ),
+            )
+            .map((route, index) => (
+              <Mapbox.ShapeSource
+                key={`matched-source-${index}`}
+                id={`matched-source-${index}`}
+                shape={route}
+              >
+                <Mapbox.LineLayer
+                  id={`matched-line-${index}`}
+                  style={{
+                    lineColor: '#000000',
+                    lineWidth: 5,
+                    lineOpacity: 0.9,
+                  }}
+                />
+              </Mapbox.ShapeSource>
+            ))}
       </Map>
       {!isCapturing && (
         <DrawUI onPanToCurrentUserLocation={onPanToCurrentUserLocation} />

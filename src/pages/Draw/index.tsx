@@ -52,12 +52,21 @@ export default function Draw() {
 
   useFocusEffect(
     useCallback(() => {
-      clearAll();
       // 위치가 없으면 강제로 위치 요청
       if (!initialLocation && !locationLoading) {
         refreshLocation();
       }
-    }, [clearAll, initialLocation, locationLoading, refreshLocation]),
+    }, [initialLocation, locationLoading, refreshLocation]),
+  );
+
+  // Draw 탭을 완전히 이탈할 때 그린 선들 초기화
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // 컴포넌트가 언마운트될 때 (탭 이탈 시) 초기화
+        clearAll();
+      };
+    }, [clearAll]),
   );
 
   const handleBackPress = () => {
