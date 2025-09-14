@@ -26,7 +26,9 @@ import {
   showCourseSaveError,
 } from './_components/Toasts';
 
-const LoadingIndicator = () => <LoadingOverlay message="로딩 중..." />;
+const LoadingIndicator = ({ message = '로딩 중...' }: { message?: string }) => (
+  <LoadingOverlay message={message} />
+);
 
 export default function Draw() {
   const navigation =
@@ -137,7 +139,7 @@ export default function Draw() {
             />
           </StyledContainer>
         </GestureDetector>
-        {isLoading && <LoadingIndicator />}
+        {isLoading && <LoadingIndicator message="매칭중..." />}
       </StyledContainer>
     </StyledGestureHandlerRootView>
   );

@@ -112,9 +112,8 @@ export default function RouteSave() {
           onPress: () => {
             clearAll();
             clearRouteData();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'RouteMain' }],
+            navigation.navigate('TabNavigator', {
+              screen: 'Home',
             });
           },
         },
