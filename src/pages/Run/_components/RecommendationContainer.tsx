@@ -123,15 +123,7 @@ const GuideCard = styled.View({
   padding: 24,
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 120,
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 4,
-  },
-  shadowOpacity: 0.1,
-  shadowRadius: 8,
-  elevation: 5,
+  minHeight: 100,
 });
 
 const GuideTitle = styled.Text({
