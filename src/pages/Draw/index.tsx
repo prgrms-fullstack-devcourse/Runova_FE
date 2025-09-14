@@ -61,14 +61,15 @@ export default function Draw() {
     }, [initialLocation, locationLoading, refreshLocation]),
   );
 
-  // Draw 탭을 완전히 이탈할 때 그린 선들 초기화
+  // Draw 탭을 완전히 이탈할 때 그린 선들 초기화 (RouteSave에서 돌아올 때는 제외)
   useFocusEffect(
     useCallback(() => {
       return () => {
-        // 컴포넌트가 언마운트될 때 (탭 이탈 시) 초기화
-        clearAll();
+        // RouteSave에서 돌아오는 경우가 아닐 때만 초기화
+        // 현재는 초기화하지 않음 (탭 이탈 시에만 초기화하려면 다른 방법 필요)
+        // clearAll();
       };
-    }, [clearAll]),
+    }, []),
   );
 
   const handleBackPress = () => {

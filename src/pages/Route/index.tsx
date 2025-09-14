@@ -113,7 +113,7 @@ const Screen = styled.View({
 
 const styles = {
   defaultButton: {
-    backgroundColor: '#111827',
+    backgroundColor: '#000000',
   },
   activeButton: {
     backgroundColor: theme.colors.secondary[500],

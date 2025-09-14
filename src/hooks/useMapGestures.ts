@@ -43,6 +43,7 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
     .enabled(drawMode === 'draw')
     .onBegin(() => {
       pointsInCurrentGesture.current = [];
+      setDrawnCoordinates([]);
     })
     .onUpdate(async (event) => {
       if (drawMode !== 'draw' || !mapRef.current) return;

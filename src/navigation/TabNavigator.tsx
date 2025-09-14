@@ -13,6 +13,11 @@ import Run from '@/pages/Run';
 import type { TabParamList } from '@/types/navigation.types';
 import WebMyPage from '@/pages/WebMyPage';
 
+// RunTab 전용 컴포넌트
+function RunTabWithReset() {
+  return <RunTabNavigator />;
+}
+
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const TAB_BAR_HEIGHT = 68;
@@ -72,7 +77,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="RunTab"
-        component={RunTabNavigator}
+        component={RunTabWithReset}
         options={({ route }) => {
           const routeName =
             getFocusedRouteNameFromRoute(route) ?? 'QuickStartMain';
