@@ -88,8 +88,12 @@ export default function Run({ route, navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      resetLocationTracking();
-      resetRunState();
+      // 런닝이 시작되지 않은 상태에서만 초기화
+      const { startTime } = useRunStore.getState();
+      if (!startTime) {
+        resetLocationTracking();
+        resetRunState();
+      }
       // courseId가 있을 때만 경로 데이터를 로드
       if (courseId) {
         loadCourseTopology();

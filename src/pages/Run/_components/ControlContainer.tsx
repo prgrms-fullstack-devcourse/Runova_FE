@@ -44,14 +44,20 @@ const ControlContainer: React.FC<ControlContainerProps> = ({
 
   const handleToggleTracking = () => {
     if (!isTracking && !startTime) {
+      // 새로운 런닝 시작
+      console.log('🎬 [ControlContainer] 새로운 런닝 시작');
       startRun();
       const initialStats = calculateRunStats([], new Date(), true, 0, null);
       setRunning({ stats: initialStats });
       toggleTracking();
     } else if (!isTracking && startTime) {
+      // 일시정지된 런닝 재시작 - 기존 경로와 통계 유지
+      console.log('▶️ [ControlContainer] 일시정지된 런닝 재시작');
       resumeRun();
       toggleTracking();
     } else if (isTracking) {
+      // 런닝 일시정지 - 경로와 통계 유지
+      console.log('⏸️ [ControlContainer] 런닝 일시정지');
       pauseRun();
       toggleTracking();
     }

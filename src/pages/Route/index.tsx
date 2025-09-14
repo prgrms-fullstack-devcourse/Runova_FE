@@ -42,6 +42,8 @@ export default function Route({ navigation }: Props) {
     courses,
     bookmarkedCourses,
     completedCourses,
+    loading,
+    error,
   } = useRouteStore();
   const { loadCourses } = useRouteData();
   const { loadBookmarkedCourses } = useBookmarkedCourses();
@@ -65,10 +67,31 @@ export default function Route({ navigation }: Props) {
   };
 
   useEffect(() => {
+    console.log('📱 [Route] useEffect 실행:', {
+      activeTab,
+      coursesLength: courses.length,
+      bookmarkedCoursesLength: bookmarkedCourses.length,
+      completedCoursesLength: completedCourses.length,
+      loading,
+      error,
+    });
+
     if (activeTab === 'created' && courses.length === 0) {
+      console.log('📱 [Route] 생성한 경로 로드 시작');
       loadCourses(true);
+    } else if (activeTab === 'liked' && bookmarkedCourses.length === 0) {
+      console.log('📱 [Route] 좋아요한 경로 로드 시작');
+      loadBookmarkedCourses(true);
+    } else if (activeTab === 'completed' && completedCourses.length === 0) {
+      console.log('📱 [Route] 완주한 경로 로드 시작');
+      loadCompletedCourses(true);
     }
-  }, [activeTab, courses.length, loadCourses]);
+  }, [
+    activeTab,
+    courses.length,
+    bookmarkedCourses.length,
+    completedCourses.length,
+  ]); // loadCourses를 의존성에서 제거
 
   const handleSettingsPress = () => {};
 

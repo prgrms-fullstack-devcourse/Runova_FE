@@ -28,7 +28,9 @@ export function useRouteData() {
 
   const loadCourses = useCallback(
     async (reset = false) => {
-      if (!accessToken || loading) return;
+      // loading 상태를 함수 내부에서 직접 확인
+      const currentLoading = useRouteStore.getState().loading;
+      if (!accessToken || currentLoading) return;
 
       setLoading(true);
       setError(null);
@@ -36,13 +38,27 @@ export function useRouteData() {
       try {
         // cursor를 함수 내부에서 직접 가져오기
         const currentCursor = reset ? null : useRouteStore.getState().cursor;
-        const response = await searchUserCourses(
-          {
-            cursor: currentCursor ? { id: currentCursor } : null,
-            limit: 10,
-          },
-          accessToken,
-        );
+        const requestParams = {
+          cursor: currentCursor ? { id: currentCursor } : null,
+          limit: 10,
+        };
+
+        console.log('🔍 [RouteAPI] 생성한 경로 요청:', {
+          endpoint: '/api/courses/user',
+          params: requestParams,
+          accessToken: accessToken ? '있음' : '없음',
+        });
+
+        const response = await searchUserCourses(requestParams, accessToken);
+
+        console.log('✅ [RouteAPI] 생성한 경로 응답:', {
+          resultsCount: response.results.length,
+          results: response.results.map((course) => ({
+            id: course.id,
+            title: course.title,
+            createdAt: course.createdAt,
+          })),
+        });
 
         if (reset) {
           setCourses(response.results);
@@ -61,11 +77,19 @@ export function useRouteData() {
         setCursor(nextCursor);
         setHasMore(response.results.length >= 10);
       } catch (error: unknown) {
+        console.error('❌ [RouteAPI] 생성한 경로 요청 실패:', error);
+
         let errorMessage = '경로를 불러오는데 실패했습니다.';
 
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as AxiosErrorResponse;
           const status = axiosError.status;
+
+          console.error('❌ [RouteAPI] HTTP 오류:', {
+            status,
+            statusText: axiosError.statusText,
+            data: axiosError.data,
+          });
 
           if (status === 500) {
             errorMessage =
@@ -86,7 +110,7 @@ export function useRouteData() {
     },
     [
       accessToken,
-      loading,
+      // loading을 의존성에서 제거하여 무한 루프 방지
       setCourses,
       setLoading,
       setError,
@@ -141,7 +165,9 @@ export function useBookmarkedCourses() {
 
   const loadBookmarkedCourses = useCallback(
     async (reset = false) => {
-      if (!accessToken || loading) return;
+      // loading 상태를 함수 내부에서 직접 확인
+      const currentLoading = useRouteStore.getState().loading;
+      if (!accessToken || currentLoading) return;
 
       setLoading(true);
       setError(null);
@@ -152,7 +178,23 @@ export function useBookmarkedCourses() {
           cursor: currentCursor ? { id: currentCursor } : null,
           limit: 10,
         };
+
+        console.log('🔍 [RouteAPI] 북마크한 경로 요청:', {
+          endpoint: '/api/courses/search/bookmarked',
+          params,
+          accessToken: accessToken ? '있음' : '없음',
+        });
+
         const response = await searchBookmarkedCourses(params, accessToken);
+
+        console.log('✅ [RouteAPI] 북마크한 경로 응답:', {
+          resultsCount: response.results.length,
+          results: response.results.map((course) => ({
+            id: course.id,
+            title: course.title,
+            createdAt: course.createdAt,
+          })),
+        });
 
         if (reset) {
           setBookmarkedCourses(response.results);
@@ -171,11 +213,19 @@ export function useBookmarkedCourses() {
         setCursor(nextCursor);
         setHasMore(response.results.length === 10);
       } catch (error: unknown) {
+        console.error('❌ [RouteAPI] 북마크한 경로 요청 실패:', error);
+
         let errorMessage = '북마크한 경로를 불러오는데 실패했습니다.';
 
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as AxiosErrorResponse;
           const status = axiosError.status;
+
+          console.error('❌ [RouteAPI] HTTP 오류:', {
+            status,
+            statusText: axiosError.statusText,
+            data: axiosError.data,
+          });
 
           if (status === 500) {
             errorMessage =
@@ -197,7 +247,7 @@ export function useBookmarkedCourses() {
     [
       accessToken,
       cursor,
-      loading,
+      // loading을 의존성에서 제거하여 무한 루프 방지
       setBookmarkedCourses,
       setLoading,
       setError,
@@ -252,7 +302,9 @@ export function useCompletedCourses() {
 
   const loadCompletedCourses = useCallback(
     async (reset = false) => {
-      if (!accessToken || loading) return;
+      // loading 상태를 함수 내부에서 직접 확인
+      const currentLoading = useRouteStore.getState().loading;
+      if (!accessToken || currentLoading) return;
 
       setLoading(true);
       setError(null);
@@ -263,7 +315,23 @@ export function useCompletedCourses() {
           cursor: currentCursor ? { id: currentCursor } : null,
           limit: 10,
         };
+
+        console.log('🔍 [RouteAPI] 완주한 경로 요청:', {
+          endpoint: '/api/courses/search/completed',
+          params,
+          accessToken: accessToken ? '있음' : '없음',
+        });
+
         const response = await searchCompletedCourses(params, accessToken);
+
+        console.log('✅ [RouteAPI] 완주한 경로 응답:', {
+          resultsCount: response.results.length,
+          results: response.results.map((course) => ({
+            id: course.id,
+            title: course.title,
+            createdAt: course.createdAt,
+          })),
+        });
 
         if (reset) {
           setCompletedCourses(response.results);
@@ -286,11 +354,19 @@ export function useCompletedCourses() {
         setCursor(nextCursor);
         setHasMore(!!response.nextCursor);
       } catch (error: unknown) {
+        console.error('❌ [RouteAPI] 완주한 경로 요청 실패:', error);
+
         let errorMessage = '완주한 경로를 불러오는데 실패했습니다.';
 
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as AxiosErrorResponse;
           const status = axiosError.status;
+
+          console.error('❌ [RouteAPI] HTTP 오류:', {
+            status,
+            statusText: axiosError.statusText,
+            data: axiosError.data,
+          });
 
           if (status === 500) {
             errorMessage =
@@ -312,7 +388,7 @@ export function useCompletedCourses() {
     [
       accessToken,
       cursor,
-      loading,
+      // loading을 의존성에서 제거하여 무한 루프 방지
       setCompletedCourses,
       setLoading,
       setError,
