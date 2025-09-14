@@ -25,7 +25,7 @@ const Stack = createNativeStackNavigator();
 type RunTabId = 'quickstart' | 'courseselection';
 
 const tabs: Array<{ id: RunTabId; title: string }> = [
-  { id: 'quickstart', title: '바로가기' },
+  { id: 'quickstart', title: '바로 달리기' },
   { id: 'courseselection', title: '코스 선택하기' },
 ];
 

@@ -273,10 +273,10 @@ export default function Detail({ route, navigation }: Props) {
             {isPressing
               ? isCompletedCourse
                 ? '인증하기...'
-                : '그리기...'
+                : '달리기   ...'
               : isCompletedCourse
                 ? '인증하기'
-                : '그리기'}
+                : '달리기'}
           </DrawButtonText>
         </DrawButton>
       </BottomContainer>
