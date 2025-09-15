@@ -136,7 +136,7 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
 
 /** --- 서버 → 클라이언트 엔티티 매퍼 --- */
 function mapPostResToEntity(res: PostRes): Post {
-  const author = res.authorInfo.nickname;
+  const author = res.authorInfo?.nickname ?? '';
   const content = 'content' in res ? res.content : undefined;
 
   return {
@@ -275,7 +275,7 @@ export function getReadablePostError(e: unknown): string {
         return '요청 처리에 실패했습니다. 잠시 후 다시 시도해주세요.';
     }
   }
-  return '알 수 없는 오류가 발생했습니다.';
+  return `알 수 없는 오류가 발생했습니다. ${e}`;
 }
 
 /* -------------------------------------------

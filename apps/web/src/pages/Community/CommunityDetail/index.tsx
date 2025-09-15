@@ -19,6 +19,7 @@ import {
   deleteComment,
 } from '@/api/comments';
 import { useModal } from '@/components/common/modal/modalContext';
+import { useNativeBridgeStore } from '@/stores/nativeBridgeStore';
 
 export default function CommunityDetail() {
   const nav = useNavigate();
@@ -41,11 +42,18 @@ export default function CommunityDetail() {
   const [deleting, setDeleting] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
 
-  // 개별 댓글 작업 상태
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
     null,
   );
+  const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
+
+  const toStr = (v: unknown) => (v == null ? null : String(v));
+
+  const myId = toStr(myIdRaw);
+  const authorId = toStr(post?.authorInfo?.id) ?? null;
+
+  const canEdit = myId !== null && authorId !== null && myId === authorId;
 
   useEffect(() => {
     let mounted = true;
@@ -264,6 +272,7 @@ export default function CommunityDetail() {
         post={post}
         onEdit={() => nav(`/community/edit/${post.id}`)}
         onDelete={handleDeletePost}
+        canEdit={canEdit}
       />
 
       <Content>
