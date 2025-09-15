@@ -26,7 +26,9 @@ import {
   showCourseSaveError,
 } from './_components/Toasts';
 
-const LoadingIndicator = () => <LoadingOverlay message="로딩 중..." />;
+const LoadingIndicator = ({ message = '로딩 중...' }: { message?: string }) => (
+  <LoadingOverlay message={message} />
+);
 
 export default function Draw() {
   const navigation =
@@ -44,6 +46,7 @@ export default function Draw() {
     locationLoading,
     flyToCurrentUserLocation,
     handleUserLocationUpdate,
+    refreshLocation,
   } = useLocationManager();
   const { composedGesture } = useMapGestures(mapRef);
   const { processImage } = useMapCapture(mapRef, cameraRef);
@@ -51,7 +54,19 @@ export default function Draw() {
 
   useFocusEffect(
     useCallback(() => {
-      clearAll();
+      // 위치가 없으면 강제로 위치 요청
+      if (!initialLocation && !locationLoading) {
+        refreshLocation();
+      }
+    }, [initialLocation, locationLoading, refreshLocation]),
+  );
+
+  // Draw 페이지 이탈 시 그린 선들 초기화
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        clearAll();
+      };
     }, [clearAll]),
   );
 
@@ -123,7 +138,7 @@ export default function Draw() {
             />
           </StyledContainer>
         </GestureDetector>
-        {isLoading && <LoadingIndicator />}
+        {isLoading && <LoadingIndicator message="매칭중..." />}
       </StyledContainer>
     </StyledGestureHandlerRootView>
   );

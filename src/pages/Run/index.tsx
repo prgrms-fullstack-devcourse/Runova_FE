@@ -18,7 +18,7 @@ import ControlContainer from './_components/ControlContainer';
 import Modal from '@/components/Modal';
 import Mapbox from '@rnmapbox/maps';
 
-type Props = NativeStackScreenProps<TabParamList, 'Run'>;
+type Props = NativeStackScreenProps<any, 'Run'>;
 
 export default function Run({ route, navigation }: Props) {
   // 전역 Store에서 현재 코스 데이터 가져오기
@@ -79,12 +79,21 @@ export default function Run({ route, navigation }: Props) {
     handleCancelExit,
     handleRetryExit,
     handleConfirmExit,
-  } = useRunModals({ navigation, mapRef, cameraRef, courseId });
+  } = useRunModals({
+    navigation: navigation as any,
+    mapRef,
+    cameraRef,
+    courseId,
+  });
 
   useFocusEffect(
     useCallback(() => {
-      resetLocationTracking();
-      resetRunState();
+      // 런닝이 시작되지 않은 상태에서만 초기화
+      const { startTime } = useRunStore.getState();
+      if (!startTime) {
+        resetLocationTracking();
+        resetRunState();
+      }
       // courseId가 있을 때만 경로 데이터를 로드
       if (courseId) {
         loadCourseTopology();
@@ -192,7 +201,7 @@ export default function Run({ route, navigation }: Props) {
           <LocationLoadingContainer>
             <Text>위치를 가져올 수 없습니다</Text>
             <RefreshButton onPress={refreshLocation}>
-              <Text style={{ color: '#007AFF', marginTop: 8 }}>새로고침</Text>
+              <Text style={{ color: '#2d2d2d', marginTop: 8 }}>새로고침</Text>
             </RefreshButton>
           </LocationLoadingContainer>
         )}
@@ -272,8 +281,8 @@ const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
       severity === 'high'
         ? '#ef4444'
         : severity === 'medium'
-          ? '#f59e0b'
-          : '#3b82f6',
+          ? '#f87171'
+          : '#fca5a5',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 12,
@@ -309,5 +318,5 @@ const RefreshButton = styled.TouchableOpacity({
   padding: 12,
   borderRadius: 8,
   borderWidth: 1,
-  borderColor: '#007AFF',
+  borderColor: '#2d2d2d',
 });

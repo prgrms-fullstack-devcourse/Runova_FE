@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   RefreshControl,
+  View,
 } from 'react-native';
 import { useCallback } from 'react';
 import Card from '@/components/Card';
@@ -90,36 +91,42 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
       if (activeTab === 'completed') {
         const completedItem = item as CompletedCourseItem;
         return (
-          <Card
-            imageSource={{ uri: completedItem.imageUrl }}
-            content={{
-              title: completedItem.title,
-              subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
-              hasStar: completedItem.bookmarked,
-            }}
-            mode="only-image"
-            onPress={() => onRouteCardPress(completedItem.id)}
-          />
+          <CardContainer>
+            <Card
+              imageSource={{ uri: completedItem.imageUrl }}
+              content={{
+                title: completedItem.title,
+                subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
+                hasStar: completedItem.bookmarked,
+              }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(completedItem.id)}
+            />
+          </CardContainer>
         );
       } else if (activeTab === 'liked') {
         const bookmarkedItem = item as BookmarkedCourseItem;
         return (
-          <Card
-            imageSource={{ uri: bookmarkedItem.imageUrl }}
-            content={{ hasStar: bookmarkedItem.bookmarked }}
-            mode="only-image"
-            onPress={() => onRouteCardPress(bookmarkedItem.id)}
-          />
+          <CardContainer>
+            <Card
+              imageSource={{ uri: bookmarkedItem.imageUrl }}
+              content={{ hasStar: bookmarkedItem.bookmarked }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(bookmarkedItem.id)}
+            />
+          </CardContainer>
         );
       } else {
         const courseItem = item as CourseSearchItem;
         return (
-          <Card
-            imageSource={{ uri: courseItem.imageUrl }}
-            content={{ hasStar: courseItem.bookmarked }}
-            mode="only-image"
-            onPress={() => onRouteCardPress(courseItem.id)}
-          />
+          <CardContainer>
+            <Card
+              imageSource={{ uri: courseItem.imageUrl }}
+              content={{ hasStar: courseItem.bookmarked }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(courseItem.id)}
+            />
+          </CardContainer>
         );
       }
     },
@@ -192,15 +199,15 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={currentHandlers.handleRefresh}
-          tintColor="#007AFF"
-          colors={['#007AFF']}
+          tintColor="#2d2d2d"
+          colors={['#2d2d2d']}
         />
       }
       ListFooterComponent={() => (
         <>
           {loading && (
             <LoadingContainer>
-              <ActivityIndicator size="large" color="#007AFF" />
+              <ActivityIndicator size="large" color="#2d2d2d" />
             </LoadingContainer>
           )}
           {error && currentData.length > 0 && (
@@ -250,7 +257,7 @@ const ErrorText = styled.Text({
 });
 
 const RetryButton = styled(TouchableOpacity)({
-  backgroundColor: '#007AFF',
+  backgroundColor: '#2d2d2d',
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderRadius: 8,
@@ -260,4 +267,9 @@ const RetryButtonText = styled.Text({
   color: '#ffffff',
   fontSize: 14,
   fontWeight: '600',
+});
+
+const CardContainer = styled.View({
+  flex: 1,
+  marginBottom: 16,
 });

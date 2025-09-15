@@ -112,10 +112,9 @@ export default function RouteSave() {
           onPress: () => {
             clearAll();
             clearRouteData();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'RouteMain' }],
-            });
+            // RouteStackNavigator 내에서 RouteMain으로 돌아가기
+            navigation.goBack(); // Draw로 돌아가기
+            navigation.goBack(); // RouteMain으로 돌아가기
           },
         },
       ]);

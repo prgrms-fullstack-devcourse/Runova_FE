@@ -79,3 +79,21 @@ export async function searchCompletedCourses(
   });
   return response.data;
 }
+
+export async function searchAdjacentCourses(
+  params: {
+    location: string; // "127.0,37.5" 형식
+    radius: number;
+    limit?: number;
+    cursor?: { id: number; distance: number } | null;
+  },
+  accessToken: string,
+): Promise<CourseSearchResponse> {
+  const response = await api.get('/api/courses/search/adjacent', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}

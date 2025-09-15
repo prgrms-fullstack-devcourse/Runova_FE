@@ -39,11 +39,14 @@ export interface CourseSearchItem {
   id: number;
   title: string;
   imageUrl: string;
-  departure: RouteCoordinate;
+  departure: [number, number];
   length: number;
   time: number;
   createdAt: string;
-  author: string;
+  author: {
+    nickname: string;
+    imageUrl: string;
+  };
   bookmarked: boolean;
   completed: boolean;
 }

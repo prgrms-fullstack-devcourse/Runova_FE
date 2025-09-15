@@ -16,8 +16,8 @@ export type RootStackParamList = {
 
 export type TabParamList = {
   Home: Record<string, never>;
-  Route: Record<string, never>;
-  Run: { courseId?: number } | Record<string, never>;
+  Records: Record<string, never>;
+  RunTab: Record<string, never>;
   Community: Record<string, never>;
   Settings: Record<string, never>;
 };

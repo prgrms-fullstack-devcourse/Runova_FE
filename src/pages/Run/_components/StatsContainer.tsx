@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import styled from '@emotion/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import useRunStore from '@/store/run';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { calculateRunStats } from '@/utils/runStats';
@@ -88,6 +89,11 @@ function StatsContainer() {
   return (
     <StatsContainerWrapper>
       <RunningTimeContainer>
+        <RunningTimeGradient
+          colors={['#1a1a1a', '#2d2d2d', '#404040']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
         <RunningTimeLabel>달린 시간</RunningTimeLabel>
         <RunningTimeValue>{localStats.runningTime}</RunningTimeValue>
       </RunningTimeContainer>
@@ -149,7 +155,6 @@ const StatLabel = styled.Text(({ theme }) => ({
 }));
 
 const RunningTimeContainer = styled.View(({ theme }) => ({
-  backgroundColor: theme.colors.primary[500],
   borderRadius: 12,
   paddingVertical: 16,
   paddingHorizontal: 20,
@@ -157,18 +162,31 @@ const RunningTimeContainer = styled.View(({ theme }) => ({
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
+  position: 'relative',
+  overflow: 'hidden',
 }));
+
+const RunningTimeGradient = styled(LinearGradient)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 12,
+});
 
 const RunningTimeLabel = styled.Text({
   fontSize: 16,
   fontWeight: '600',
   color: '#ffffff',
+  zIndex: 1,
 });
 
 const RunningTimeValue = styled.Text({
   fontSize: 24,
   fontWeight: '700',
   color: '#ffffff',
+  zIndex: 1,
 });
 
 export default React.memo(StatsContainer);

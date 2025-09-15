@@ -10,6 +10,8 @@ import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId, TabParamList } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type {
   BookmarkedCourseItem,
   CourseSearchItem,
@@ -20,11 +22,12 @@ import {
   useBookmarkedCourses,
   useCompletedCourses,
 } from '@/hooks/api/useRouteApi';
+import { theme } from '@/styles/theme';
 
-type Props = CompositeScreenProps<
-  NativeStackScreenProps<RouteStackParamList, 'RouteMain'>,
-  BottomTabScreenProps<TabParamList>
->;
+type Props = {
+  navigation: any;
+  onStartRun?: (courseId: number) => void;
+};
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'created', title: '생성한 경로' },
@@ -88,18 +91,17 @@ export default function Route({ navigation }: Props) {
 
   return (
     <Screen>
-      <Header
-        title="Runova"
-        rightIcon={Settings}
-        onRightPress={handleSettingsPress}
-      />
       <TabNavigation<RouteTabId>
         tabs={tabs}
         activeTab={activeTab}
         onTabPress={handleTabPress}
       />
       <RouteGrid onRouteCardPress={handleRouteCardPress} />
-      <FloatingButton icon={PenTool} onPress={handleCreatePress} />
+      <FloatingButton
+        icon={PenTool}
+        onPress={handleCreatePress}
+        style={styles.defaultButton}
+      />
     </Screen>
   );
 }
@@ -108,3 +110,14 @@ const Screen = styled.View({
   flex: 1,
   backgroundColor: '#ffffff',
 });
+
+const styles = {
+  defaultButton: {
+    backgroundColor: '#000000',
+  },
+  activeButton: {
+    backgroundColor: theme.colors.secondary[500],
+    elevation: 12,
+    shadowOpacity: 0.5,
+  },
+};

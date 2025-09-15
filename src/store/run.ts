@@ -185,23 +185,33 @@ const useRunStore = create<RunState>((set, get) => ({
   // 런닝 액션들
   setRunning: (running) => set((state) => ({ ...state, ...running })),
 
-  startRun: () =>
+  startRun: () => {
+    const startTime = new Date();
+    console.log('🏃‍♂️ [RunStore] 새로운 런닝 시작:', startTime.toISOString());
     set({
-      startTime: new Date(),
+      startTime,
       pausedTime: 0,
       pauseStartTime: null,
-    }),
+    });
+  },
 
-  pauseRun: () =>
+  pauseRun: () => {
+    const pauseStartTime = new Date();
+    console.log('⏸️ [RunStore] 런닝 일시정지:', pauseStartTime.toISOString());
     set({
-      pauseStartTime: new Date(),
-    }),
+      pauseStartTime,
+    });
+  },
 
   resumeRun: () =>
     set((state) => {
       if (state.pauseStartTime) {
         const pauseDuration =
           (new Date().getTime() - state.pauseStartTime.getTime()) / 1000;
+        console.log('▶️ [RunStore] 런닝 재시작:', {
+          pauseDuration: `${pauseDuration.toFixed(1)}초`,
+          totalPausedTime: `${(state.pausedTime + pauseDuration).toFixed(1)}초`,
+        });
         return {
           pausedTime: state.pausedTime + pauseDuration,
           pauseStartTime: null,
@@ -210,13 +220,15 @@ const useRunStore = create<RunState>((set, get) => ({
       return state;
     }),
 
-  stopRun: () =>
+  stopRun: () => {
+    console.log('⏹️ [RunStore] 런닝 완전 종료 - 통계 초기화됨');
     set({
       startTime: null,
       pausedTime: 0,
       pauseStartTime: null,
       stats: initialStats,
-    }),
+    });
+  },
 
   // 코스 액션들
   setCourseTopology: (courseTopology) => set({ courseTopology }),
@@ -282,15 +294,42 @@ const useRunStore = create<RunState>((set, get) => ({
     }),
 
   resetRunState: () => {
-    set((state) => ({
-      ...initialUIState,
-      ...initialErrorState,
-      ...initialRunningState,
-      // 코스 데이터는 유지 (currentCourseId, currentCourseData 보존)
-      courseTopology: null,
-      ...initialLocationTrackingState,
-      ...initialCourseValidationState,
-    }));
+    set((state) => {
+      // 런닝이 진행 중이면 상태를 보존
+      if (state.startTime) {
+        console.log('🔄 [RunStore] 런닝 상태 보존 - 통계 초기화되지 않음');
+        return {
+          ...initialUIState,
+          ...initialErrorState,
+          // 런닝 상태는 보존
+          startTime: state.startTime,
+          pausedTime: state.pausedTime,
+          pauseStartTime: state.pauseStartTime,
+          stats: state.stats,
+          // 코스 데이터는 유지 (currentCourseId, currentCourseData 보존)
+          courseTopology: null,
+          // 위치 추적 상태는 보존 (경로 데이터 유지)
+          routeCoordinates: state.routeCoordinates,
+          location: state.location,
+          isTracking: state.isTracking,
+          subscriber: state.subscriber,
+          errorMsg: state.errorMsg,
+          ...initialCourseValidationState,
+        };
+      }
+
+      // 런닝이 시작되지 않은 경우에만 완전 초기화
+      console.log('🔄 [RunStore] 런닝 상태 완전 초기화 - 통계 초기화됨');
+      return {
+        ...initialUIState,
+        ...initialErrorState,
+        ...initialRunningState,
+        // 코스 데이터는 유지 (currentCourseId, currentCourseData 보존)
+        courseTopology: null,
+        ...initialLocationTrackingState,
+        ...initialCourseValidationState,
+      };
+    });
   },
 }));
 
