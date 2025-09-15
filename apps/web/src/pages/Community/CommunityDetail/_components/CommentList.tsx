@@ -21,31 +21,43 @@ export default function CommentList({
       {comments.map((c) => {
         const manageable = canManage ? canManage(c) : true;
         const busy = workingId === c.id;
+
         return (
           <Row key={c.id}>
-            <Meta>
-              <Author>{c.author}</Author>
-            </Meta>
-            <Body>{c.content}</Body>
-            {manageable && (onEdit || onDelete) && (
-              <BtnRow>
-                <Btns>
+            <HeaderRow>
+              <Meta>
+                <Author>{c.author}</Author>
+              </Meta>
+
+              {manageable && (onEdit || onDelete) && (
+                <Actions>
                   {onEdit && (
-                    <EditButton disabled={busy} onClick={() => onEdit(c.id)}>
-                      수정
-                    </EditButton>
+                    <IconButton
+                      aria-label="수정"
+                      title="수정"
+                      disabled={busy}
+                      onClick={() => onEdit(c.id)}
+                      $variant="edit"
+                    >
+                      <i className="ri-pencil-line" />
+                    </IconButton>
                   )}
                   {onDelete && (
-                    <DeleteButton
+                    <IconButton
+                      aria-label="삭제"
+                      title="삭제"
                       disabled={busy}
                       onClick={() => onDelete(c.id)}
+                      $variant="delete"
                     >
-                      삭제
-                    </DeleteButton>
+                      <i className="ri-delete-bin-6-line" />
+                    </IconButton>
                   )}
-                </Btns>
-              </BtnRow>
-            )}
+                </Actions>
+              )}
+            </HeaderRow>
+
+            <Body>{c.content}</Body>
           </Row>
         );
       })}
@@ -61,9 +73,16 @@ const Wrap = styled.div`
 
 const Row = styled.div`
   display: grid;
-  gap: 6px;
+  gap: 8px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.surface};
   padding-bottom: 12px;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 좌: 작성자 / 우: 버튼들 */
+  gap: 12px;
 `;
 
 const Meta = styled.div`
@@ -80,31 +99,28 @@ const Body = styled.div`
   white-space: pre-wrap;
 `;
 
-/* 버튼 줄을 오른쪽 끝으로 */
-const BtnRow = styled.div`
+const Actions = styled.div`
   display: flex;
-  justify-content: flex-end;
+  align-items: end;
+  gap: 6px;
 `;
 
-const Btns = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const baseBtn = `
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+const IconButton = styled.button<{ $variant: 'edit' | 'delete' }>`
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
   background: transparent;
-  font-weight: 600;
-`;
+  font-size: 20px;
 
-const EditButton = styled.button`
-  ${baseBtn}
-  color: ${({ theme }) => theme.colors.subtext};
-`;
+  /* 색상은 기존과 동일한 토큰 사용 */
+  color: ${({ theme, $variant }) =>
+    $variant === 'edit' ? theme.colors.primary : theme.colors.danger};
 
-const DeleteButton = styled.button`
-  ${baseBtn}
-  color: ${({ theme }) => theme.colors.danger};
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
 `;

@@ -12,10 +12,12 @@ export default function PostHeader({
   post,
   onEdit,
   onDelete,
+  canEdit = false,
 }: {
   post: Post;
   onEdit: () => void;
   onDelete: () => void;
+  canEdit?: boolean;
 }) {
   return (
     <Container>
@@ -23,10 +25,12 @@ export default function PostHeader({
         <div>
           <Pill>{CATEGORY_LABEL_MAP[post.category]}</Pill>
         </div>
-        <ButtonContainer>
-          <EditButton onClick={onEdit}>수정</EditButton>
-          <DeleteButton onClick={onDelete}>삭제</DeleteButton>
-        </ButtonContainer>
+        {canEdit && (
+          <ButtonContainer>
+            <EditButton onClick={onEdit}>수정</EditButton>
+            <DeleteButton onClick={onDelete}>삭제</DeleteButton>
+          </ButtonContainer>
+        )}
       </Row>
       <Title>{post.title}</Title>
       <Author>{post.authorInfo?.nickname}</Author>

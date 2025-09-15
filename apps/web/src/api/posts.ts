@@ -2,15 +2,13 @@ import axios from 'axios';
 import api from '@/lib/api';
 import type { Category, Post } from '@/types/community';
 
-/** 서버 enum (클라 Category에서 'ALL' 제외) */
-export type ServerPostType = Exclude<Category, 'ALL'>; // 'FREE' | 'PROOF' | 'SHARE' | 'MATE'
+export type ServerPostType = Exclude<Category, 'ALL'>;
 
-/** --- 요청/응답 타입: 서버 스펙 기준 --- */
 export type CreatePostReq = {
   type: ServerPostType;
   title: string;
   content: string;
-  imageUrl: string; // 단일 이미지 URL
+  imageUrl: string;
   routeId?: number;
 };
 
@@ -18,7 +16,7 @@ export type UpdatePostReq = Partial<{
   type: ServerPostType;
   title: string;
   content: string;
-  imageUrl: string | null; // 단일 이미지 URL 또는 null
+  imageUrl: string | null;
   routeId: number | null;
 }>;
 
@@ -28,8 +26,8 @@ type PostResBase = {
   id: number;
   type: ServerPostType;
   title: string;
-  imageUrls?: string[]; // 서버가 과거 호환 위해 줄 수 있음
-  imageUrl?: string; // 표준: 단일
+  imageUrls?: string[];
+  imageUrl?: string;
   routeId?: number | null;
   likeCount: number;
   commentCount: number;
@@ -40,12 +38,12 @@ type PostResBase = {
 };
 
 type PostResCreate = PostResBase & {
-  authorId: number; // 생성 응답
+  authorId: number;
   content: string;
 };
 
 type PostResDetail = PostResBase & {
-  author: AuthorObj; // 상세 응답
+  author: AuthorObj;
   content: string;
 };
 
@@ -62,7 +60,7 @@ type UpdatePostRes = {
     type: ServerPostType;
     title: string;
     content: string;
-    imageUrl: string; // 서버 표준
+    imageUrl: string;
     routeId?: number;
     updatedAt: string;
   };
@@ -77,18 +75,15 @@ export type GetPostsQuery = {
   limit?: number;
 };
 
-/** 목록 아이템 (author 객체 버전) */
 type PostResListItem = PostResBase & {
   content?: string; // 서버가 줄 수도 있어 optional
 };
 
-/** 목록 아이템 (authorId만 있는 버전) */
 type PostResListItemAlt = PostResBase & {
   authorId: number;
   content?: string;
 };
 
-/** 커서 목록 응답 */
 type PostListCursorRes = {
   items: Array<PostResListItem | PostResListItemAlt>;
   nextCursor: number | string | null;
@@ -103,7 +98,6 @@ export type GetPostsCursorQuery = {
   limit?: number;
 };
 
-/** 서버 응답에서 단일 imageUrl 계산 (imageUrl 우선, 없으면 imageUrls[0]) */
 function pickImageUrl(res: {
   imageUrl?: string;
   imageUrls?: string[];
@@ -115,7 +109,6 @@ function pickImageUrl(res: {
   return '';
 }
 
-/** 목록 아이템 매퍼 (author/authorId 모두 대응) */
 function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
   const author = res.authorInfo?.nickname;
 
@@ -134,9 +127,8 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
   };
 }
 
-/** --- 서버 → 클라이언트 엔티티 매퍼 --- */
 function mapPostResToEntity(res: PostRes): Post {
-  const author = res.authorInfo.nickname;
+  const author = res.authorInfo?.nickname ?? '';
   const content = 'content' in res ? res.content : undefined;
 
   return {
@@ -154,13 +146,11 @@ function mapPostResToEntity(res: PostRes): Post {
   };
 }
 
-/** --- 게시글 생성 --- */
 export async function createPost(body: CreatePostReq): Promise<Post> {
   const { data } = await api.post<PostRes>('/community/posts', body);
   return mapPostResToEntity(data);
 }
 
-/** --- 게시글 목록 --- */
 export async function getPosts(query: GetPostsQuery = {}): Promise<Post[]> {
   const q: string[] = [];
 
@@ -184,7 +174,6 @@ export async function getPosts(query: GetPostsQuery = {}): Promise<Post[]> {
   return (data.items ?? []).map(mapListItemToEntity);
 }
 
-/** 커서 기반 목록 */
 export async function getPostsCursor(
   query: GetPostsCursorQuery = {},
 ): Promise<{ items: Post[]; nextCursor: number | string | null }> {
@@ -214,13 +203,11 @@ export async function getPostsCursor(
   };
 }
 
-/** --- 게시글 상세 --- */
 export async function getPost(id: number | string): Promise<Post> {
   const { data } = await api.get<PostResDetail>(`/community/posts/${id}`);
   return mapPostResToEntity(data);
 }
 
-/** 게시글 수정 */
 export async function updatePostById(
   id: number | string,
   body: UpdatePostReq,
@@ -232,19 +219,16 @@ export async function updatePostById(
   return data;
 }
 
-/** 좋아요 토글 */
 export async function togglePostLike(id: number | string): Promise<LikeRes> {
   const { data } = await api.post<LikeRes>(`/community/posts/${id}/like`);
   return data;
 }
 
-/** 게시글 삭제 (soft) */
 export async function deletePostById(id: number | string): Promise<boolean> {
   const { data } = await api.delete<DeleteRes>(`/community/posts/${id}`);
   return !!data?.ok;
 }
 
-/** --- (선택) 에러 코드 헬퍼: 필요시 사용 --- */
 export type PostErrorCode =
   | 'AUTH.UNAUTHORIZED'
   | 'COMMUNITY.POST_TYPE_INVALID'
@@ -275,23 +259,16 @@ export function getReadablePostError(e: unknown): string {
         return '요청 처리에 실패했습니다. 잠시 후 다시 시도해주세요.';
     }
   }
-  return '알 수 없는 오류가 발생했습니다.';
+  return `알 수 없는 오류가 발생했습니다.`;
 }
 
-/* -------------------------------------------
- *   🔽 PROOF 이미지 presign & 업로드 유틸
- *   (아바타 presign 로직과 동일한 패턴)
- * ----------------------------------------- */
-
 export type PresignReq = {
-  /** 예: 'community-proof' */
   type: string;
   contentType: string;
   size: number;
 };
 
 export type PresignRes = {
-  /** PUT 대상 URL (S3 presigned URL 등) */
   url: string;
 };
 
@@ -304,19 +281,16 @@ export function objectUrlFromPresign(url: string): string {
   return url.split('?')[0];
 }
 
-/** 파일 업로드(put) 후 public URL(단일) 반환 */
 export async function uploadProofWithFile(file: File): Promise<string> {
   const contentType = file.type || 'image/jpeg';
   const size = file.size;
 
-  // 1) presign
   const presign = await getProofPresign({
     type: 'verify',
     contentType,
     size,
   });
 
-  // 2) PUT 업로드
   const putRes = await fetch(presign.url, {
     method: 'PUT',
     headers: { 'Content-Type': contentType },
@@ -326,6 +300,5 @@ export async function uploadProofWithFile(file: File): Promise<string> {
     throw new Error(`이미지 업로드 실패: ${putRes.status}`);
   }
 
-  // 3) 업로드된 public URL 반환
   return objectUrlFromPresign(presign.url);
 }
