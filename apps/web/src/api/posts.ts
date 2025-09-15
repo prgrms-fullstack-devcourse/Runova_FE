@@ -110,13 +110,11 @@ function pickImageUrl(res: {
 }
 
 function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
-  const author = res.authorInfo?.nickname;
-
   return {
     id: String(res.id),
     category: res.type,
     title: res.title,
-    author,
+    author: 'author',
     commentsCount: res.commentCount,
     content: res.content,
     likeCount: res.likeCount,

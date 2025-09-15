@@ -13,8 +13,6 @@ import {
   updatePostById,
   uploadProofWithFile,
 } from '@/api/posts';
-// 🔻 PROOF 목록 불러오기는 제거 (PROOF에선 목록을 안 씀)
-// import { fetchRunningRecords } from '@/api/running';
 import { searchUserCourses } from '@/api/courses';
 
 const PROOF_KEYS: Exclude<Category, 'ALL'>[] = ['PROOF'];
@@ -32,6 +30,7 @@ type ItemShape = {
   imageUrl?: string;
   title?: string;
   date?: string;
+  length?: number;
 };
 
 export default function CommunityEdit() {
@@ -61,6 +60,9 @@ export default function CommunityEdit() {
   const [proofUploading, setProofUploading] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // ✅ 중복 요청 방지 락
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -105,7 +107,7 @@ export default function CommunityEdit() {
   useEffect(() => {
     setItems([]);
     setCursor(null);
-    setListDone(true);
+    setListDone(false);
     setListError(null);
 
     if (!isProofCategory(category)) {
@@ -115,11 +117,14 @@ export default function CommunityEdit() {
     }
   }, [category, proofPreview]);
 
-  // 페이지 로드 함수 — 🔸 SHARE에서만 동작
+  // ✅ 커서 기반 + 중복요청 가드
   const loadMore = useCallback(async () => {
+    if (inFlightRef.current) return;
     if (listLoading || listDone) return;
     if (!isShareCategory(category)) return;
+    if (cursor === null && items.length > 0) return;
 
+    inFlightRef.current = true;
     setListLoading(true);
     setListError(null);
     try {
@@ -133,6 +138,7 @@ export default function CommunityEdit() {
           imageUrl: c.imageUrl,
           title: c.title ?? '코스 공유',
           date: c.date,
+          length: c.length,
         })),
       ]);
       setCursor(nextCursor);
@@ -146,10 +152,10 @@ export default function CommunityEdit() {
       setListError(msg);
     } finally {
       setListLoading(false);
+      inFlightRef.current = false;
     }
-  }, [category, cursor, listDone, listLoading]);
+  }, [category, cursor, listDone, listLoading, items.length]);
 
-  // 초기 로드 — 🔸 SHARE에서만
   useEffect(() => {
     if (
       isShareCategory(category) &&
@@ -171,7 +177,7 @@ export default function CommunityEdit() {
     const io = new IntersectionObserver(
       (entries) => {
         const isVisible = entries.some((e) => e.isIntersecting);
-        if (isVisible && !listLoading) {
+        if (isVisible && !listLoading && !inFlightRef.current) {
           void loadMore();
         }
       },
@@ -199,6 +205,25 @@ export default function CommunityEdit() {
     [proofPreview],
   );
 
+  const handleSelectCourse = useCallback(
+    (clickedId: string) => {
+      const found = items.find((it) => it.id === clickedId);
+      const n = Number(found?.id ?? clickedId);
+
+      setRouteId((prev) => {
+        const next = Number.isFinite(n) ? n : undefined;
+        if (prev != null && next != null && prev === next) {
+          return undefined;
+        }
+        if (found?.imageUrl && found.imageUrl.trim()) {
+          setImageUrl(found.imageUrl);
+        }
+        return next;
+      });
+    },
+    [items],
+  );
+
   const submit = async () => {
     if (!title.trim()) return alert('제목을 입력하세요.');
     if (!content.trim()) return alert('내용을 입력하세요.');
@@ -206,7 +231,6 @@ export default function CommunityEdit() {
     try {
       setSubmitting(true);
 
-      // PROOF면, 아직 업로드 안 된 로컬 파일을 선 업로드 → imageUrl 대체
       let finalImageUrl = imageUrl;
       if (isProofCategory(category) && proofFile) {
         setProofUploading(true);
@@ -222,7 +246,7 @@ export default function CommunityEdit() {
           type: category,
           title,
           content,
-          imageUrl: finalImageUrl || null, // 비웠다면 null 전달 가능
+          imageUrl: finalImageUrl || null,
           ...(typeof routeId === 'number' ? { routeId } : {}),
         });
         navigate(`/community/${id}`, { replace: true });
@@ -233,7 +257,7 @@ export default function CommunityEdit() {
         type: category,
         title,
         content,
-        imageUrl: finalImageUrl, // 생성은 필수
+        imageUrl: finalImageUrl,
         routeId,
       });
       navigate(`/community/${created.id}`, { replace: true });
@@ -248,7 +272,7 @@ export default function CommunityEdit() {
     () =>
       items.map((it) => ({
         id: it.id,
-        imageUrl: it.imageUrl ?? 'https://picsum.photos/200?blur',
+        imageUrl: it.imageUrl ?? '',
         title: it.title ?? '',
         date: it.date ?? '',
       })),
@@ -271,15 +295,17 @@ export default function CommunityEdit() {
             category={category}
             title={title}
             content={content}
-            // 🔸 PROOF일 땐 EditForm에 빈 배열 전달(픽커 완전 비활성화)
             items={isShareCategory(category) ? formItems : []}
             submitting={submitting}
             submitLabel={editing ? '수정하기' : '작성하기'}
             onChange={handleFormChange}
             onSubmit={submit}
+            selectedItemId={routeId != null ? String(routeId) : null}
+            onSelectItem={
+              isShareCategory(category) ? handleSelectCourse : undefined
+            }
             footerSlot={
               <FooterArea>
-                {/* 🔹 PROOF: 업로드 카드만 노출 */}
                 {isProofCategory(category) && (
                   <UploadArea>
                     <HiddenInput
@@ -307,24 +333,11 @@ export default function CommunityEdit() {
                   </UploadArea>
                 )}
 
-                {/* 🔹 SHARE: 목록 관련 UI만 노출 */}
                 {isShareCategory(category) && (
                   <>
-                    {listError && (
-                      <ErrorBox role="alert">
-                        <ErrorText>{listError}</ErrorText>
-                        <RetryButton
-                          type="button"
-                          onClick={() => {
-                            void loadMore();
-                          }}
-                          disabled={listLoading}
-                        >
-                          다시 시도
-                        </RetryButton>
-                      </ErrorBox>
+                    {!listDone && !listLoading && (
+                      <Sentinel ref={sentinelRef} />
                     )}
-                    {!listDone && <Sentinel ref={sentinelRef} />}
                     {listLoading && <SmallHint>불러오는 중…</SmallHint>}
                     {listDone && items.length > 0 && (
                       <SmallHint>마지막 항목입니다.</SmallHint>
@@ -367,33 +380,6 @@ const SmallHint = styled.div`
   color: ${({ theme }) => theme.colors.subtext};
 `;
 
-const ErrorBox = styled.div`
-  width: 100%;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: ${({ theme }) => theme.colors.danger}22;
-  border: 1px solid ${({ theme }) => theme.colors.danger};
-`;
-
-const ErrorText = styled.div`
-  flex: 1;
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.danger};
-`;
-
-const RetryButton = styled.button`
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.danger};
-  background: transparent;
-  font-size: 12px;
-  cursor: pointer;
-`;
-
 const UploadArea = styled.div`
   width: 100%;
   display: flex;
@@ -402,7 +388,6 @@ const UploadArea = styled.div`
   margin-bottom: 8px;
 `;
 
-/** 업로드 미리보기 박스 (label) */
 const PreviewCard = styled.label`
   width: 100%;
   border: 1px solid ${({ theme }) => theme.colors.border};
