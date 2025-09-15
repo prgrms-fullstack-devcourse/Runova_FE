@@ -30,26 +30,12 @@ export async function searchUserCourses(
   params: CourseSearchRequest,
   accessToken: string,
 ): Promise<CourseSearchResponse> {
-  console.log('🌐 [CoursesService] searchUserCourses 요청:', {
-    url: '/api/courses/search/users',
-    params,
-    headers: {
-      Authorization: `Bearer ${accessToken.substring(0, 20)}...`,
-    },
-  });
-
   const response = await api.get('/api/courses/search/users', {
     params,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-
-  console.log('🌐 [CoursesService] searchUserCourses 응답:', {
-    status: response.status,
-    data: response.data,
-  });
-
   return response.data;
 }
 
@@ -69,26 +55,12 @@ export async function searchBookmarkedCourses(
   params: CourseSearchRequest,
   accessToken: string,
 ): Promise<BookmarkedCourseResponse> {
-  console.log('🌐 [CoursesService] searchBookmarkedCourses 요청:', {
-    url: '/api/courses/search/bookmarked',
-    params,
-    headers: {
-      Authorization: `Bearer ${accessToken.substring(0, 20)}...`,
-    },
-  });
-
   const response = await api.get('/api/courses/search/bookmarked', {
     params,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-
-  console.log('🌐 [CoursesService] searchBookmarkedCourses 응답:', {
-    status: response.status,
-    data: response.data,
-  });
-
   return response.data;
 }
 
@@ -99,26 +71,12 @@ export async function searchCompletedCourses(
   },
   accessToken: string,
 ): Promise<CompletedCourseResponse> {
-  console.log('🌐 [CoursesService] searchCompletedCourses 요청:', {
-    url: '/api/courses/search/completed',
-    params,
-    headers: {
-      Authorization: `Bearer ${accessToken.substring(0, 20)}...`,
-    },
-  });
-
   const response = await api.get('/api/courses/search/completed', {
     params,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-
-  console.log('🌐 [CoursesService] searchCompletedCourses 응답:', {
-    status: response.status,
-    data: response.data,
-  });
-
   return response.data;
 }
 

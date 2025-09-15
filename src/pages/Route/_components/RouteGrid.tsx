@@ -158,16 +158,6 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
   }
 
   if (currentData.length === 0 && !loading && !error) {
-    console.log('📱 [RouteGrid] 빈 데이터 상태:', {
-      activeTab,
-      currentDataLength: currentData.length,
-      loading,
-      error,
-      coursesLength: courses.length,
-      bookmarkedCoursesLength: bookmarkedCourses.length,
-      completedCoursesLength: completedCourses.length,
-    });
-
     const getEmptyMessage = () => {
       switch (activeTab) {
         case 'created':
