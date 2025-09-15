@@ -106,12 +106,10 @@ export default function EditForm({
                   </PickerItem>
                 );
               })}
-            {/* SHARE에서는 Picker 내부 하단에 footerSlot */}
             {footerSlot}
           </Picker>
         </Field>
       ) : (
-        // PROOF/FREE/MATE에서는 Picker 대신 별도 영역으로 footerSlot 노출
         footerSlot && <Field>{footerSlot}</Field>
       )}
 

@@ -13,7 +13,7 @@ import {
   getReadablePostError,
 } from '@/api/posts';
 import {
-  getPostComments, // ← 커서 기반 시그니처: (postId, limit?, cursor?)
+  getPostComments,
   createPostComment,
   updateComment,
   deleteComment,
@@ -46,16 +46,13 @@ export default function CommunityDetail() {
     null,
   );
 
-  // 현재 사용자 ID (RN → Web 브리지)
   const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
   const toStr = useCallback((v: unknown) => (v == null ? null : String(v)), []);
   const myId = toStr(myIdRaw);
 
-  // 게시글 수정/삭제 권한 (작성자 본인만)
   const authorId = toStr(post?.authorInfo?.id) ?? null;
   const canEdit = myId !== null && authorId !== null && myId === authorId;
 
-  // ---- 게시글 로드 ----
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -81,7 +78,6 @@ export default function CommunityDetail() {
     };
   }, [id]);
 
-  // ---- 댓글 최초 로드 (커서 기반) ----
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -104,7 +100,6 @@ export default function CommunityDetail() {
     };
   }, [id, cLimit]);
 
-  // ---- 좋아요 ----
   const handleToggleLike = async () => {
     if (!post || liking) return;
     setLiking(true);
@@ -127,7 +122,6 @@ export default function CommunityDetail() {
     }
   };
 
-  // ---- 댓글 작성 ----
   const handleSubmitComment = async () => {
     const v = inputRef.current?.value?.trim();
     if (!v || !id) return;
@@ -139,7 +133,6 @@ export default function CommunityDetail() {
       setPost((p) =>
         p ? { ...p, commentsCount: (p.commentsCount ?? 0) + 1 } : p,
       );
-      // 커서는 서버가 새로 계산하므로 유지(append만 했으니 nextCursor 변화 없음)
     } catch (e) {
       alert(getReadablePostError(e));
     } finally {
@@ -147,7 +140,6 @@ export default function CommunityDetail() {
     }
   };
 
-  // ---- 댓글 수정 ----
   const handleEditComment = async (commentId: string) => {
     const target = comments.find((c) => c.id === commentId);
     if (!target) return;
@@ -186,7 +178,6 @@ export default function CommunityDetail() {
     }
   };
 
-  // ---- 게시글 삭제 ----
   const handleDeletePost = useCallback(async () => {
     if (!post || deleting) return;
 
@@ -213,7 +204,6 @@ export default function CommunityDetail() {
     }
   }, [post, deleting, nav, confirm]);
 
-  // ---- 댓글 삭제 ----
   const handleDeleteComment = async (commentId: string) => {
     const ok = await confirm({
       title: '댓글을 삭제하시겠습니까?',
@@ -243,9 +233,8 @@ export default function CommunityDetail() {
     }
   };
 
-  // ---- 더 보기(커서 페이징) ----
   const handleLoadMore = async () => {
-    if (!post || !cCursor) return; // 더 불러올 것 없으면 종료
+    if (!post || !cCursor) return;
     const { items, nextCursor } = await getPostComments(
       post.id,
       cLimit,
@@ -255,7 +244,6 @@ export default function CommunityDetail() {
     setCCursor(nextCursor ?? null);
   };
 
-  // ---- early returns ----
   if (loading) {
     return (
       <AppLayout title="게시글" onBack={goBack}>
