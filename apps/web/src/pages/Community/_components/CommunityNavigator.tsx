@@ -4,9 +4,9 @@ import { useCommunityStore } from '@/stores/communityStore';
 
 const PATH_BY_KEY = {
   home: '/community',
-  photo: '/community/feed/proof', // ✅ photo -> proof
-  route: '/community/feed/share', // ✅ route -> share
-  run: '/community/feed/mate', // ✅ run   -> mate
+  photo: '/community/feed/proof',
+  route: '/community/feed/share',
+  run: '/community/feed/mate',
 } as const;
 
 type NavKey = keyof typeof PATH_BY_KEY;

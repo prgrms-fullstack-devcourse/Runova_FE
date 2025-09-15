@@ -54,14 +54,12 @@ export default function CommunityEdit() {
   const [listDone, setListDone] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
 
-  // PROOF 업로드 미리보기/업로딩 상태
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string>('');
   const [proofUploading, setProofUploading] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // ✅ 중복 요청 방지 락
   const inFlightRef = useRef(false);
 
   useEffect(() => {
@@ -95,12 +93,6 @@ export default function CommunityEdit() {
     if (typeof patch.title === 'string') setTitle(patch.title);
     if (typeof patch.content === 'string') setContent(patch.content);
     if (typeof patch.imageUrl === 'string') setImageUrl(patch.imageUrl);
-    if (
-      typeof patch.routeId === 'number' ||
-      typeof patch.routeId === 'undefined'
-    ) {
-      setRouteId(patch.routeId);
-    }
   }, []);
 
   // 카테고리 바뀌면 목록 초기화 + PROOF 미리보기 정리
@@ -117,7 +109,6 @@ export default function CommunityEdit() {
     }
   }, [category, proofPreview]);
 
-  // ✅ 커서 기반 + 중복요청 가드
   const loadMore = useCallback(async () => {
     if (inFlightRef.current) return;
     if (listLoading || listDone) return;
@@ -208,18 +199,14 @@ export default function CommunityEdit() {
   const handleSelectCourse = useCallback(
     (clickedId: string) => {
       const found = items.find((it) => it.id === clickedId);
-      const n = Number(found?.id ?? clickedId);
+      const raw = found?.id ?? clickedId;
+      const n = Number(raw);
+      if (!Number.isFinite(n)) return;
 
-      setRouteId((prev) => {
-        const next = Number.isFinite(n) ? n : undefined;
-        if (prev != null && next != null && prev === next) {
-          return undefined;
-        }
-        if (found?.imageUrl && found.imageUrl.trim()) {
-          setImageUrl(found.imageUrl);
-        }
-        return next;
-      });
+      setRouteId(n);
+
+      const nextImg = found?.imageUrl?.trim();
+      if (nextImg) setImageUrl(nextImg);
     },
     [items],
   );
@@ -227,6 +214,9 @@ export default function CommunityEdit() {
   const submit = async () => {
     if (!title.trim()) return alert('제목을 입력하세요.');
     if (!content.trim()) return alert('내용을 입력하세요.');
+    if (isShareCategory(category) && typeof routeId !== 'number') {
+      return alert('공유할 코스를 선택해주세요.');
+    }
 
     try {
       setSubmitting(true);
