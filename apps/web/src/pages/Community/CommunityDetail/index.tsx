@@ -48,7 +48,7 @@ export default function CommunityDetail() {
 
   // 현재 사용자 ID (RN → Web 브리지)
   const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
-  const toStr = (v: unknown) => (v == null ? null : String(v));
+  const toStr = useCallback((v: unknown) => (v == null ? null : String(v)), []);
   const myId = toStr(myIdRaw);
 
   // 게시글 수정/삭제 권한 (작성자 본인만)
@@ -230,7 +230,7 @@ export default function CommunityDetail() {
         setComments((prev) => prev.filter((c) => c.id !== commentId));
         setPost((p) =>
           p
-            ? { ...p, commentsCount: Math.max(0, (p.commentsCount ?? 1) - 1) }
+            ? { ...p, commentsCount: Math.max(0, (p.commentsCount ?? 0) - 1) }
             : p,
         );
       } else {
@@ -279,11 +279,10 @@ export default function CommunityDetail() {
   }
 
   const imageUrl = post.imageUrl;
-  const hasMore = cCursor !== null; // ✅ 커서가 있으면 더 불러올 수 있음
+  const hasMore = cCursor !== null;
 
-  // 댓글 개별 권한: 본인만 관리 가능
   const canEditComment = (c: Comment) => {
-    const cid = toStr(c.author) ?? null; // Comment.author는 문자열 ID로 매핑됨
+    const cid = toStr(c.author) ?? null;
     return myId !== null && cid !== null && myId === cid;
   };
 
@@ -317,7 +316,7 @@ export default function CommunityDetail() {
         onEdit={handleEditComment}
         onDelete={handleDeleteComment}
         workingId={editingId ?? deletingCommentId ?? null}
-        canManage={canEditComment} // ✅ 댓글도 권한 체크 적용
+        canManage={canEditComment}
       />
 
       {cLoading && <Hint>댓글 불러오는 중…</Hint>}
@@ -341,7 +340,6 @@ export default function CommunityDetail() {
   );
 }
 
-/* ---- styles 동일 ---- */
 const Content = styled.section`
   padding: 16px;
   color: ${({ theme }) => theme.colors.text};
