@@ -253,5 +253,5 @@ export function getReadableUserError(e: unknown): string {
     if (status === 404) return '사용자 정보를 찾을 수 없습니다.';
     return '요청 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.';
   }
-  return '알 수 없는 오류가 발생했습니다.';
+  return `알 수 없는 오류가 발생했습니다. ${e}`;
 }
