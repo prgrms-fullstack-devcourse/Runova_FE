@@ -321,7 +321,6 @@ export default function CommunityDetail() {
   ) => {
     postToNative({ type: 'toast', payload: { message, variant } });
   };
-  console.log(post.routeId);
   const handleToggleBookmark = async () => {
     if (!post || bookmarking) return;
     if (post.category !== 'SHARE' || !post.routeId) return;
