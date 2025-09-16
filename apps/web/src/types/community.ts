@@ -22,9 +22,10 @@ export interface Post {
 export interface Comment {
   id: string;
   postId: string;
-  author: string;
+  authorId: number;
   content: string;
   updatedAt: string;
+  authorInfo?: AuthorObj;
 }
 
 export type NavKey = 'home' | 'photo' | 'route' | 'run';

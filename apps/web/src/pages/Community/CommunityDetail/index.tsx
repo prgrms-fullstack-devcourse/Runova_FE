@@ -46,9 +46,8 @@ export default function CommunityDetail() {
     null,
   );
 
-  const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
+  const myId = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
   const toStr = useCallback((v: unknown) => (v == null ? null : String(v)), []);
-  const myId = toStr(myIdRaw);
 
   const authorId = toStr(post?.authorInfo?.id) ?? null;
   const canEdit = myId !== null && authorId !== null && myId === authorId;
@@ -270,8 +269,8 @@ export default function CommunityDetail() {
   const hasMore = cCursor !== null;
 
   const canEditComment = (c: Comment) => {
-    const cid = toStr(c.author) ?? null;
-    return myId !== null && cid !== null && myId === cid;
+    const cid = c.authorInfo?.id ?? c.authorId ?? null;
+    return myId !== null && cid !== null && Number(myId) === cid;
   };
 
   return (

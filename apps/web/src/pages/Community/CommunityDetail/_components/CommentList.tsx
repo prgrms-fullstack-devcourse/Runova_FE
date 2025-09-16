@@ -22,11 +22,15 @@ export default function CommentList({
         const manageable = canManage ? canManage(c) : true;
         const busy = workingId === c.id;
 
+        const nickname = c.authorInfo?.nickname ?? c.authorId ?? '알 수 없음';
+        const avatar = c.authorInfo?.imageUrl ?? '';
+
         return (
           <Row key={c.id}>
             <HeaderRow>
               <Meta>
-                <Author>{c.author}</Author>
+                <Avatar src={avatar} alt="avatar" $placeholder={!avatar} />
+                <Author>{nickname}</Author>
               </Meta>
 
               {manageable && (onEdit || onDelete) && (
@@ -81,13 +85,26 @@ const Row = styled.div`
 const HeaderRow = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 좌: 작성자 / 우: 버튼들 */
+  justify-content: space-between;
   gap: 12px;
 `;
 
 const Meta = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   color: ${({ theme }) => theme.colors.primary};
+`;
+
+const Avatar = styled.img<{ $placeholder?: boolean }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: ${({ theme, $placeholder }) =>
+    $placeholder ? theme.colors.surfaceAlt : 'transparent'};
+  border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const Author = styled.span`
@@ -115,7 +132,6 @@ const IconButton = styled.button<{ $variant: 'edit' | 'delete' }>`
   background: transparent;
   font-size: 20px;
 
-  /* 색상은 기존과 동일한 토큰 사용 */
   color: ${({ theme, $variant }) =>
     $variant === 'edit' ? theme.colors.primary : theme.colors.danger};
 

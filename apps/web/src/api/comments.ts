@@ -1,7 +1,13 @@
 import api from '@/lib/api';
 import type { Comment } from '@/types/community';
 
-// ----- 서버 응답 타입 (커서 기반) -----
+// ----- 서버 응답 타입 -----
+type AuthorInfoRes = {
+  id: number;
+  nickname: string;
+  imageUrl: string | null;
+};
+
 type CommentListItemRes = {
   id: number;
   postId: number;
@@ -9,6 +15,7 @@ type CommentListItemRes = {
   content: string;
   createdAt: string;
   updatedAt: string;
+  authorInfo: AuthorInfoRes; // ✅ 추가
 };
 
 type CommentListRes = {
@@ -23,6 +30,7 @@ type CommentCreateRes = {
   content: string;
   createdAt: string;
   updatedAt: string;
+  authorInfo: AuthorInfoRes; // ✅ 생성 응답에서도 내려온다고 가정
 };
 
 type CommentUpdateRes = {
@@ -33,21 +41,22 @@ type CommentUpdateRes = {
 type OkRes = { ok: boolean };
 
 // ----- 매퍼 (서버 → 클라 엔티티) -----
-// 주의: UI에서 c.author를 "작성자 ID"로 쓰는 흐름에 맞춰 문자열 ID로 매핑
 const mapListItemToEntity = (r: CommentListItemRes): Comment => ({
   id: String(r.id),
   postId: String(r.postId),
-  author: String(r.authorId), // ← authorId를 문자열로
+  authorId: r.authorId,
   content: r.content,
   updatedAt: r.updatedAt,
+  authorInfo: r.authorInfo,
 });
 
 const mapCreateItemToEntity = (r: CommentCreateRes): Comment => ({
   id: String(r.id),
   postId: String(r.postId),
-  author: String(r.authorId), // ← 동일하게 문자열 ID
+  authorId: r.authorId,
   content: r.content,
   updatedAt: r.updatedAt,
+  authorInfo: r.authorInfo,
 });
 
 // ----- API -----
