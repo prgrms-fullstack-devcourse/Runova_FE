@@ -114,7 +114,7 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
     id: String(res.id),
     category: res.type,
     title: res.title,
-    author: 'author',
+    author: res.authorInfo?.nickname ?? '',
     commentsCount: res.commentCount,
     content: res.content,
     likeCount: res.likeCount,
@@ -122,6 +122,7 @@ function mapListItemToEntity(res: PostResListItem | PostResListItemAlt): Post {
     createdAt: res.createdAt,
     updatedAt: res.updatedAt,
     authorInfo: res.authorInfo,
+    routeId: res.routeId ?? undefined,
   };
 }
 
@@ -141,6 +142,7 @@ function mapPostResToEntity(res: PostRes): Post {
     createdAt: res.createdAt,
     updatedAt: res.updatedAt,
     authorInfo: res.authorInfo,
+    routeId: res.routeId ?? undefined,
   };
 }
 

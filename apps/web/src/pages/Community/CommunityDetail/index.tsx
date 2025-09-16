@@ -20,6 +20,7 @@ import {
 } from '@/api/comments';
 import { useModal } from '@/components/common/modal/modalContext';
 import { useNativeBridgeStore } from '@/stores/nativeBridgeStore';
+import { toggleCourseBookmark } from '@/api/courses';
 
 export default function CommunityDetail() {
   const nav = useNavigate();
@@ -46,12 +47,35 @@ export default function CommunityDetail() {
     null,
   );
 
-  const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
-  const toStr = useCallback((v: unknown) => (v == null ? null : String(v)), []);
-  const myId = toStr(myIdRaw);
+  const [bookmarking, setBookmarking] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
-  const authorId = toStr(post?.authorInfo?.id) ?? null;
-  const canEdit = myId !== null && authorId !== null && myId === authorId;
+  const toId = useCallback(
+    (v: unknown): string | null => (v == null ? null : String(v)),
+    [],
+  );
+  const sameId = useCallback(
+    (a: unknown, b: unknown) => {
+      const as = toId(a);
+      const bs = toId(b);
+      return as !== null && bs !== null && as === bs;
+    },
+    [toId],
+  );
+
+  const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
+  const myId = toId(myIdRaw);
+  const authorId = toId(post?.authorInfo?.id ?? post?.author ?? null);
+
+  const canEdit = sameId(myId, authorId);
+
+  const canEditComment = useCallback(
+    (c: Comment) => {
+      const commentId = toId(c?.authorInfo?.id ?? c?.authorId ?? null);
+      return sameId(myId, commentId);
+    },
+    [myId, sameId, toId],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -140,24 +164,41 @@ export default function CommunityDetail() {
     }
   };
 
+  const getPromptText = (v: unknown): string => {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object') {
+      const any = v as Record<string, unknown>;
+      const cand =
+        (any.value as string | undefined) ??
+        (any.text as string | undefined) ??
+        (any.content as string | undefined);
+      if (typeof cand === 'string') return cand;
+    }
+    return String(v);
+  };
+
   const handleEditComment = async (commentId: string) => {
     const target = comments.find((c) => c.id === commentId);
     if (!target) return;
 
-    const next = await prompt({
+    const raw = await prompt({
       title: '댓글을 수정하세요',
-      defaultValue: target.content,
+      defaultValue: target.content ?? '',
       placeholder: '댓글 내용을 입력',
       confirmText: '수정',
       cancelText: '취소',
     });
-    if (next == null) return;
-    const content = next.trim();
+    if (raw == null) return; // 취소
+
+    const content = getPromptText(raw).trim();
+
     if (!content) {
-      await alert({
-        title: '입력이 필요합니다',
-        description: '내용을 입력하세요.',
-      });
+      sendToast('내용을 입력하세요.', 'error');
+      return;
+    }
+    if (content === target.content) {
+      sendToast('변경된 내용이 없습니다.', 'error');
       return;
     }
 
@@ -171,8 +212,9 @@ export default function CommunityDetail() {
             : c,
         ),
       );
+      sendToast('댓글을 수정했어요 ✅', 'success');
     } catch (e) {
-      await alert({ title: '오류', description: getReadablePostError(e) });
+      sendToast(getReadablePostError(e), 'error');
     } finally {
       setEditingId(null);
     }
@@ -269,9 +311,36 @@ export default function CommunityDetail() {
   const imageUrl = post.imageUrl;
   const hasMore = cCursor !== null;
 
-  const canEditComment = (c: Comment) => {
-    const cid = toStr(c.author) ?? null;
-    return myId !== null && cid !== null && myId === cid;
+  const postToNative = (evt: unknown) => {
+    window.ReactNativeWebView?.postMessage(JSON.stringify(evt));
+  };
+
+  const sendToast = (
+    message: string,
+    variant: 'success' | 'error' = 'success',
+  ) => {
+    postToNative({ type: 'toast', payload: { message, variant } });
+  };
+  const handleToggleBookmark = async () => {
+    if (!post || bookmarking) return;
+    if (post.category !== 'SHARE' || !post.routeId) return;
+
+    setBookmarking(true);
+    try {
+      const res = await toggleCourseBookmark(post.routeId);
+
+      if (res.bookmarked) {
+        setBookmarked(true);
+        sendToast('북마크했어요 ✅', 'success');
+      } else {
+        setBookmarked(false);
+        sendToast('북마크 해제했어요', 'success');
+      }
+    } catch (e) {
+      sendToast(getReadablePostError(e), 'error');
+    } finally {
+      setBookmarking(false);
+    }
   };
 
   return (
@@ -292,8 +361,15 @@ export default function CommunityDetail() {
         <Article>{post.content || '내용이 없습니다.'}</Article>
 
         <LikeBar>
+          {post.routeId && (
+            <BookmarkBtn onClick={handleToggleBookmark} disabled={bookmarking}>
+              <i
+                className={bookmarked ? 'ri-bookmark-fill' : 'ri-bookmark-line'}
+              />
+            </BookmarkBtn>
+          )}
           <LikeBtn onClick={handleToggleLike} disabled={liking}>
-            <i className="ri-thumb-up-fill" />{' '}
+            <i className="ri-thumb-up-fill" />
             <span>{post.likeCount ?? 0}</span>
           </LikeBtn>
         </LikeBar>
@@ -413,4 +489,18 @@ const Submit = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const BookmarkBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.surfaceAlt};
+  color: ${({ theme }) => theme.colors.subtext};
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
 `;
