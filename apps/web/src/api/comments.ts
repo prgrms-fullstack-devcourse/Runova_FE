@@ -34,8 +34,13 @@ type CommentCreateRes = {
 };
 
 type CommentUpdateRes = {
-  ok: boolean;
-  comment: { id: number; content: string; updatedAt: string };
+  id: number;
+  postId: number;
+  authorId: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  authorInfo: { id: number; nickname: string; imageUrl: string | null };
 };
 
 type OkRes = { ok: boolean };
@@ -95,10 +100,11 @@ export async function updateComment(
     `/community/comments/${id}`,
     { content },
   );
+
   return {
-    id: String(data.comment.id),
-    content: data.comment.content,
-    updatedAt: data.comment.updatedAt,
+    id: String(data.id),
+    content: data.content,
+    updatedAt: data.updatedAt,
   };
 }
 

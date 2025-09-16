@@ -50,11 +50,32 @@ export default function CommunityDetail() {
   const [bookmarking, setBookmarking] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
 
-  const myId = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
-  const toStr = useCallback((v: unknown) => (v == null ? null : String(v)), []);
+  const toId = useCallback(
+    (v: unknown): string | null => (v == null ? null : String(v)),
+    [],
+  );
+  const sameId = useCallback(
+    (a: unknown, b: unknown) => {
+      const as = toId(a);
+      const bs = toId(b);
+      return as !== null && bs !== null && as === bs;
+    },
+    [toId],
+  );
 
-  const authorId = toStr(post?.authorInfo?.id) ?? null;
-  const canEdit = myId !== null && authorId !== null && myId === authorId;
+  const myIdRaw = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
+  const myId = toId(myIdRaw);
+  const authorId = toId(post?.authorInfo?.id ?? post?.author ?? null);
+
+  const canEdit = sameId(myId, authorId);
+
+  const canEditComment = useCallback(
+    (c: Comment) => {
+      const commentId = toId(c?.authorInfo?.id ?? c?.authorId ?? null);
+      return sameId(myId, commentId);
+    },
+    [myId, sameId, toId],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -143,24 +164,41 @@ export default function CommunityDetail() {
     }
   };
 
+  const getPromptText = (v: unknown): string => {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object') {
+      const any = v as Record<string, unknown>;
+      const cand =
+        (any.value as string | undefined) ??
+        (any.text as string | undefined) ??
+        (any.content as string | undefined);
+      if (typeof cand === 'string') return cand;
+    }
+    return String(v);
+  };
+
   const handleEditComment = async (commentId: string) => {
     const target = comments.find((c) => c.id === commentId);
     if (!target) return;
 
-    const next = await prompt({
+    const raw = await prompt({
       title: '댓글을 수정하세요',
-      defaultValue: target.content,
+      defaultValue: target.content ?? '',
       placeholder: '댓글 내용을 입력',
       confirmText: '수정',
       cancelText: '취소',
     });
-    if (next == null) return;
-    const content = next.trim();
+    if (raw == null) return; // 취소
+
+    const content = getPromptText(raw).trim();
+
     if (!content) {
-      await alert({
-        title: '입력이 필요합니다',
-        description: '내용을 입력하세요.',
-      });
+      sendToast('내용을 입력하세요.', 'error');
+      return;
+    }
+    if (content === target.content) {
+      sendToast('변경된 내용이 없습니다.', 'error');
       return;
     }
 
@@ -174,8 +212,9 @@ export default function CommunityDetail() {
             : c,
         ),
       );
+      sendToast('댓글을 수정했어요 ✅', 'success');
     } catch (e) {
-      await alert({ title: '오류', description: getReadablePostError(e) });
+      sendToast(getReadablePostError(e), 'error');
     } finally {
       setEditingId(null);
     }
@@ -272,11 +311,6 @@ export default function CommunityDetail() {
   const imageUrl = post.imageUrl;
   const hasMore = cCursor !== null;
 
-  const canEditComment = (c: Comment) => {
-    const cid = c.authorInfo?.id ?? c.authorId ?? null;
-    return myId !== null && cid !== null && Number(myId) === cid;
-  };
-
   const postToNative = (evt: unknown) => {
     window.ReactNativeWebView?.postMessage(JSON.stringify(evt));
   };
@@ -295,7 +329,6 @@ export default function CommunityDetail() {
     setBookmarking(true);
     try {
       const res = await toggleCourseBookmark(post.routeId);
-      setPost((p) => (p ? { ...p, bookmarked: res.bookmarked } : p));
 
       if (res.bookmarked) {
         setBookmarked(true);
