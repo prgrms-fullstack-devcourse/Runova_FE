@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
+import Toast from 'react-native-toast-message';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 
 import { refreshToken } from '@/services/auth.service';
@@ -37,11 +38,27 @@ type WebToNativeMessage =
   | {
       type: 'NAVIGATE';
       payload: { screen: NativeScreen; params?: Record<string, unknown> };
+    }
+  | {
+      type: 'TOAST' | 'toast';
+      payload?: { message?: string; variant?: 'success' | 'error' | 'info' };
     };
 
 type UseWebViewMessengerOptions = {
   onNavigate?: (screen: NativeScreen, params?: Record<string, unknown>) => void;
 };
+
+type MsgOf<T extends WebToNativeMessage['type']> = Extract<
+  WebToNativeMessage,
+  { type: T }
+>;
+
+function asMsg<T extends WebToNativeMessage['type']>(
+  m: WebToNativeMessage,
+  t: T,
+): MsgOf<T> | null {
+  return m.type === t ? (m as MsgOf<T>) : null;
+}
 
 export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
   const webRef = useRef<WebView | null>(null);
@@ -99,12 +116,14 @@ export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
         msg = { type: 'LOG', payload: e.nativeEvent.data };
       }
 
-      switch (msg.type) {
-        case 'PING':
+      const typeLower = String(msg.type ?? '').toLowerCase();
+
+      switch (typeLower) {
+        case 'ping':
           postJson({ type: 'PONG' });
           break;
 
-        case 'REFRESH_TOKEN':
+        case 'refresh_token':
           try {
             const { accessToken } = await refreshToken();
             if (user) setAuth(accessToken, user);
@@ -117,15 +136,20 @@ export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
           }
           break;
 
-        case 'NAVIGATE':
-          opts?.onNavigate?.(msg.payload.screen, msg.payload.params);
+        case 'navigate': {
+          const p = (msg as Extract<WebToNativeMessage, { type: 'NAVIGATE' }>)
+            .payload ?? { screen: undefined, params: undefined };
+          opts?.onNavigate?.(p.screen as NativeScreen, p.params);
           break;
+        }
 
-        case 'LOG':
-          console.log('[Web LOG]', msg.payload);
+        case 'log': {
+          const m = asMsg(msg, 'LOG');
+          console.log('[Web LOG]', m?.payload);
           break;
+        }
 
-        case 'LOGOUT': {
+        case 'logout': {
           try {
             await signOut();
           } catch (error) {
@@ -140,7 +164,31 @@ export function useWebViewMessenger(opts?: UseWebViewMessengerOptions) {
           break;
         }
 
+        case 'toast': {
+          const p =
+            (msg as Extract<WebToNativeMessage, { type: 'TOAST' | 'toast' }>)
+              .payload || {};
+          const message =
+            typeof p.message === 'string' && p.message.trim()
+              ? p.message
+              : '알림';
+          const variant =
+            p.variant === 'error'
+              ? 'error'
+              : p.variant === 'info'
+                ? 'info'
+                : 'success';
+
+          Toast.show({
+            type: variant, // 'success' | 'error' | 'info'
+            text1: message,
+          });
+          break;
+        }
+
         default:
+          // 필요시 로그
+          // console.log('[Web → RN] unhandled:', msg);
           break;
       }
     },

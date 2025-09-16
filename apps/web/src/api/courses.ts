@@ -41,3 +41,14 @@ export async function searchUserCourses(cursor?: string) {
     nextCursor: data.nextCursor ?? null,
   };
 }
+
+export type ToggleBookmarkRes = {
+  bookmarked: boolean;
+};
+
+export async function toggleCourseBookmark(courseId: number | string) {
+  const { data } = await api.put<ToggleBookmarkRes>(
+    `/api/courses/${courseId}/bookmarks`,
+  );
+  return data;
+}

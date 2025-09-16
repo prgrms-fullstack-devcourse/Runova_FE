@@ -20,6 +20,7 @@ import {
 } from '@/api/comments';
 import { useModal } from '@/components/common/modal/modalContext';
 import { useNativeBridgeStore } from '@/stores/nativeBridgeStore';
+import { toggleCourseBookmark } from '@/api/courses';
 
 export default function CommunityDetail() {
   const nav = useNavigate();
@@ -45,6 +46,9 @@ export default function CommunityDetail() {
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
     null,
   );
+
+  const [bookmarking, setBookmarking] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
   const myId = useNativeBridgeStore((s) => s.init?.user?.id ?? null);
   const toStr = useCallback((v: unknown) => (v == null ? null : String(v)), []);
@@ -273,6 +277,40 @@ export default function CommunityDetail() {
     return myId !== null && cid !== null && Number(myId) === cid;
   };
 
+  const postToNative = (evt: unknown) => {
+    window.ReactNativeWebView?.postMessage(JSON.stringify(evt));
+  };
+
+  const sendToast = (
+    message: string,
+    variant: 'success' | 'error' = 'success',
+  ) => {
+    postToNative({ type: 'toast', payload: { message, variant } });
+  };
+  console.log(post.routeId);
+  const handleToggleBookmark = async () => {
+    if (!post || bookmarking) return;
+    if (post.category !== 'SHARE' || !post.routeId) return;
+
+    setBookmarking(true);
+    try {
+      const res = await toggleCourseBookmark(post.routeId);
+      setPost((p) => (p ? { ...p, bookmarked: res.bookmarked } : p));
+
+      if (res.bookmarked) {
+        setBookmarked(true);
+        sendToast('북마크했어요 ✅', 'success');
+      } else {
+        setBookmarked(false);
+        sendToast('북마크 해제했어요', 'success');
+      }
+    } catch (e) {
+      sendToast(getReadablePostError(e), 'error');
+    } finally {
+      setBookmarking(false);
+    }
+  };
+
   return (
     <AppLayout title="게시글" topOffset={48} onBack={goBack}>
       <PostHeader
@@ -291,8 +329,15 @@ export default function CommunityDetail() {
         <Article>{post.content || '내용이 없습니다.'}</Article>
 
         <LikeBar>
+          {post.routeId && (
+            <BookmarkBtn onClick={handleToggleBookmark} disabled={bookmarking}>
+              <i
+                className={bookmarked ? 'ri-bookmark-fill' : 'ri-bookmark-line'}
+              />
+            </BookmarkBtn>
+          )}
           <LikeBtn onClick={handleToggleLike} disabled={liking}>
-            <i className="ri-thumb-up-fill" />{' '}
+            <i className="ri-thumb-up-fill" />
             <span>{post.likeCount ?? 0}</span>
           </LikeBtn>
         </LikeBar>
@@ -412,4 +457,18 @@ const Submit = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const BookmarkBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.surfaceAlt};
+  color: ${({ theme }) => theme.colors.subtext};
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
 `;
