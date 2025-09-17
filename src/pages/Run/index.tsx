@@ -1,5 +1,5 @@
 import { useRef, useCallback, useMemo, useEffect } from 'react';
-import { Text, BackHandler } from 'react-native';
+import { Text, View, BackHandler } from 'react-native';
 import styled from '@emotion/native';
 import { ArrowLeft, AlertTriangle } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -8,7 +8,6 @@ import { LoadingOverlay, ErrorOverlay } from '@/components/Overlay';
 import Header from '@/components/Header';
 import type { TabParamList } from '@/types/navigation.types';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
-import { useRunStats } from '@/hooks/useRunStats';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
 import { useCourseValidation } from '@/hooks/useCourseValidation';
@@ -19,10 +18,12 @@ import ControlContainer from './_components/ControlContainer';
 import Modal from '@/components/Modal';
 import Mapbox from '@rnmapbox/maps';
 
-type Props = NativeStackScreenProps<TabParamList, 'Run'>;
+type Props = NativeStackScreenProps<any, 'Run'>;
 
 export default function Run({ route, navigation }: Props) {
-  const courseId = route.params?.courseId;
+  // 전역 Store에서 현재 코스 데이터 가져오기
+  const { currentCourseId, currentCourseData } = useRunStore();
+  const courseId = currentCourseId || route.params?.courseId;
 
   const {
     routeCoordinates,
@@ -34,6 +35,7 @@ export default function Run({ route, navigation }: Props) {
     refreshLocation,
     toggleTracking,
   } = useLocationTracking();
+
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
 
@@ -46,7 +48,8 @@ export default function Run({ route, navigation }: Props) {
     startTime,
   } = useRunStore();
 
-  useRunStats(routeCoordinates, isTracking);
+  // useRunStats는 StatsContainer에서 처리
+
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
 
   // 코스 검증 훅
@@ -58,6 +61,7 @@ export default function Run({ route, navigation }: Props) {
     distanceFromCourse,
     validateCurrentLocation,
   } = useCourseValidation({
+    courseId,
     validationOptions: {
       tolerance: 5, // 5미터 허용 오차 (매우 엄격하게)
       enableDistanceCalculation: true,
@@ -75,13 +79,22 @@ export default function Run({ route, navigation }: Props) {
     handleCancelExit,
     handleRetryExit,
     handleConfirmExit,
-  } = useRunModals({ navigation, mapRef, cameraRef, courseId });
+  } = useRunModals({
+    navigation: navigation as any,
+    mapRef,
+    cameraRef,
+    courseId,
+  });
 
   useFocusEffect(
     useCallback(() => {
-      resetLocationTracking();
-      resetRunState();
-      // 같은 courseId로 다시 진입할 때도 경로 데이터를 다시 로드
+      // 런닝이 시작되지 않은 상태에서만 초기화
+      const { startTime } = useRunStore.getState();
+      if (!startTime) {
+        resetLocationTracking();
+        resetRunState();
+      }
+      // courseId가 있을 때만 경로 데이터를 로드
       if (courseId) {
         loadCourseTopology();
       }
@@ -165,6 +178,7 @@ export default function Run({ route, navigation }: Props) {
               cameraRef={cameraRef}
               routeCoordinates={routeCoordinates}
               locationObject={location}
+              courseId={courseId}
             />
             {loading && <LoadingOverlay message="경로 정보를 불러오는 중..." />}
             {topologyError && (
@@ -173,8 +187,8 @@ export default function Run({ route, navigation }: Props) {
                 onRetry={loadCourseTopology}
               />
             )}
-            {/* 코스 이탈 알림 */}
-            {isDeviating && (
+            {/* 코스 이탈 알림 - courseId가 있을 때만 */}
+            {courseId && isDeviating && (
               <DeviationOverlay severity={deviationSeverity}>
                 <DeviationAlert severity={deviationSeverity}>
                   <AlertTriangle size={24} color="#ffffff" />
@@ -187,7 +201,7 @@ export default function Run({ route, navigation }: Props) {
           <LocationLoadingContainer>
             <Text>위치를 가져올 수 없습니다</Text>
             <RefreshButton onPress={refreshLocation}>
-              <Text style={{ color: '#007AFF', marginTop: 8 }}>새로고침</Text>
+              <Text style={{ color: '#2d2d2d', marginTop: 8 }}>새로고침</Text>
             </RefreshButton>
           </LocationLoadingContainer>
         )}
@@ -267,8 +281,8 @@ const DeviationAlert = styled.View<{ severity: 'low' | 'medium' | 'high' }>(
       severity === 'high'
         ? '#ef4444'
         : severity === 'medium'
-          ? '#f59e0b'
-          : '#3b82f6',
+          ? '#f87171'
+          : '#fca5a5',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 12,
@@ -304,5 +318,5 @@ const RefreshButton = styled.TouchableOpacity({
   padding: 12,
   borderRadius: 8,
   borderWidth: 1,
-  borderColor: '#007AFF',
+  borderColor: '#2d2d2d',
 });

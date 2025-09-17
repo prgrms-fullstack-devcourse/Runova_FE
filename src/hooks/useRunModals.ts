@@ -14,7 +14,7 @@ import type { RunningRecordRequest } from '@/types/run.types';
 import type { AxiosErrorResponse } from '@/types/api.types';
 
 type Props = {
-  navigation: NativeStackNavigationProp<TabParamList, 'Run'>;
+  navigation: NativeStackNavigationProp<TabParamList, 'RunTab'>;
   mapRef?: RefObject<Mapbox.MapView | null>;
   cameraRef?: RefObject<Mapbox.Camera | null>;
   courseId?: number;
@@ -33,6 +33,7 @@ export function useRunModals({
     setError,
     setUI,
     resetRunState,
+    clearCurrentCourse,
     startTime,
     stats,
   } = useRunStore();
@@ -58,10 +59,11 @@ export function useRunModals({
   const cleanupAndGoBack = useCallback(() => {
     resetLocationTracking();
     resetRunState();
+    clearCurrentCourse(); // currentCourseId를 undefined로 초기화
     // courseId 파라미터 초기화
     navigation.setParams({ courseId: undefined });
     navigation.goBack();
-  }, [resetLocationTracking, resetRunState, navigation]);
+  }, [resetLocationTracking, resetRunState, clearCurrentCourse, navigation]);
 
   const handleConfirmBack = cleanupAndGoBack;
 
@@ -76,6 +78,18 @@ export function useRunModals({
 
   const handleConfirmExit = useCallback(async () => {
     if (!startTime || routeCoordinates.length === 0) {
+      cleanupAndGoBack();
+      return;
+    }
+
+    // 코스 선택 시 최소 이동 거리 체크
+    if (courseId && routeCoordinates.length < 2) {
+      Toast.show({
+        type: 'error',
+        text1: '저장 불가',
+        text2:
+          '선택한 코스와 실제 러닝 경로가 많이 다릅니다. 코스를 따라 달려보세요.',
+      });
       cleanupAndGoBack();
       return;
     }
@@ -113,7 +127,6 @@ export function useRunModals({
           imageUrl = publicImageUrl;
         }
       } catch (imageError) {
-        console.warn('이미지 처리 실패:', imageError);
         Toast.show({
           type: 'info',
           text1: '이미지 저장 실패',
@@ -130,7 +143,20 @@ export function useRunModals({
         imageUrl,
       };
 
-      await saveRunningRecord(runningRecord, courseId);
+      console.log('📤 [useRunModals] 런닝 기록 저장 요청 페이로드:', {
+        runningRecord,
+        courseId,
+        pathLength: path.length,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        pace: paceValue,
+        calories: stats.calories,
+        imageUrl,
+      });
+
+      const response = await saveRunningRecord(runningRecord, courseId);
+
+      console.log('📥 [useRunModals] 런닝 기록 저장 응답:', response);
 
       Toast.show({
         type: 'success',
@@ -142,9 +168,19 @@ export function useRunModals({
     } catch (error: unknown) {
       let errorMessage = '런닝 기록 저장에 실패했습니다.';
 
+      // API 응답 로그 추가
+      console.error('🚨 [useRunModals] 런닝 기록 저장 실패:', error);
+
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as AxiosErrorResponse;
         const status = axiosError.status;
+
+        console.error('🚨 [useRunModals] API 응답 상태코드:', status);
+        console.error('🚨 [useRunModals] API 응답 데이터:', axiosError.data);
+        console.error(
+          '🚨 [useRunModals] API 응답 상태텍스트:',
+          axiosError.statusText,
+        );
 
         if (status === 400) {
           const errorData = axiosError.data;
@@ -155,10 +191,14 @@ export function useRunModals({
           }
         } else if (status === 401) {
           errorMessage = '로그인이 필요합니다.';
+        } else if (status === 409) {
+          errorMessage =
+            '선택한 코스와 실제 러닝 경로가 많이 다릅니다. 코스를 따라 달려보세요.';
         } else if (status === 500) {
           errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
         }
       } else if (error instanceof Error) {
+        console.error('🚨 [useRunModals] 일반 에러:', error.message);
         errorMessage = error.message;
       }
 

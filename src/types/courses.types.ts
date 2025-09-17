@@ -31,7 +31,7 @@ export type CourseSaveResult = {
 };
 
 export interface CourseSearchRequest {
-  cursor?: number | null;
+  cursor?: { id: number } | null;
   limit?: number;
 }
 
@@ -39,17 +39,64 @@ export interface CourseSearchItem {
   id: number;
   title: string;
   imageUrl: string;
-  departure: RouteCoordinate;
+  departure: [number, number];
   length: number;
   time: number;
   createdAt: string;
-  author: string;
+  author: {
+    nickname: string;
+    imageUrl: string;
+  };
   bookmarked: boolean;
   completed: boolean;
 }
 
 export interface CourseSearchResponse {
   results: CourseSearchItem[];
+}
+
+// 북마크한 경로 API 타입
+export interface BookmarkedCourseItem {
+  id: number;
+  title: string;
+  imageUrl: string;
+  departure: [number, number];
+  length: number;
+  time: number;
+  createdAt: string;
+  author: {
+    nickname: string;
+    imageUrl: string;
+  };
+  bookmarked: boolean;
+  distance: number;
+}
+
+export interface BookmarkedCourseResponse {
+  results: BookmarkedCourseItem[];
+  nextCursor: string;
+}
+
+// 완주한 경로 API 타입
+export interface CompletedCourseItem {
+  id: number;
+  title: string;
+  imageUrl: string;
+  departure: [number, number];
+  length: number;
+  time: number;
+  createdAt: string;
+  author: {
+    nickname: string;
+    imageUrl: string;
+  };
+  bookmarked: boolean;
+  distance: number;
+}
+
+export interface CompletedCourseResponse {
+  results: CompletedCourseItem[];
+  nextCursor: string;
 }
 
 export interface CourseTopologyNode {

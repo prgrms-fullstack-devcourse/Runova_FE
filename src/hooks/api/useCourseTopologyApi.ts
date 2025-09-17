@@ -8,7 +8,9 @@ export function useCourseTopologyApi(courseId?: number) {
   const { setUI, setError, setCourseTopology } = useRunStore();
 
   const loadCourseTopology = useCallback(async () => {
-    if (!courseId) return;
+    if (!courseId) {
+      return;
+    }
 
     try {
       setUI({ loading: true });
@@ -42,8 +44,10 @@ export function useCourseTopologyApi(courseId?: number) {
   }, [courseId, fetchCourseTopology, setUI, setError, setCourseTopology]);
 
   useEffect(() => {
-    loadCourseTopology();
-  }, [loadCourseTopology]);
+    if (courseId) {
+      loadCourseTopology();
+    }
+  }, [courseId, loadCourseTopology]);
 
   return {
     loadCourseTopology,

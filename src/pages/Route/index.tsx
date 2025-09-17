@@ -10,13 +10,24 @@ import FloatingButton from '@/components/FloatingButton';
 import RouteGrid from './_components/RouteGrid';
 import type { RouteTabId, TabParamList } from '@/types/navigation.types';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type {
+  BookmarkedCourseItem,
+  CourseSearchItem,
+} from '@/types/courses.types';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/api/useRouteApi';
+import {
+  useRouteData,
+  useBookmarkedCourses,
+  useCompletedCourses,
+} from '@/hooks/api/useRouteApi';
+import { theme } from '@/styles/theme';
 
-type Props = CompositeScreenProps<
-  NativeStackScreenProps<RouteStackParamList, 'RouteMain'>,
-  BottomTabScreenProps<TabParamList>
->;
+type Props = {
+  navigation: any;
+  onStartRun?: (courseId: number) => void;
+};
 
 const tabs: Array<{ id: RouteTabId; title: string }> = [
   { id: 'created', title: '생성한 경로' },
@@ -25,11 +36,32 @@ const tabs: Array<{ id: RouteTabId; title: string }> = [
 ];
 
 export default function Route({ navigation }: Props) {
-  const { activeTab, setActiveTab, courses } = useRouteStore();
+  const {
+    activeTab,
+    setActiveTab,
+    courses,
+    bookmarkedCourses,
+    completedCourses,
+  } = useRouteStore();
   const { loadCourses } = useRouteData();
+  const { loadBookmarkedCourses } = useBookmarkedCourses();
+  const { loadCompletedCourses } = useCompletedCourses();
 
   const handleRouteCardPress = (courseId: number) => {
-    navigation.navigate('Run', { courseId });
+    // 현재 탭의 데이터에서 해당 courseId 찾기
+    let courseData: BookmarkedCourseItem | CourseSearchItem | null = null;
+
+    if (activeTab === 'created') {
+      courseData = courses.find((course) => course.id === courseId) || null;
+    } else if (activeTab === 'liked') {
+      courseData =
+        bookmarkedCourses.find((course) => course.id === courseId) || null;
+    } else if (activeTab === 'completed') {
+      // completed 탭의 경우 courseData는 null로 전달
+      courseData = null;
+    }
+
+    navigation.navigate('Detail', { courseId, courseData });
   };
 
   useEffect(() => {
@@ -41,30 +73,35 @@ export default function Route({ navigation }: Props) {
   const handleSettingsPress = () => {};
 
   const handleCreatePress = () => {
-    navigation.navigate('Draw', {});
+    navigation.navigate('Draw', undefined);
   };
 
   const handleTabPress = (tabId: RouteTabId) => {
     setActiveTab(tabId);
-    if (tabId === 'created') {
+
+    // 탭 전환 시 해당 탭의 데이터가 비어있을 때만 로드
+    if (tabId === 'created' && courses.length === 0) {
       loadCourses(true);
+    } else if (tabId === 'liked' && bookmarkedCourses.length === 0) {
+      loadBookmarkedCourses(true);
+    } else if (tabId === 'completed' && completedCourses.length === 0) {
+      loadCompletedCourses(true);
     }
   };
 
   return (
     <Screen>
-      <Header
-        title="Runova"
-        rightIcon={Settings}
-        onRightPress={handleSettingsPress}
-      />
       <TabNavigation<RouteTabId>
         tabs={tabs}
         activeTab={activeTab}
         onTabPress={handleTabPress}
       />
       <RouteGrid onRouteCardPress={handleRouteCardPress} />
-      <FloatingButton icon={PenTool} onPress={handleCreatePress} />
+      <FloatingButton
+        icon={PenTool}
+        onPress={handleCreatePress}
+        style={styles.defaultButton}
+      />
     </Screen>
   );
 }
@@ -73,3 +110,14 @@ const Screen = styled.View({
   flex: 1,
   backgroundColor: '#ffffff',
 });
+
+const styles = {
+  defaultButton: {
+    backgroundColor: '#000000',
+  },
+  activeButton: {
+    backgroundColor: theme.colors.secondary[500],
+    elevation: 12,
+    shadowOpacity: 0.5,
+  },
+};

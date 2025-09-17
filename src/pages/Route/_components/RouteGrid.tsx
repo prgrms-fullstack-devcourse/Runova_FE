@@ -5,55 +5,159 @@ import {
   Text,
   TouchableOpacity,
   RefreshControl,
+  View,
 } from 'react-native';
 import { useCallback } from 'react';
 import Card from '@/components/Card';
 import useRouteStore from '@/store/route';
-import { useRouteData } from '@/hooks/api/useRouteApi';
-import { CourseSearchItem } from '@/types/courses.types';
+import {
+  useRouteData,
+  useBookmarkedCourses,
+  useCompletedCourses,
+} from '@/hooks/api/useRouteApi';
+import {
+  BookmarkedCourseItem,
+  CompletedCourseItem,
+  CourseSearchItem,
+} from '@/types/courses.types';
 
 interface RouteGridProps {
   onRouteCardPress: (courseId: number) => void;
 }
 
 export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
-  const { activeTab, courses, loading, error, refreshing } = useRouteStore();
+  const {
+    activeTab,
+    courses,
+    bookmarkedCourses,
+    completedCourses,
+    loading,
+    error,
+    refreshing,
+  } = useRouteStore();
 
   const { handleLoadMore, handleRetry, handleRefresh } = useRouteData();
+  const {
+    handleLoadMore: handleBookmarkedLoadMore,
+    handleRetry: handleBookmarkedRetry,
+    handleRefresh: handleBookmarkedRefresh,
+  } = useBookmarkedCourses();
+  const {
+    handleLoadMore: handleCompletedLoadMore,
+    handleRetry: handleCompletedRetry,
+    handleRefresh: handleCompletedRefresh,
+  } = useCompletedCourses();
+
+  const getCurrentData = () => {
+    switch (activeTab) {
+      case 'created':
+        return courses;
+      case 'liked':
+        return bookmarkedCourses;
+      case 'completed':
+        return completedCourses;
+      default:
+        return courses;
+    }
+  };
+
+  const getCurrentHandlers = () => {
+    switch (activeTab) {
+      case 'created':
+        return { handleLoadMore, handleRetry, handleRefresh };
+      case 'liked':
+        return {
+          handleLoadMore: handleBookmarkedLoadMore,
+          handleRetry: handleBookmarkedRetry,
+          handleRefresh: handleBookmarkedRefresh,
+        };
+      case 'completed':
+        return {
+          handleLoadMore: handleCompletedLoadMore,
+          handleRetry: handleCompletedRetry,
+          handleRefresh: handleCompletedRefresh,
+        };
+      default:
+        return { handleLoadMore, handleRetry, handleRefresh };
+    }
+  };
 
   const renderRouteCard = useCallback(
-    ({ item }: { item: CourseSearchItem }) => (
-      <Card
-        imageSource={{ uri: item.imageUrl }}
-        content={{ hasStar: item.bookmarked }}
-        mode="only-image"
-        onPress={() => onRouteCardPress(item.id)}
-      />
-    ),
-    [onRouteCardPress],
+    ({
+      item,
+    }: {
+      item: CourseSearchItem | BookmarkedCourseItem | CompletedCourseItem;
+    }) => {
+      if (activeTab === 'completed') {
+        const completedItem = item as CompletedCourseItem;
+        return (
+          <CardContainer>
+            <Card
+              imageSource={{ uri: completedItem.imageUrl }}
+              content={{
+                title: completedItem.title,
+                subtitle: `${Math.round((completedItem.distance / 1000) * 10) / 10}km`,
+                hasStar: completedItem.bookmarked,
+              }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(completedItem.id)}
+            />
+          </CardContainer>
+        );
+      } else if (activeTab === 'liked') {
+        const bookmarkedItem = item as BookmarkedCourseItem;
+        return (
+          <CardContainer>
+            <Card
+              imageSource={{ uri: bookmarkedItem.imageUrl }}
+              content={{ hasStar: bookmarkedItem.bookmarked }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(bookmarkedItem.id)}
+            />
+          </CardContainer>
+        );
+      } else {
+        const courseItem = item as CourseSearchItem;
+        return (
+          <CardContainer>
+            <Card
+              imageSource={{ uri: courseItem.imageUrl }}
+              content={{ hasStar: courseItem.bookmarked }}
+              mode="only-image"
+              onPress={() => onRouteCardPress(courseItem.id)}
+            />
+          </CardContainer>
+        );
+      }
+    },
+    [activeTab, onRouteCardPress],
   );
+
+  const currentData = getCurrentData();
+  const currentHandlers = getCurrentHandlers();
 
   const handleEndReached = useCallback(() => {
-    handleLoadMore();
-  }, [handleLoadMore]);
+    currentHandlers.handleLoadMore();
+  }, [currentHandlers]);
 
   const keyExtractor = useCallback(
-    (item: CourseSearchItem) => item.id.toString(),
-    [],
+    (item: CourseSearchItem | BookmarkedCourseItem | CompletedCourseItem) =>
+      `${activeTab}-${item.id}`,
+    [activeTab],
   );
 
-  if (error && courses.length === 0) {
+  if (error && currentData.length === 0) {
     return (
       <ErrorContainer>
         <ErrorText>{error}</ErrorText>
-        <RetryButton onPress={handleRetry}>
+        <RetryButton onPress={currentHandlers.handleRetry}>
           <RetryButtonText>다시 시도</RetryButtonText>
         </RetryButton>
       </ErrorContainer>
     );
   }
 
-  if (courses.length === 0 && !loading && !error) {
+  if (currentData.length === 0 && !loading && !error) {
     const getEmptyMessage = () => {
       switch (activeTab) {
         case 'created':
@@ -76,7 +180,7 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
 
   return (
     <FlatList
-      data={courses}
+      data={currentData}
       renderItem={renderRouteCard}
       keyExtractor={keyExtractor}
       numColumns={2}
@@ -94,22 +198,22 @@ export default function RouteGrid({ onRouteCardPress }: RouteGridProps) {
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor="#007AFF"
-          colors={['#007AFF']}
+          onRefresh={currentHandlers.handleRefresh}
+          tintColor="#2d2d2d"
+          colors={['#2d2d2d']}
         />
       }
       ListFooterComponent={() => (
         <>
           {loading && (
             <LoadingContainer>
-              <ActivityIndicator size="large" color="#007AFF" />
+              <ActivityIndicator size="large" color="#2d2d2d" />
             </LoadingContainer>
           )}
-          {error && courses.length > 0 && (
+          {error && currentData.length > 0 && (
             <ErrorMessage>
               <ErrorText>{error}</ErrorText>
-              <RetryButton onPress={handleRetry}>
+              <RetryButton onPress={currentHandlers.handleRetry}>
                 <RetryButtonText>다시 시도</RetryButtonText>
               </RetryButton>
             </ErrorMessage>
@@ -153,7 +257,7 @@ const ErrorText = styled.Text({
 });
 
 const RetryButton = styled(TouchableOpacity)({
-  backgroundColor: '#007AFF',
+  backgroundColor: '#2d2d2d',
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderRadius: 8,
@@ -163,4 +267,9 @@ const RetryButtonText = styled.Text({
   color: '#ffffff',
   fontSize: 14,
   fontWeight: '600',
+});
+
+const CardContainer = styled.View({
+  flex: 1,
+  marginBottom: 16,
 });

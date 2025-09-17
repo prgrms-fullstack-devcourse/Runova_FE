@@ -1,5 +1,6 @@
 import { Modal as RNModal, Text, TouchableOpacity, View } from 'react-native';
 import styled from '@emotion/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@/styles/theme';
 
 interface ModalProps {
@@ -38,6 +39,11 @@ export default function Modal({
           <ModalMessage>{message}</ModalMessage>
           <ButtonContainer>
             <ModalButton onPress={onCancel} disabled={disabled || loading}>
+              <ModalButtonGradient
+                colors={['#1a1a1a', '#2d2d2d', '#404040']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
               <ModalButtonText>{cancelText}</ModalButtonText>
             </ModalButton>
             <ModalButton
@@ -45,6 +51,11 @@ export default function Modal({
               isPrimary
               disabled={disabled || loading}
             >
+              <ModalButtonGradient
+                colors={['#1a1a1a', '#2d2d2d', '#404040']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
               <ModalButtonText isPrimary>
                 {loading ? '저장 중...' : confirmText}
               </ModalButtonText>
@@ -101,16 +112,24 @@ const ModalButton = styled(TouchableOpacity)<{
   flex: 1;
   padding: 12px 16px;
   border-radius: 8px;
-  background-color: ${({ isPrimary, disabled }) => {
-    if (disabled) return theme.colors.gray[300];
-    return isPrimary ? theme.colors.primary[500] : theme.colors.gray[100];
-  }};
   align-items: center;
+  position: relative;
+  overflow: hidden;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+`;
+
+const ModalButtonGradient = styled(LinearGradient)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
 `;
 
 const ModalButtonText = styled(Text)<{ isPrimary?: boolean }>`
   font-size: 16px;
   font-weight: 500;
-  color: ${({ isPrimary }) => (isPrimary ? '#ffffff' : theme.colors.gray[700])};
+  color: #ffffff;
+  z-index: 1;
 `;

@@ -11,6 +11,7 @@ import {
   initializeGoogleSignIn,
   signInWithGoogle,
 } from '@/services/auth.service';
+import { useLocationTracking } from '@/hooks/useLocationTracking';
 import type { RootStackParamList } from '@/types/navigation.types';
 
 export default function Auth() {
@@ -18,6 +19,9 @@ export default function Auth() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // 로그인 시 위치 미리 받아오기
+  const { refreshLocation } = useLocationTracking();
 
   useEffect(() => {
     initializeGoogleSignIn();
@@ -30,6 +34,11 @@ export default function Auth() {
       const { accessToken, user } = await signInWithGoogle();
 
       setAuth(accessToken, user);
+
+      // 로그인 성공 후 위치 미리 받아오기
+      console.log('📍 로그인 성공! 위치 미리 받아오기 시작...');
+      refreshLocation();
+
       // navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
     } catch (error: unknown) {
       console.error('로그인 오류:', error);
@@ -54,7 +63,7 @@ export default function Auth() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, setAuth, navigation]);
+  }, [isSubmitting, setAuth, navigation, refreshLocation]);
 
   return (
     <Screen>

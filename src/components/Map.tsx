@@ -7,8 +7,9 @@ import { INITIAL_ZOOM_LEVEL } from '@/constants/location';
 interface MapProps {
   mapRef: RefObject<Mapbox.MapView | null>;
   cameraRef: RefObject<Mapbox.Camera | null>;
-  initialLocation: Position;
+  initialLocation: Position | null;
   onUserLocationUpdate?: (location: Mapbox.Location) => void;
+  onMapReady?: () => void;
   children?: React.ReactNode;
   showUserLocation?: boolean;
 }
@@ -18,15 +19,23 @@ export default function Map({
   cameraRef,
   initialLocation,
   onUserLocationUpdate,
+  onMapReady,
   children,
   showUserLocation = true,
 }: MapProps) {
+  // initialLocation이 없으면 기본 서울 좌표 사용
+  const safeInitialLocation = initialLocation || [127.0276, 37.4979];
+
   return (
-    <StyledMapView ref={mapRef} styleURL={Mapbox.StyleURL.Street}>
+    <StyledMapView
+      ref={mapRef}
+      styleURL={Mapbox.StyleURL.Street}
+      onDidFinishLoadingMap={onMapReady}
+    >
       <Mapbox.Camera
         ref={cameraRef}
         defaultSettings={{
-          centerCoordinate: initialLocation,
+          centerCoordinate: safeInitialLocation,
           zoomLevel: INITIAL_ZOOM_LEVEL,
         }}
       />

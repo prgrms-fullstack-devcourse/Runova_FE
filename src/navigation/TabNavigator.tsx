@@ -1,31 +1,32 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  Star,
-  AudioWaveform,
-  Play,
-  Laugh,
-  Settings,
-} from 'lucide-react-native';
+import { View } from 'react-native';
+import { Star, FileText, Play, Laugh, Settings } from 'lucide-react-native';
 
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
-import RouteStackNavigator from '@/navigation/RouteStackNavigator';
+import Records from '@/pages/Records';
+import RunTabNavigator from '@/navigation/RunTabNavigator';
 import Run from '@/pages/Run';
 
 import type { TabParamList } from '@/types/navigation.types';
 import WebMyPage from '@/pages/WebMyPage';
 
+// RunTab 전용 컴포넌트
+function RunTabWithReset() {
+  return <RunTabNavigator />;
+}
+
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const TAB_BAR_HEIGHT = 60;
+const TAB_BAR_HEIGHT = 68;
 
 export default function TabNavigator() {
   const insets = useSafeAreaInsets();
 
   const baseTabBarStyle = {
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
@@ -35,6 +36,14 @@ export default function TabNavigator() {
     right: 0,
     height: TAB_BAR_HEIGHT + insets.bottom,
     paddingBottom: insets.bottom,
+    paddingTop: 8,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowRadius: 8,
   };
 
   return (
@@ -58,33 +67,33 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Route"
-        component={RouteStackNavigator}
+        name="Records"
+        component={Records}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FileText color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="RunTab"
+        component={RunTabWithReset}
         options={({ route }) => {
-          const routeName = getFocusedRouteNameFromRoute(route) ?? 'RouteMain';
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? 'QuickStartMain';
           return {
-            tabBarIcon: ({ color, size }) => (
-              <AudioWaveform color={color} size={size} />
-            ),
+            tabBarIcon: ({ color, size }) => <Play color={color} size={size} />,
             tabBarStyle: {
               ...baseTabBarStyle,
               display:
-                routeName === 'Draw' || routeName === 'RouteSave'
+                routeName === 'Run' ||
+                routeName === 'Draw' ||
+                routeName === 'RouteSave' ||
+                routeName === 'Detail'
                   ? 'none'
                   : 'flex',
             },
           };
-        }}
-      />
-      <Tab.Screen
-        name="Run"
-        component={Run}
-        options={{
-          tabBarIcon: ({ color, size }) => <Play color={color} size={size} />,
-          tabBarStyle: {
-            ...baseTabBarStyle,
-            display: 'none',
-          },
         }}
       />
       <Tab.Screen

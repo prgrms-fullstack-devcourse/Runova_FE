@@ -8,6 +8,7 @@ export function useRunMap(
   cameraRef?: React.RefObject<Mapbox.Camera | null>,
   location?: Position | null,
   routeCoordinates?: Position[],
+  courseId?: number,
 ) {
   const { courseTopology, isLocked } = useRunStore();
   const { fitToCoordinates } = useLocationManager();
@@ -24,32 +25,34 @@ export function useRunMap(
     },
   };
 
-  // 코스 shape 폴리곤들 생성
+  // 코스 shape 폴리곤들 생성 - courseId가 있을 때만
   const courseShapePolygons =
-    courseTopology?.shape.map((polygonCoords, index) => ({
-      type: 'Feature' as const,
-      properties: { id: index },
-      geometry: {
-        type: 'Polygon' as const,
-        coordinates: [polygonCoords],
-      },
-    })) || [];
+    courseId && courseTopology?.shape
+      ? courseTopology.shape.map((polygonCoords, index) => ({
+          type: 'Feature' as const,
+          properties: { id: index },
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [polygonCoords],
+          },
+        }))
+      : [];
 
   const courseShapeGeoJSON = {
     type: 'FeatureCollection' as const,
     features: courseShapePolygons,
   };
 
-  // 코스 토폴로지가 로드되면 지도에 맞춤
+  // 코스 토폴로지가 로드되면 지도에 맞춤 - courseId가 있을 때만
   useEffect(() => {
-    if (courseTopology && courseTopology.shape.length > 0) {
+    if (courseId && courseTopology && courseTopology.shape.length > 0) {
       const allCoordinates: [number, number][] = courseTopology.shape.flat(1);
 
       if (allCoordinates.length > 0) {
         fitToCoordinates(finalCameraRef, allCoordinates);
       }
     }
-  }, [courseTopology, fitToCoordinates, finalCameraRef]);
+  }, [courseId, courseTopology, fitToCoordinates, finalCameraRef]);
 
   return {
     cameraRef: finalCameraRef,

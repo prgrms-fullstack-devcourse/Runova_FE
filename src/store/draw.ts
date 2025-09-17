@@ -44,12 +44,10 @@ const useDrawStore = create<DrawState>((set) => ({
   toggleDrawMode: () =>
     set((state) => ({
       drawMode: state.drawMode === 'draw' ? 'none' : 'draw',
-      drawnCoordinates: [],
     })),
   toggleEraseMode: () =>
     set((state) => ({
       drawMode: state.drawMode === 'erase' ? 'none' : 'erase',
-      drawnCoordinates: [],
     })),
   eraseRouteByIndex: (routeIndex) =>
     set((state) => ({
@@ -66,6 +64,7 @@ const useDrawStore = create<DrawState>((set) => ({
       completedDrawings: [],
       drawnCoordinates: [],
       drawMode: 'none',
+      isLoading: false,
     }),
 }));
 

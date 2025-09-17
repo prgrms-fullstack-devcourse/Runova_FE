@@ -17,6 +17,10 @@ export function useLocationManager() {
         initialLocation.coords.longitude,
         initialLocation.coords.latitude,
       ];
+      console.log(
+        '📍 useLocationManager: 위치 업데이트됨',
+        currentUserLocation.current,
+      );
     }
   }, [initialLocation]);
 
@@ -74,8 +78,8 @@ export function useLocationManager() {
   };
 
   return {
-    initialLocation,
-    locationLoading,
+    initialLocation: currentUserLocation.current, // 현재 위치만 사용
+    locationLoading: locationLoading,
     location,
     errorMsg,
     refreshLocation,

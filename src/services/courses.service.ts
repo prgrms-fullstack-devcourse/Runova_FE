@@ -1,6 +1,8 @@
 import { convertPathToApiFormat } from '@/utils/courseFormatter';
 import api from '../lib/api';
 import type {
+  BookmarkedCourseResponse,
+  CompletedCourseResponse,
   CourseClientData,
   CourseCreateRequest,
   CourseSearchRequest,
@@ -42,6 +44,53 @@ export async function getCourseTopology(
   accessToken: string,
 ): Promise<CourseTopologyResponse> {
   const response = await api.get(`/api/courses/${courseId}/topology`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function searchBookmarkedCourses(
+  params: CourseSearchRequest,
+  accessToken: string,
+): Promise<BookmarkedCourseResponse> {
+  const response = await api.get('/api/courses/search/bookmarked', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function searchCompletedCourses(
+  params: {
+    cursor?: { id: number } | null;
+    limit?: number;
+  },
+  accessToken: string,
+): Promise<CompletedCourseResponse> {
+  const response = await api.get('/api/courses/search/completed', {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function searchAdjacentCourses(
+  params: {
+    location: string; // "127.0,37.5" 형식
+    radius: number;
+    limit?: number;
+    cursor?: { id: number; distance: number } | null;
+  },
+  accessToken: string,
+): Promise<CourseSearchResponse> {
+  const response = await api.get('/api/courses/search/adjacent', {
+    params,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
