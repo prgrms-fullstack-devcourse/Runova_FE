@@ -295,9 +295,9 @@ const useRunStore = create<RunState>((set, get) => ({
 
   resetRunState: () => {
     set((state) => {
-      // 런닝이 진행 중이면 상태를 보존
-      if (state.startTime) {
-        console.log('🔄 [RunStore] 런닝 상태 보존 - 통계 초기화되지 않음');
+      // isTracking이 true면 일시정지 상태이므로 상태 보존
+      if (state.isTracking) {
+        console.log('🔄 [RunStore] 일시정지 상태 - 런닝 상태 보존');
         return {
           ...initialUIState,
           ...initialErrorState,
@@ -318,14 +318,13 @@ const useRunStore = create<RunState>((set, get) => ({
         };
       }
 
-      // 런닝이 시작되지 않은 경우에만 완전 초기화
-      console.log('🔄 [RunStore] 런닝 상태 완전 초기화 - 통계 초기화됨');
+      // isTracking이 false면 완전 초기화
+      console.log('🔄 [RunStore] 완전 초기화 - 모든 상태 초기화됨');
       return {
         ...initialUIState,
         ...initialErrorState,
         ...initialRunningState,
-        // 코스 데이터는 유지 (currentCourseId, currentCourseData 보존)
-        courseTopology: null,
+        ...initialCourseState,
         ...initialLocationTrackingState,
         ...initialCourseValidationState,
       };

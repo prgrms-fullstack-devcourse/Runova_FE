@@ -88,12 +88,11 @@ export default function Run({ route, navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      // 런닝이 시작되지 않은 상태에서만 초기화
-      const { startTime } = useRunStore.getState();
-      if (!startTime) {
-        resetLocationTracking();
-        resetRunState();
-      }
+      // 스크린 진입 시 항상 완전 초기화 (이전 상태 완전 제거)
+      console.log('🔄 [Run] 스크린 진입 - 모든 상태 강제 초기화');
+      resetLocationTracking();
+      resetRunState(); // isTracking이 false이므로 완전 초기화
+
       // courseId가 있을 때만 경로 데이터를 로드
       if (courseId) {
         loadCourseTopology();
