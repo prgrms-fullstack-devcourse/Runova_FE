@@ -12,6 +12,16 @@ export type RootStackParamList = {
   CommunityDetail: { postId: string };
   CommunityEdit: { postId: string } | undefined;
   WebCommunity: undefined;
+  RunDetail: {
+    recordId: number;
+    imageUrl?: string;
+    stats: {
+      distance: number;
+      calories: number;
+      pace: number;
+      runningTime: string;
+    };
+  };
 };
 
 export type TabParamList = {
