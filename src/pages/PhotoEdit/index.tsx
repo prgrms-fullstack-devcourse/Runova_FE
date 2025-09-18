@@ -1,0 +1,249 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Platform,
+} from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ArrowLeft, Check, RotateCcw } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import styled from '@emotion/native';
+import * as MediaLibrary from 'expo-media-library';
+
+import Header from '@/components/Header';
+import type { RunTabStackParamList } from '@/types/navigation.types';
+
+type Props = NativeStackScreenProps<RunTabStackParamList, 'PhotoEdit'>;
+
+export default function PhotoEdit({ route, navigation }: Props) {
+  const { photoUri, recordId } = route.params;
+  const insets = useSafeAreaInsets();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  console.log('📷 [PhotoEdit] 받은 사진 URI:', photoUri);
+
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
+
+  const saveToGallery = async () => {
+    try {
+      console.log('📷 [PhotoEdit] 갤러리 저장 시작:', photoUri);
+
+      // 미디어 라이브러리 권한 요청
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('권한 필요', '갤러리에 저장하려면 권한이 필요합니다.');
+        return false;
+      }
+
+      console.log('📷 [PhotoEdit] 저장할 사진 URI:', photoUri);
+
+      // 갤러리에 저장
+      const asset = await MediaLibrary.createAssetAsync(photoUri);
+      console.log('📷 [PhotoEdit] 갤러리 저장 완료:', asset);
+
+      return true;
+    } catch (error) {
+      console.error('📷 [PhotoEdit] 갤러리 저장 실패:', error);
+      return false;
+    }
+  };
+
+  const handleSavePress = async () => {
+    try {
+      setIsProcessing(true);
+      console.log('📷 [PhotoEdit] 저장 버튼 클릭');
+
+      // 갤러리에 저장
+      const savedToGallery = await saveToGallery();
+
+      if (savedToGallery) {
+        Alert.alert('저장 완료', '인증사진이 갤러리에 저장되었습니다.', [
+          {
+            text: '확인',
+            onPress: () => {
+              // RunDetail로 돌아가기
+              navigation.navigate('RunDetail', {
+                recordId,
+                imageUrl: photoUri,
+                stats: {
+                  distance: 0,
+                  calories: 0,
+                  pace: 0,
+                  runningTime: '00:00:00',
+                },
+              });
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('저장 실패', '사진 저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('📷 [PhotoEdit] 저장 중 오류:', error);
+      Alert.alert('오류', '사진 저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRetakePress = () => {
+    navigation.goBack();
+  };
+
+  return (
+    <Container>
+      <Header
+        leftIcon={ArrowLeft}
+        onLeftPress={handleBackPress}
+        title="사진 편집"
+      />
+
+      <ImageContainer>
+        {!imageError ? (
+          <PhotoImage
+            source={{ uri: photoUri }}
+            resizeMode="contain"
+            onError={() => {
+              console.log('📷 [PhotoEdit] 이미지 로딩 오류');
+              setImageError(true);
+              setImageLoading(false);
+            }}
+            onLoad={() => {
+              console.log('📷 [PhotoEdit] 이미지 로딩 완료');
+              setImageLoading(false);
+            }}
+          />
+        ) : (
+          <ErrorContainer>
+            <ErrorText>사진을 불러올 수 없습니다</ErrorText>
+            <ErrorText>URI: {photoUri}</ErrorText>
+          </ErrorContainer>
+        )}
+
+        {imageLoading && !imageError && (
+          <LoadingOverlay>
+            <ActivityIndicator size="large" color="#ffffff" />
+            <LoadingText>사진을 불러오는 중...</LoadingText>
+          </LoadingOverlay>
+        )}
+      </ImageContainer>
+
+      <BottomContainer safeAreaBottom={insets.bottom}>
+        <RetakeButton onPress={handleRetakePress}>
+          <RotateCcw size={24} color="#666666" />
+          <RetakeText>다시 촬영</RetakeText>
+        </RetakeButton>
+
+        <SaveButton onPress={handleSavePress} disabled={isProcessing}>
+          {isProcessing ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Check size={24} color="#ffffff" />
+          )}
+          <SaveText>저장하기</SaveText>
+        </SaveButton>
+      </BottomContainer>
+    </Container>
+  );
+}
+
+const Container = styled.View({
+  flex: 1,
+  backgroundColor: '#000000',
+});
+
+const ImageContainer = styled.View({
+  flex: 1,
+  backgroundColor: '#000000',
+});
+
+const PhotoImage = styled(Image)({
+  width: '100%',
+  height: '100%',
+});
+
+const BottomContainer = styled.View<{ safeAreaBottom: number }>(
+  ({ safeAreaBottom }) => ({
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: safeAreaBottom + 16,
+    backgroundColor: '#000000',
+    borderTopWidth: 1,
+    borderTopColor: '#333333',
+  }),
+);
+
+const RetakeButton = styled(TouchableOpacity)({
+  flex: 1,
+  height: 48,
+  borderRadius: 8,
+  backgroundColor: '#f8f9fa',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 12,
+});
+
+const RetakeText = styled.Text({
+  fontSize: 16,
+  color: '#666666',
+  marginLeft: 8,
+  fontWeight: '500',
+});
+
+const SaveButton = styled(TouchableOpacity)({
+  flex: 1,
+  height: 48,
+  borderRadius: 8,
+  backgroundColor: '#2d2d2d',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
+const SaveText = styled.Text({
+  fontSize: 16,
+  color: '#ffffff',
+  marginLeft: 8,
+  fontWeight: '600',
+});
+
+const ErrorContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+});
+
+const ErrorText = styled.Text({
+  fontSize: 16,
+  color: '#ffffff',
+  textAlign: 'center',
+  marginBottom: 8,
+});
+
+const LoadingOverlay = styled.View({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+});
+
+const LoadingText = styled.Text({
+  fontSize: 16,
+  color: '#ffffff',
+  marginTop: 16,
+});

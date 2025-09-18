@@ -12,15 +12,18 @@ import { useLocationManager } from '@/hooks/useLocationManager';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useAdjacentCourses } from '@/hooks/api/useRouteApi';
 import type { CourseSearchItem } from '@/types/courses.types';
+import type { RunTabStackParamList } from '@/types/navigation.types';
 
 import Route from '@/pages/Route';
 import Draw from '@/pages/Draw';
 import RouteSave from '@/pages/RouteSave';
 import Detail from '@/pages/Detail';
 import Run from '@/pages/Run';
+import RunDetail from '@/pages/RunDetail';
+import PhotoEdit from '@/pages/PhotoEdit';
 import RecommendationContainer from '@/pages/Run/_components/RecommendationContainer';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RunTabStackParamList>();
 
 type RunTabId = 'quickstart' | 'courseselection';
 
@@ -172,6 +175,8 @@ export default function RunTabNavigator() {
       <Stack.Screen name="RouteSave" component={RouteSave} />
       <Stack.Screen name="Detail" component={Detail} />
       <Stack.Screen name="Run" component={Run} />
+      <Stack.Screen name="RunDetail" component={RunDetail} />
+      <Stack.Screen name="PhotoEdit" component={PhotoEdit} />
     </Stack.Navigator>
   );
 }

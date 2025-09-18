@@ -12,16 +12,6 @@ export type RootStackParamList = {
   CommunityDetail: { postId: string };
   CommunityEdit: { postId: string } | undefined;
   WebCommunity: undefined;
-  RunDetail: {
-    recordId: number;
-    imageUrl?: string;
-    stats: {
-      distance: number;
-      calories: number;
-      pace: number;
-      runningTime: string;
-    };
-  };
 };
 
 export type TabParamList = {
@@ -33,3 +23,25 @@ export type TabParamList = {
 };
 
 export type RouteTabId = 'created' | 'completed' | 'liked';
+
+export type RunTabStackParamList = {
+  QuickStartMain: undefined;
+  Draw: undefined;
+  RouteSave: undefined;
+  Detail: { id: string };
+  Run: { courseId?: number } | undefined;
+  RunDetail: {
+    recordId: number;
+    imageUrl?: string;
+    stats: {
+      distance: number;
+      calories: number;
+      pace: number;
+      runningTime: string;
+    };
+  };
+  PhotoEdit: {
+    photoUri: string;
+    recordId: number;
+  };
+};

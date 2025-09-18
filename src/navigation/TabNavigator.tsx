@@ -89,7 +89,9 @@ export default function TabNavigator() {
                 routeName === 'Run' ||
                 routeName === 'Draw' ||
                 routeName === 'RouteSave' ||
-                routeName === 'Detail'
+                routeName === 'Detail' ||
+                routeName === 'RunDetail' ||
+                routeName === 'PhotoEdit'
                   ? 'none'
                   : 'flex',
             },

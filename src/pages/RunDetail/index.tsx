@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,40 +7,156 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Share, ArrowLeft, Home, Upload } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
+import { useCameraPermission, Camera } from 'react-native-vision-camera';
+import { PermissionsAndroid, Platform, Linking } from 'react-native';
 
 import Header from '@/components/Header';
+import CameraComponent from '@/components/Camera';
 import { formatDistance, formatTime, formatPace } from '@/utils/formatters';
-import type { RootStackParamList } from '@/types/navigation.types';
+import type { RunTabStackParamList } from '@/types/navigation.types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RunDetail'>;
+type Props = NativeStackScreenProps<RunTabStackParamList, 'RunDetail'>;
 
 export default function RunDetail({ route, navigation }: Props) {
   const { recordId, imageUrl, stats } = route.params;
   const insets = useSafeAreaInsets();
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraPermissionChecked, setCameraPermissionChecked] = useState(false);
+
+  const { hasPermission: hasCameraPermission } = useCameraPermission();
+
+  // 네이티브 카메라 권한 요청 함수
+  const requestNativeCameraPermission = async () => {
+    console.log('📷 [RunDetail] 네이티브 카메라 권한 요청 시작');
+
+    if (Platform.OS === 'android') {
+      try {
+        console.log('📷 [RunDetail] Android 권한 요청 중...');
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: '카메라 권한',
+            message: '인증사진 촬영을 위해 카메라 권한이 필요합니다.',
+            buttonNeutral: '나중에',
+            buttonNegative: '취소',
+            buttonPositive: '확인',
+          },
+        );
+        console.log('📷 [RunDetail] Android 권한 요청 결과:', granted);
+
+        if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+          console.log('📷 [RunDetail] 권한이 영구적으로 거부됨');
+          Alert.alert(
+            '카메라 권한 필요',
+            '카메라 권한이 거부되었습니다. 설정 > 앱 > Runova > 권한에서 카메라 권한을 허용해주세요.',
+            [
+              { text: '취소', style: 'cancel' },
+              {
+                text: '설정으로 이동',
+                onPress: () => {
+                  // 설정 앱으로 이동 (Android)
+                  console.log('📷 [RunDetail] 설정 앱으로 이동');
+                  Linking.openSettings();
+                },
+              },
+            ],
+          );
+          return false;
+        }
+
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (error) {
+        console.error('📷 [RunDetail] Android 카메라 권한 요청 실패:', error);
+        return false;
+      }
+    } else {
+      // iOS는 react-native-vision-camera 사용
+      try {
+        console.log('📷 [RunDetail] iOS 권한 요청 중...');
+        const permission = await Camera.requestCameraPermission();
+        console.log('📷 [RunDetail] iOS 권한 요청 결과:', permission);
+
+        if (permission === 'denied') {
+          Alert.alert(
+            '카메라 권한 필요',
+            '카메라 권한이 거부되었습니다. 설정 > 개인정보 보호 및 보안 > 카메라에서 Runova 앱의 카메라 권한을 허용해주세요.',
+            [
+              { text: '취소', style: 'cancel' },
+              {
+                text: '설정으로 이동',
+                onPress: () => {
+                  // 설정 앱으로 이동 (iOS)
+                  console.log('📷 [RunDetail] 설정 앱으로 이동');
+                  Linking.openSettings();
+                },
+              },
+            ],
+          );
+        }
+
+        return permission === 'granted';
+      } catch (error) {
+        console.error('📷 [RunDetail] iOS 카메라 권한 요청 실패:', error);
+        return false;
+      }
+    }
+  };
+
+  // 페이지 로드 시 카메라 권한 미리 확인
+  useEffect(() => {
+    const checkCameraPermission = async () => {
+      console.log(
+        '📷 [RunDetail] 카메라 권한 확인 시작, hasCameraPermission:',
+        hasCameraPermission,
+      );
+      console.log('📷 [RunDetail] Platform.OS:', Platform.OS);
+
+      // Android에서 현재 권한 상태 확인
+      if (Platform.OS === 'android') {
+        try {
+          const currentPermission = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.CAMERA,
+          );
+          console.log(
+            '📷 [RunDetail] Android 현재 카메라 권한 상태:',
+            currentPermission,
+          );
+        } catch (error) {
+          console.error('📷 [RunDetail] 권한 상태 확인 실패:', error);
+        }
+      }
+
+      if (!hasCameraPermission) {
+        console.log('📷 [RunDetail] 카메라 권한 없음, 권한 요청 시작');
+        const granted = await requestNativeCameraPermission();
+        console.log('📷 [RunDetail] 권한 요청 최종 결과:', granted);
+      } else {
+        console.log('📷 [RunDetail] 카메라 권한 이미 있음');
+      }
+
+      console.log('📷 [RunDetail] 카메라 권한 확인 완료');
+      setCameraPermissionChecked(true);
+    };
+
+    checkCameraPermission();
+  }, [hasCameraPermission]);
 
   const handleBackPress = () => {
     navigation.goBack();
   };
 
   const handleHomePress = () => {
-    // RunDetail에서 홈으로 이동할 때는 스택을 리셋하고 홈으로 이동
-    navigation.reset({
-      index: 0,
-      routes: [
-        {
-          name: 'TabNavigator',
-          params: {
-            screen: 'Home',
-          },
-        },
-      ],
+    // RunDetail에서 홈으로 이동할 때는 상위 네비게이션을 통해 TabNavigator의 Home으로 이동
+    navigation.getParent()?.navigate('TabNavigator', {
+      screen: 'Home',
     });
   };
 
@@ -48,8 +164,45 @@ export default function RunDetail({ route, navigation }: Props) {
     Alert.alert('공유', '런닝 기록을 공유합니다.');
   };
 
-  const handleCameraPress = () => {
-    Alert.alert('인증사진', '인증사진을 찍습니다.');
+  const handleCameraPress = async () => {
+    console.log('📷 [RunDetail] 인증사진 찍기 버튼 클릭');
+
+    if (!cameraPermissionChecked) {
+      console.log('📷 [RunDetail] 카메라 권한 확인 중...');
+      Alert.alert('카메라 권한 확인 중', '잠시만 기다려주세요.');
+      return;
+    }
+
+    if (!hasCameraPermission) {
+      console.log('📷 [RunDetail] 카메라 권한 없음, 권한 요청 시작');
+      const granted = await requestNativeCameraPermission();
+      console.log('📷 [RunDetail] 권한 요청 결과:', granted);
+
+      if (!granted) {
+        console.log('📷 [RunDetail] 권한 거부됨');
+        Alert.alert(
+          '카메라 권한 필요',
+          '인증사진 촬영을 위해 카메라 권한이 필요합니다.',
+        );
+        return;
+      }
+    }
+
+    console.log('📷 [RunDetail] 카메라 모달 열기');
+    setShowCamera(true);
+  };
+
+  const handlePhotoTaken = (photoUri: string) => {
+    setShowCamera(false);
+    // PhotoEdit 페이지로 이동
+    navigation.navigate('PhotoEdit', {
+      photoUri,
+      recordId,
+    });
+  };
+
+  const handleCameraClose = () => {
+    setShowCamera(false);
   };
 
   const handleImageError = () => {
@@ -132,6 +285,17 @@ export default function RunDetail({ route, navigation }: Props) {
           <HomeButtonText>홈으로 이동</HomeButtonText>
         </HomeButton>
       </BottomContainer>
+
+      <Modal
+        visible={showCamera}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <CameraComponent
+          onPhotoTaken={handlePhotoTaken}
+          onClose={handleCameraClose}
+        />
+      </Modal>
     </Container>
   );
 }
