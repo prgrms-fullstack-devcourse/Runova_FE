@@ -6,6 +6,7 @@ import type {
 import type {
   RunningRecordsRequest,
   RunningRecordsResponse,
+  RunningRecordDetail,
   RunningDashboard,
   RunningDashboardRequest,
 } from '@/types/records.types';
@@ -62,6 +63,18 @@ export async function searchRunningRecords(
 ): Promise<RunningRecordsResponse> {
   const response = await api.get('/api/running/records', {
     params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data;
+}
+
+export async function getRunningRecordDetail(
+  recordId: number,
+  accessToken: string,
+): Promise<RunningRecordDetail> {
+  const response = await api.get(`/api/running/records/${recordId}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
