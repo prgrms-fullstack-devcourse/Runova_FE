@@ -11,6 +11,7 @@ module.exports = function (api) {
           extensions: ['.ts', '.tsx', '.js', '.json'],
         },
       ],
+      'react-native-worklets/plugin',
     ],
   };
 };
