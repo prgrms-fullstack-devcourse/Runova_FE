@@ -19,7 +19,9 @@ import { PermissionsAndroid, Platform, Linking } from 'react-native';
 import Header from '@/components/Header';
 import CameraComponent from '@/components/Camera';
 import { formatDistance, formatTime, formatPace } from '@/utils/formatters';
+import { COLOR_TOKENS } from '@/constants/colors';
 import type { RunTabStackParamList } from '@/types/navigation.types';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Props = NativeStackScreenProps<RunTabStackParamList, 'RunDetail'>;
 
@@ -210,6 +212,17 @@ export default function RunDetail({ route, navigation }: Props) {
     setImageLoading(false);
   };
 
+  const formatDateTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}`;
+  };
+
   return (
     <Container>
       <Header
@@ -234,52 +247,81 @@ export default function RunDetail({ route, navigation }: Props) {
           )}
           {imageLoading && imageUrl && !imageError && (
             <LoadingImageContainer>
-              <ActivityIndicator size="large" color="#2d2d2d" />
+              <ActivityIndicator
+                size="large"
+                color={COLOR_TOKENS.primary[500]}
+              />
             </LoadingImageContainer>
           )}
         </ImageContainer>
 
-        <InfoContainer>
-          <Title>런닝 기록 #{recordId}</Title>
+        <StatsContainer>
+          <StatsTitle>런닝 통계</StatsTitle>
 
-          <InfoRow>
-            <InfoLabel>거리</InfoLabel>
-            <InfoValue>{formatDistance(stats.distance)}</InfoValue>
-          </InfoRow>
+          <StatsGrid>
+            <StatItem>
+              <StatLabel>거리</StatLabel>
+              <StatValue>{formatDistance(stats.distance)}</StatValue>
+            </StatItem>
 
-          <InfoRow>
-            <InfoLabel>시간</InfoLabel>
-            <InfoValue>{stats.runningTime}</InfoValue>
-          </InfoRow>
+            <StatItem>
+              <StatLabel>시간</StatLabel>
+              <StatValue>{stats.runningTime}</StatValue>
+            </StatItem>
 
-          <InfoRow>
-            <InfoLabel>페이스</InfoLabel>
-            <InfoValue>{formatPace(stats.pace)}</InfoValue>
-          </InfoRow>
+            <StatItem>
+              <StatLabel>평균 페이스</StatLabel>
+              <StatValue>{formatPace(stats.pace)}</StatValue>
+            </StatItem>
 
-          <InfoRow>
-            <InfoLabel>칼로리</InfoLabel>
-            <InfoValue>{stats.calories} kcal</InfoValue>
-          </InfoRow>
-        </InfoContainer>
+            <StatItem>
+              <StatLabel>칼로리</StatLabel>
+              <StatValue>{stats.calories}kcal</StatValue>
+            </StatItem>
+          </StatsGrid>
+        </StatsContainer>
 
-        <UploadContainer>
-          <UploadButton onPress={handleCameraPress}>
-            <Upload size={24} color="#2d2d2d" />
-            <UploadText>인증사진 찍기</UploadText>
-          </UploadButton>
-        </UploadContainer>
+        {/* 런닝 정보 */}
+        <RunInfoContainer>
+          <RunInfoTitle>런닝 정보</RunInfoTitle>
+
+          <RunInfoItem>
+            <RunInfoLabel>시작 시간</RunInfoLabel>
+            <RunInfoValue>
+              {/* 임시로 현재 시간 표시, 실제로는 route params에서 전달받아야 함 */}
+              {formatDateTime(new Date().toISOString())}
+            </RunInfoValue>
+          </RunInfoItem>
+
+          <RunInfoItem>
+            <RunInfoLabel>종료 시간</RunInfoLabel>
+            <RunInfoValue>
+              {/* 임시로 현재 시간 표시, 실제로는 route params에서 전달받아야 함 */}
+              {formatDateTime(new Date().toISOString())}
+            </RunInfoValue>
+          </RunInfoItem>
+        </RunInfoContainer>
       </ScrollView>
 
-      <BottomContainer paddingBottom={insets.bottom + 16}>
-        <ShareButton onPress={handleSharePress}>
-          <Share size={24} color="#2d2d2d" />
-        </ShareButton>
-
-        <HomeButton onPress={handleHomePress}>
-          <Home size={24} color="#ffffff" />
-          <HomeButtonText>홈으로 이동</HomeButtonText>
+      <BottomContainer>
+        <HomeButton onPress={handleHomePress} activeOpacity={0.8}>
+          <HomeButtonContent>
+            <Home color={COLOR_TOKENS.gray[900]} size={24} />
+            <HomeButtonText>홈으로</HomeButtonText>
+          </HomeButtonContent>
         </HomeButton>
+
+        <UploadButton onPress={handleCameraPress} activeOpacity={0.8}>
+          <UploadButtonGradient
+            colors={['#1a1a1a', '#2d2d2d', '#404040']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          <UploadButtonContent>
+            <Upload size={24} color="#ffffff" />
+            <UploadText>인증사진 찍기</UploadText>
+          </UploadButtonContent>
+        </UploadButton>
       </BottomContainer>
 
       <Modal
@@ -302,8 +344,8 @@ const Container = styled.View({
 });
 
 const ImageContainer = styled.View({
-  aspectRatio: 1,
-  backgroundColor: '#f5f5f5',
+  height: 400,
+  backgroundColor: COLOR_TOKENS.gray[100],
 });
 
 const RouteImage = styled(Image)({
@@ -316,12 +358,12 @@ const FallbackContainer = styled.View({
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
-  backgroundColor: '#f5f5f5',
+  backgroundColor: COLOR_TOKENS.gray[100],
 });
 
 const FallbackText = styled.Text({
   fontSize: 16,
-  color: '#666666',
+  color: COLOR_TOKENS.gray[500],
   textAlign: 'center',
 });
 
@@ -333,102 +375,136 @@ const LoadingImageContainer = styled.View({
   bottom: 0,
   justifyContent: 'center',
   alignItems: 'center',
-  backgroundColor: '#f5f5f5',
+  backgroundColor: COLOR_TOKENS.gray[100],
 });
 
-const InfoContainer = styled.View({
+const StatsContainer = styled.View({
   padding: 20,
+  backgroundColor: '#ffffff',
 });
 
-const Title = styled.Text({
-  fontSize: 24,
-  fontWeight: 'bold',
-  color: '#000000',
-  marginBottom: 24,
+const StatsTitle = styled.Text({
+  fontSize: 20,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+  marginBottom: 16,
 });
 
-const InfoRow = styled.View<{ isLast?: boolean }>(({ isLast }) => ({
+const StatsGrid = styled.View({
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 16,
+});
+
+const StatItem = styled.View({
+  flex: 1,
+  minWidth: '45%',
+  backgroundColor: COLOR_TOKENS.gray[50],
+  padding: 16,
+  borderRadius: 12,
+  alignItems: 'center',
+});
+
+const StatLabel = styled.Text({
+  fontSize: 14,
+  color: COLOR_TOKENS.gray[600],
+  marginBottom: 4,
+});
+
+const StatValue = styled.Text({
+  fontSize: 18,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+});
+
+const BottomContainer = styled.View({
+  flexDirection: 'row',
+  padding: 20,
+  backgroundColor: '#ffffff',
+  gap: 12,
+});
+
+const HomeButton = styled.TouchableOpacity({
+  flex: 0.6,
+  height: 56,
+  borderRadius: 8,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'transparent',
+});
+
+const HomeButtonContent = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+});
+
+const HomeButtonText = styled.Text({
+  color: COLOR_TOKENS.gray[900],
+  fontSize: 16,
+  fontWeight: '600',
+});
+
+const UploadButton = styled.TouchableOpacity({
+  flex: 1.4,
+  height: 56,
+  borderRadius: 8,
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+});
+
+const UploadButtonGradient = styled(LinearGradient)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 8,
+});
+
+const UploadButtonContent = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+  zIndex: 1,
+});
+
+const UploadText = styled.Text({
+  color: '#ffffff',
+  fontSize: 16,
+  fontWeight: '600',
+});
+
+const RunInfoContainer = styled.View({
+  padding: 20,
+  backgroundColor: '#ffffff',
+});
+
+const RunInfoTitle = styled.Text({
+  fontSize: 18,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+  marginBottom: 16,
+});
+
+const RunInfoItem = styled.View({
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
   paddingVertical: 12,
-  borderBottomWidth: isLast ? 0 : 1,
-  borderBottomColor: '#f0f0f0',
-}));
+  borderBottomWidth: 1,
+  borderBottomColor: COLOR_TOKENS.gray[100],
+});
 
-const InfoLabel = styled.Text({
+const RunInfoLabel = styled.Text({
   fontSize: 16,
-  color: '#666666',
-  fontWeight: '500',
+  color: COLOR_TOKENS.gray[600],
 });
 
-const InfoValue = styled.Text({
-  fontSize: 16,
-  color: '#000000',
-  flex: 1,
-  textAlign: 'right',
-});
-
-const BottomContainer = styled.View<{ paddingBottom: number }>(
-  ({ paddingBottom }) => ({
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  }),
-);
-
-const ShareButton = styled(TouchableOpacity)({
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-  backgroundColor: '#f8f9fa',
-  justifyContent: 'center',
-  alignItems: 'center',
-  marginRight: 12,
-});
-
-const HomeButton = styled(TouchableOpacity)({
-  flex: 1,
-  height: 48,
-  borderRadius: 8,
-  backgroundColor: '#2d2d2d',
-  flexDirection: 'row',
-  justifyContent: 'center',
-  alignItems: 'center',
-});
-
-const HomeButtonText = styled.Text({
-  color: '#ffffff',
+const RunInfoValue = styled.Text({
   fontSize: 16,
   fontWeight: '600',
-  marginLeft: 8,
-});
-
-const UploadContainer = styled.View({
-  paddingHorizontal: 20,
-  paddingVertical: 16,
-});
-
-const UploadButton = styled(TouchableOpacity)({
-  backgroundColor: '#f8f9fa',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 16,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-  borderWidth: 2,
-  borderColor: '#e9ecef',
-  borderStyle: 'dashed',
-});
-
-const UploadText = styled.Text({
-  fontSize: 16,
-  color: '#666666',
-  marginLeft: 8,
-  fontWeight: '500',
+  color: COLOR_TOKENS.gray[900],
 });
