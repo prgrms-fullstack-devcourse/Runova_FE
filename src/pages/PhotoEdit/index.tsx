@@ -20,7 +20,7 @@ import type { RunTabStackParamList } from '@/types/navigation.types';
 type Props = NativeStackScreenProps<RunTabStackParamList, 'PhotoEdit'>;
 
 export default function PhotoEdit({ route, navigation }: Props) {
-  const { photoUri, recordId } = route.params;
+  const { photoUri, recordId, path, stats } = route.params;
   const insets = useSafeAreaInsets();
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -56,42 +56,14 @@ export default function PhotoEdit({ route, navigation }: Props) {
     }
   };
 
-  const handleSavePress = async () => {
-    try {
-      setIsProcessing(true);
-      console.log('📷 [PhotoEdit] 저장 버튼 클릭');
-
-      // 갤러리에 저장
-      const savedToGallery = await saveToGallery();
-
-      if (savedToGallery) {
-        Alert.alert('저장 완료', '인증사진이 갤러리에 저장되었습니다.', [
-          {
-            text: '확인',
-            onPress: () => {
-              // RunDetail로 돌아가기
-              navigation.navigate('RunDetail', {
-                recordId,
-                imageUrl: photoUri,
-                stats: {
-                  distance: 0,
-                  calories: 0,
-                  pace: 0,
-                  runningTime: '00:00:00',
-                },
-              });
-            },
-          },
-        ]);
-      } else {
-        Alert.alert('저장 실패', '사진 저장에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('📷 [PhotoEdit] 저장 중 오류:', error);
-      Alert.alert('오류', '사진 저장 중 오류가 발생했습니다.');
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleEditPress = () => {
+    console.log('📷 [PhotoEdit] 편집하기 버튼 클릭');
+    navigation.navigate('PhotoDecoration', {
+      photoUri,
+      recordId,
+      path,
+      stats,
+    });
   };
 
   const handleRetakePress = () => {
@@ -142,14 +114,10 @@ export default function PhotoEdit({ route, navigation }: Props) {
           <RetakeText>다시 촬영</RetakeText>
         </RetakeButton>
 
-        <SaveButton onPress={handleSavePress} disabled={isProcessing}>
-          {isProcessing ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <Check size={24} color="#ffffff" />
-          )}
-          <SaveText>저장하기</SaveText>
-        </SaveButton>
+        <EditButton onPress={handleEditPress} disabled={isProcessing}>
+          <Check size={24} color="#ffffff" />
+          <EditText>편집하기</EditText>
+        </EditButton>
       </BottomContainer>
     </Container>
   );
@@ -200,7 +168,7 @@ const RetakeText = styled.Text({
   fontWeight: '500',
 });
 
-const SaveButton = styled(TouchableOpacity)({
+const EditButton = styled(TouchableOpacity)({
   flex: 1,
   height: 48,
   borderRadius: 8,
@@ -210,7 +178,7 @@ const SaveButton = styled(TouchableOpacity)({
   alignItems: 'center',
 });
 
-const SaveText = styled.Text({
+const EditText = styled.Text({
   fontSize: 16,
   color: '#ffffff',
   marginLeft: 8,

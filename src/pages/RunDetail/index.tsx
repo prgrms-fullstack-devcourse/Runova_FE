@@ -24,7 +24,7 @@ import type { RunTabStackParamList } from '@/types/navigation.types';
 type Props = NativeStackScreenProps<RunTabStackParamList, 'RunDetail'>;
 
 export default function RunDetail({ route, navigation }: Props) {
-  const { recordId, imageUrl, stats } = route.params;
+  const { recordId, imageUrl, path, stats } = route.params;
   const insets = useSafeAreaInsets();
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -33,7 +33,6 @@ export default function RunDetail({ route, navigation }: Props) {
 
   const { hasPermission: hasCameraPermission } = useCameraPermission();
 
-  // 네이티브 카메라 권한 요청 함수
   const requestNativeCameraPermission = async () => {
     console.log('📷 [RunDetail] 네이티브 카메라 권한 요청 시작');
 
@@ -62,7 +61,6 @@ export default function RunDetail({ route, navigation }: Props) {
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  // 설정 앱으로 이동 (Android)
                   console.log('📷 [RunDetail] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
@@ -78,7 +76,6 @@ export default function RunDetail({ route, navigation }: Props) {
         return false;
       }
     } else {
-      // iOS는 react-native-vision-camera 사용
       try {
         console.log('📷 [RunDetail] iOS 권한 요청 중...');
         const permission = await Camera.requestCameraPermission();
@@ -93,7 +90,6 @@ export default function RunDetail({ route, navigation }: Props) {
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  // 설정 앱으로 이동 (iOS)
                   console.log('📷 [RunDetail] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
@@ -110,7 +106,6 @@ export default function RunDetail({ route, navigation }: Props) {
     }
   };
 
-  // 페이지 로드 시 카메라 권한 미리 확인
   useEffect(() => {
     const checkCameraPermission = async () => {
       console.log(
@@ -119,7 +114,6 @@ export default function RunDetail({ route, navigation }: Props) {
       );
       console.log('📷 [RunDetail] Platform.OS:', Platform.OS);
 
-      // Android에서 현재 권한 상태 확인
       if (Platform.OS === 'android') {
         try {
           const currentPermission = await PermissionsAndroid.check(
@@ -154,9 +148,10 @@ export default function RunDetail({ route, navigation }: Props) {
   };
 
   const handleHomePress = () => {
-    // RunDetail에서 홈으로 이동할 때는 상위 네비게이션을 통해 TabNavigator의 Home으로 이동
-    navigation.getParent()?.navigate('TabNavigator', {
-      screen: 'Home',
+    // RunTabNavigator 내에서 QuickStartMain으로 직접 이동
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'QuickStartMain' }],
     });
   };
 
@@ -194,10 +189,11 @@ export default function RunDetail({ route, navigation }: Props) {
 
   const handlePhotoTaken = (photoUri: string) => {
     setShowCamera(false);
-    // PhotoEdit 페이지로 이동
     navigation.navigate('PhotoEdit', {
       photoUri,
       recordId,
+      path,
+      stats,
     });
   };
 

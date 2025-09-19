@@ -3,7 +3,7 @@ import { View, Animated } from 'react-native';
 import styled from '@emotion/native';
 import { Play } from 'lucide-react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Mapbox from '@rnmapbox/maps';
 import TabNavigation from '@/components/TabNavigation';
@@ -21,6 +21,7 @@ import Detail from '@/pages/Detail';
 import Run from '@/pages/Run';
 import RunDetail from '@/pages/RunDetail';
 import PhotoEdit from '@/pages/PhotoEdit';
+import PhotoDecoration from '@/pages/PhotoDecoration';
 import RecommendationContainer from '@/pages/Run/_components/RecommendationContainer';
 
 const Stack = createNativeStackNavigator<RunTabStackParamList>();
@@ -32,7 +33,6 @@ const tabs: Array<{ id: RunTabId; title: string }> = [
   { id: 'courseselection', title: '코스 선택하기' },
 ];
 
-// 바로가기 메인 컴포넌트
 function QuickStartMain({ navigation }: { navigation: any }) {
   const [activeTab, setActiveTab] = useState<RunTabId>('quickstart');
   const [recommendations, setRecommendations] = useState<CourseSearchItem[]>(
@@ -51,7 +51,6 @@ function QuickStartMain({ navigation }: { navigation: any }) {
 
   const { searchAdjacent } = useAdjacentCourses();
 
-  // 추천 경로 로드 함수
   const loadRecommendations = useCallback(async () => {
     if (initialLocation) {
       try {
@@ -63,7 +62,6 @@ function QuickStartMain({ navigation }: { navigation: any }) {
     }
   }, [initialLocation, searchAdjacent]);
 
-  // 탭이 포커스될 때마다 위치 새로고침 및 추천 경로 로드
   useFocusEffect(
     useCallback(() => {
       if (!initialLocation && !locationLoading) {
@@ -177,6 +175,7 @@ export default function RunTabNavigator() {
       <Stack.Screen name="Run" component={Run} />
       <Stack.Screen name="RunDetail" component={RunDetail} />
       <Stack.Screen name="PhotoEdit" component={PhotoEdit} />
+      <Stack.Screen name="PhotoDecoration" component={PhotoDecoration} />
     </Stack.Navigator>
   );
 }

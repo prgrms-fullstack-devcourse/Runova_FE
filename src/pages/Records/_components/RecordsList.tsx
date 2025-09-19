@@ -122,6 +122,7 @@ const RecordItem = styled(TouchableOpacity)({
   borderRadius: 12,
   overflow: 'hidden',
   marginBottom: 120,
+  backgroundColor: '#000000',
 });
 
 const RecordImage = styled.Image({

@@ -7,16 +7,20 @@ import {
   PermissionsAndroid,
   Platform,
   Linking,
+  Dimensions,
 } from 'react-native';
 import {
   Camera,
-  useCameraDevices,
+  useCameraDevice,
   useCameraPermission,
   useMicrophonePermission,
+  useCameraFormat,
 } from 'react-native-vision-camera';
 import { X, Camera as CameraIcon, RotateCcw } from 'lucide-react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 interface CameraComponentProps {
   onPhotoTaken: (photoUri: string) => void;
@@ -27,7 +31,6 @@ export default function CameraComponent({
   onPhotoTaken,
   onClose,
 }: CameraComponentProps) {
-  const devices = useCameraDevices();
   const camera = useRef<Camera>(null);
   const insets = useSafeAreaInsets();
   const [isCapturing, setIsCapturing] = useState(false);
@@ -36,14 +39,16 @@ export default function CameraComponent({
     'back' | 'front'
   >('back');
 
-  // 현재 선택된 카메라 위치에 따라 디바이스 선택
-  const device =
-    devices.find((d) => d.position === currentCameraPosition) || devices[0];
+  const device = useCameraDevice(currentCameraPosition);
+
+  const format = useCameraFormat(device, [
+    { photoAspectRatio: 1 },
+    { photoResolution: 'max' },
+  ]);
 
   const { hasPermission: hasCameraPermission } = useCameraPermission();
   const { hasPermission: hasMicrophonePermission } = useMicrophonePermission();
 
-  // 네이티브 카메라 권한 요청 함수
   const requestNativeCameraPermission = async () => {
     console.log('📷 [Camera] 네이티브 카메라 권한 요청 시작');
 
@@ -72,7 +77,6 @@ export default function CameraComponent({
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  // 설정 앱으로 이동 (Android)
                   console.log('📷 [Camera] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
@@ -88,7 +92,6 @@ export default function CameraComponent({
         return false;
       }
     } else {
-      // iOS는 react-native-vision-camera 사용
       try {
         console.log('📷 [Camera] iOS 권한 요청 중...');
         const permission = await Camera.requestCameraPermission();
@@ -103,7 +106,6 @@ export default function CameraComponent({
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  // 설정 앱으로 이동 (iOS)
                   console.log('📷 [Camera] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
@@ -122,13 +124,9 @@ export default function CameraComponent({
 
   useEffect(() => {
     const initializeCamera = async () => {
-      console.log(
-        '📷 [Camera] 카메라 초기화 시작, hasCameraPermission:',
-        hasCameraPermission,
-      );
+      console.log('📷 [Camera] 카메라 초기화 시작');
       console.log('📷 [Camera] 현재 카메라 위치:', currentCameraPosition);
-      console.log('📷 [Camera] 사용 가능한 카메라 디바이스:', devices);
-      console.log('📷 [Camera] 선택된 카메라:', device);
+      console.log('📷 [Camera] 선택된 디바이스:', device);
 
       if (!hasCameraPermission) {
         console.log('📷 [Camera] 카메라 권한 없음, 권한 요청 시작');
@@ -149,32 +147,18 @@ export default function CameraComponent({
         await Camera.requestMicrophonePermission();
       }
 
-      // 카메라 디바이스가 있는지 확인 (약간의 지연 후)
-      setTimeout(() => {
-        const currentDevice =
-          devices.find((d) => d.position === currentCameraPosition) ||
-          devices[0];
-        console.log('📷 [Camera] 지연 후 카메라 디바이스 확인:', currentDevice);
-        console.log('📷 [Camera] 현재 카메라 위치:', currentCameraPosition);
-        console.log('📷 [Camera] 선택된 디바이스 ID:', currentDevice?.id);
-        console.log('📷 [Camera] 선택된 디바이스 이름:', currentDevice?.name);
-
-        if (!currentDevice) {
-          console.log('📷 [Camera] 카메라 디바이스를 찾을 수 없음');
-          Alert.alert(
-            '카메라 오류',
-            '카메라를 찾을 수 없습니다. 앱을 재시작해주세요.',
-            [{ text: '확인', onPress: onClose }],
-          );
-          return;
-        }
-
-        console.log(
-          '📷 [Camera] 카메라 준비 완료 - 위치:',
-          currentCameraPosition,
+      if (!device) {
+        console.log('📷 [Camera] 카메라 디바이스를 찾을 수 없음');
+        Alert.alert(
+          '카메라 오류',
+          '카메라를 찾을 수 없습니다. 앱을 재시작해주세요.',
+          [{ text: '확인', onPress: onClose }],
         );
-        setIsReady(true);
-      }, 500); // 0.5초로 단축
+        return;
+      }
+
+      console.log('📷 [Camera] 카메라 준비 완료');
+      setIsReady(true);
     };
 
     initializeCamera();
@@ -182,24 +166,19 @@ export default function CameraComponent({
     hasCameraPermission,
     hasMicrophonePermission,
     onClose,
-    devices,
+    device,
     currentCameraPosition,
   ]);
 
   const toggleCamera = () => {
     const newPosition = currentCameraPosition === 'back' ? 'front' : 'back';
     console.log(
-      '📷 [Camera] 카메라 전환 버튼 클릭:',
+      '📷 [Camera] 카메라 전환:',
       currentCameraPosition,
       '->',
       newPosition,
     );
-
-    // 카메라 전환 시 isReady를 false로 설정하여 재초기화
-    setIsReady(false);
     setCurrentCameraPosition(newPosition);
-
-    console.log('📷 [Camera] 카메라 위치 상태 업데이트 완료:', newPosition);
   };
 
   const takePhoto = async () => {
@@ -216,7 +195,6 @@ export default function CameraComponent({
       console.log('📷 [Camera] 사진 촬영 완료:', photo);
       console.log('📷 [Camera] 사진 경로:', photo.path);
 
-      // file:// 프로토콜 추가
       const photoUri = `file://${photo.path}`;
       console.log('📷 [Camera] 최종 사진 URI:', photoUri);
 
@@ -229,7 +207,7 @@ export default function CameraComponent({
     }
   };
 
-  if (!isReady) {
+  if (!isReady || !device) {
     return (
       <Container>
         <LoadingContainer>
@@ -246,33 +224,36 @@ export default function CameraComponent({
         ref={camera}
         style={{ flex: 1 }}
         device={device}
+        format={format}
         isActive={isReady}
         photo={true}
         enableZoomGesture={true}
         enableFpsGraph={false}
+        photoQualityBalance="quality"
+        resizeMode="cover"
       />
 
-      <TopControls safeAreaTop={insets.top}>
+      <CloseButtonContainer safeAreaTop={insets.top}>
         <CloseButton onPress={onClose}>
           <X size={24} color="#ffffff" />
         </CloseButton>
-      </TopControls>
+      </CloseButtonContainer>
 
-      <BottomControls safeAreaBottom={insets.bottom}>
+      <BottomContainer safeAreaBottom={insets.bottom}>
         <ToggleButton onPress={toggleCamera}>
           <RotateCcw size={24} color="#ffffff" />
         </ToggleButton>
 
         <CaptureButton onPress={takePhoto} disabled={isCapturing}>
           {isCapturing ? (
-            <ActivityIndicator size="small" color="#ffffff" />
+            <ActivityIndicator size="small" color="#000000" />
           ) : (
-            <CameraIcon size={32} color="#ffffff" />
+            <CameraIcon size={28} color="#000000" />
           )}
         </CaptureButton>
 
         <PlaceholderView />
-      </BottomControls>
+      </BottomContainer>
     </Container>
   );
 }
@@ -294,35 +275,34 @@ const LoadingText = styled.Text({
   marginTop: 16,
 });
 
-const TopControls = styled.View<{ safeAreaTop: number }>(({ safeAreaTop }) => ({
-  position: 'absolute',
-  top: safeAreaTop + 16,
-  left: 16,
-  right: 16,
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-}));
+const CloseButtonContainer = styled.View<{ safeAreaTop: number }>(
+  ({ safeAreaTop }) => ({
+    position: 'absolute',
+    top: safeAreaTop + 20,
+    left: 20,
+    zIndex: 1,
+  }),
+);
 
 const CloseButton = styled(TouchableOpacity)({
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
   justifyContent: 'center',
   alignItems: 'center',
 });
 
-const BottomControls = styled.View<{ safeAreaBottom: number }>(
+const BottomContainer = styled.View<{ safeAreaBottom: number }>(
   ({ safeAreaBottom }) => ({
     position: 'absolute',
-    bottom: safeAreaBottom + 32,
+    bottom: safeAreaBottom + 40,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 50,
   }),
 );
 
@@ -330,20 +310,25 @@ const ToggleButton = styled(TouchableOpacity)({
   width: 50,
   height: 50,
   borderRadius: 25,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
   justifyContent: 'center',
   alignItems: 'center',
 });
 
 const CaptureButton = styled(TouchableOpacity)({
-  width: 80,
-  height: 80,
-  borderRadius: 40,
+  width: 70,
+  height: 70,
+  borderRadius: 35,
   backgroundColor: '#ffffff',
   justifyContent: 'center',
   alignItems: 'center',
-  borderWidth: 4,
+  borderWidth: 3,
   borderColor: '#ffffff',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 5,
 });
 
 const PlaceholderView = styled.View({

@@ -33,6 +33,7 @@ export type RunTabStackParamList = {
   RunDetail: {
     recordId: number;
     imageUrl?: string;
+    path?: [number, number][];
     stats: {
       distance: number;
       calories: number;
@@ -43,5 +44,23 @@ export type RunTabStackParamList = {
   PhotoEdit: {
     photoUri: string;
     recordId: number;
+    path?: [number, number][];
+    stats: {
+      distance: number;
+      calories: number;
+      pace: number;
+      runningTime: string;
+    };
+  };
+  PhotoDecoration: {
+    photoUri: string;
+    recordId: number;
+    path?: [number, number][];
+    stats: {
+      distance: number;
+      calories: number;
+      pace: number;
+      runningTime: string;
+    };
   };
 };

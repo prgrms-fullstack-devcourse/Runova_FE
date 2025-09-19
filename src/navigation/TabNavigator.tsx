@@ -1,8 +1,12 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View } from 'react-native';
 import { Star, FileText, Play, Laugh, Settings } from 'lucide-react-native';
+import { useCallback } from 'react';
 
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
@@ -13,7 +17,6 @@ import Run from '@/pages/Run';
 import type { TabParamList } from '@/types/navigation.types';
 import WebMyPage from '@/pages/WebMyPage';
 
-// RunTab 전용 컴포넌트
 function RunTabWithReset() {
   return <RunTabNavigator />;
 }
@@ -91,7 +94,8 @@ export default function TabNavigator() {
                 routeName === 'RouteSave' ||
                 routeName === 'Detail' ||
                 routeName === 'RunDetail' ||
-                routeName === 'PhotoEdit'
+                routeName === 'PhotoEdit' ||
+                routeName === 'PhotoDecoration'
                   ? 'none'
                   : 'flex',
             },
