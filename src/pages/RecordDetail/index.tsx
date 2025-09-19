@@ -266,19 +266,6 @@ export default function RecordDetail({ route, navigation }: Props) {
       </Content>
 
       {/* 하단 홈 버튼 */}
-      <BottomContainer>
-        <HomeButton onPress={handleHomePress} activeOpacity={0.8}>
-          <HomeButtonGradient
-            colors={['#1a1a1a', '#2d2d2d', '#404040']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          />
-          <HomeButtonContent>
-            <Home color="#ffffff" size={24} />
-            <HomeButtonText>홈으로</HomeButtonText>
-          </HomeButtonContent>
-        </HomeButton>
-      </BottomContainer>
     </Container>
   );
 }
