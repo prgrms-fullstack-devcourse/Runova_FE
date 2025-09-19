@@ -232,6 +232,8 @@ export function useRunModals({
           pace: stats.pace,
           runningTime: stats.runningTime,
         },
+        startAt: startTime.toISOString(),
+        endAt: endTime.toISOString(),
       });
 
       resetLocationTracking();

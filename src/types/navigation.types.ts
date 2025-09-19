@@ -40,6 +40,8 @@ export type RunTabStackParamList = {
       pace: number;
       runningTime: string;
     };
+    startAt?: string;
+    endAt?: string;
   };
   PhotoEdit: {
     photoUri: string;

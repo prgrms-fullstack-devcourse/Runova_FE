@@ -10,7 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Share, ArrowLeft, Home, Upload } from 'lucide-react-native';
+import { Share, Home, Upload } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { useCameraPermission, Camera } from 'react-native-vision-camera';
@@ -26,7 +26,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 type Props = NativeStackScreenProps<RunTabStackParamList, 'RunDetail'>;
 
 export default function RunDetail({ route, navigation }: Props) {
-  const { recordId, imageUrl, path, stats } = route.params;
+  const { recordId, imageUrl, path, stats, startAt, endAt } = route.params;
   const insets = useSafeAreaInsets();
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -145,10 +145,6 @@ export default function RunDetail({ route, navigation }: Props) {
     checkCameraPermission();
   }, [hasCameraPermission]);
 
-  const handleBackPress = () => {
-    navigation.goBack();
-  };
-
   const handleHomePress = () => {
     // RunTabNavigator 내에서 QuickStartMain으로 직접 이동
     navigation.reset({
@@ -225,11 +221,7 @@ export default function RunDetail({ route, navigation }: Props) {
 
   return (
     <Container>
-      <Header
-        leftIcon={ArrowLeft}
-        onLeftPress={handleBackPress}
-        title="런닝 기록"
-      />
+      <Header leftIcon={Home} onLeftPress={handleHomePress} title="런닝 기록" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <ImageContainer>
@@ -288,29 +280,20 @@ export default function RunDetail({ route, navigation }: Props) {
           <RunInfoItem>
             <RunInfoLabel>시작 시간</RunInfoLabel>
             <RunInfoValue>
-              {/* 임시로 현재 시간 표시, 실제로는 route params에서 전달받아야 함 */}
-              {formatDateTime(new Date().toISOString())}
+              {startAt ? formatDateTime(startAt) : '정보 없음'}
             </RunInfoValue>
           </RunInfoItem>
 
           <RunInfoItem>
             <RunInfoLabel>종료 시간</RunInfoLabel>
             <RunInfoValue>
-              {/* 임시로 현재 시간 표시, 실제로는 route params에서 전달받아야 함 */}
-              {formatDateTime(new Date().toISOString())}
+              {endAt ? formatDateTime(endAt) : '정보 없음'}
             </RunInfoValue>
           </RunInfoItem>
         </RunInfoContainer>
       </ScrollView>
 
       <BottomContainer>
-        <HomeButton onPress={handleHomePress} activeOpacity={0.8}>
-          <HomeButtonContent>
-            <Home color={COLOR_TOKENS.gray[900]} size={24} />
-            <HomeButtonText>홈으로</HomeButtonText>
-          </HomeButtonContent>
-        </HomeButton>
-
         <UploadButton onPress={handleCameraPress} activeOpacity={0.8}>
           <UploadButtonGradient
             colors={['#1a1a1a', '#2d2d2d', '#404040']}
@@ -418,35 +401,11 @@ const StatValue = styled.Text({
 });
 
 const BottomContainer = styled.View({
-  flexDirection: 'row',
   padding: 20,
   backgroundColor: '#ffffff',
-  gap: 12,
-});
-
-const HomeButton = styled.TouchableOpacity({
-  flex: 0.6,
-  height: 56,
-  borderRadius: 8,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: 'transparent',
-});
-
-const HomeButtonContent = styled.View({
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 8,
-});
-
-const HomeButtonText = styled.Text({
-  color: COLOR_TOKENS.gray[900],
-  fontSize: 16,
-  fontWeight: '600',
 });
 
 const UploadButton = styled.TouchableOpacity({
-  flex: 1.4,
   height: 56,
   borderRadius: 8,
   justifyContent: 'center',
