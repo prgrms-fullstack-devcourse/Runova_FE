@@ -31,7 +31,7 @@ export default {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
-      edgeToEdgeEnabled: true,
+      edgeToEdgeEnabled: false,
       package: 'com.chris13404.runova',
       permissions: [
         'android.permission.CAMERA',
