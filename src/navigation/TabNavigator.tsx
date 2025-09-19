@@ -10,7 +10,7 @@ import { useCallback } from 'react';
 
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
-import Records from '@/pages/Records';
+import RecordsStackNavigator from '@/navigation/RecordsStackNavigator';
 import RunTabNavigator from '@/navigation/RunTabNavigator';
 import Run from '@/pages/Run';
 
@@ -71,11 +71,19 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Records"
-        component={Records}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FileText color={color} size={size} />
-          ),
+        component={RecordsStackNavigator}
+        options={({ route }) => {
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? 'RecordsMain';
+          return {
+            tabBarIcon: ({ color, size }) => (
+              <FileText color={color} size={size} />
+            ),
+            tabBarStyle: {
+              ...baseTabBarStyle,
+              display: routeName === 'RecordDetail' ? 'none' : 'flex',
+            },
+          };
         }}
       />
       <Tab.Screen
