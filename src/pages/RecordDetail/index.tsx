@@ -7,13 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  StyleSheet,
   Dimensions,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Home, Share2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import styled from '@emotion/native';
 
 import Header from '@/components/Header';
 import { getRunningRecordDetail } from '@/services/running.service';
@@ -108,28 +108,39 @@ export default function RecordDetail({ route, navigation }: Props) {
     }
   };
 
+  const formatDateTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}`;
+  };
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <LoadingContainer>
         <ActivityIndicator size="large" color={COLOR_TOKENS.primary[500]} />
-        <Text style={styles.loadingText}>기록을 불러오는 중...</Text>
-      </View>
+        <LoadingText>기록을 불러오는 중...</LoadingText>
+      </LoadingContainer>
     );
   }
 
   if (!recordDetail) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>기록을 찾을 수 없습니다.</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleBackPress}>
-          <Text style={styles.retryButtonText}>돌아가기</Text>
-        </TouchableOpacity>
-      </View>
+      <ErrorContainer>
+        <ErrorText>기록을 찾을 수 없습니다.</ErrorText>
+        <RetryButton onPress={handleBackPress}>
+          <RetryButtonText>돌아가기</RetryButtonText>
+        </RetryButton>
+      </ErrorContainer>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <Container paddingTop={insets.top}>
       <Header
         leftIcon={ArrowLeft}
         rightIcon={Share2}
@@ -138,10 +149,10 @@ export default function RecordDetail({ route, navigation }: Props) {
         title="런닝 기록"
       />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <Content showsVerticalScrollIndicator={false}>
         {/* 이미지 영역 */}
         {availableImages.length > 0 && (
-          <View style={styles.imageContainer}>
+          <ImageContainer>
             <ScrollView
               horizontal
               pagingEnabled
@@ -154,352 +165,376 @@ export default function RecordDetail({ route, navigation }: Props) {
               }}
             >
               {availableImages.map((image, index) => (
-                <View key={index} style={styles.imageWrapper}>
+                <ImageWrapper key={index} isArt={image.type === 'art'}>
                   {imageLoading && index === currentImageIndex && (
-                    <View style={styles.imageLoadingContainer}>
+                    <ImageLoadingContainer>
                       <ActivityIndicator
                         size="large"
                         color={COLOR_TOKENS.primary[500]}
                       />
-                    </View>
+                    </ImageLoadingContainer>
                   )}
                   {imageError && index === currentImageIndex ? (
-                    <View style={styles.imageErrorContainer}>
-                      <Text style={styles.imageErrorText}>
+                    <ImageErrorContainer>
+                      <ImageErrorText>
                         이미지를 불러올 수 없습니다
-                      </Text>
-                    </View>
+                      </ImageErrorText>
+                    </ImageErrorContainer>
                   ) : (
-                    <Image
+                    <StyledImage
                       source={{ uri: image.url }}
-                      style={styles.image}
-                      resizeMode="cover"
+                      resizeMode="contain"
                       onError={handleImageError}
                       onLoad={handleImageLoad}
                       onLoadStart={() => setImageLoading(true)}
                     />
                   )}
-                  <View style={styles.imageTypeIndicator}>
-                    <Text style={styles.imageTypeText}>
-                      {image.type === 'art' ? 'GPS 아트' : '인증사진'}
-                    </Text>
-                  </View>
-                </View>
+                  <ImageTypeIndicator>
+                    <ImageTypeText>
+                      {image.type === 'art' ? 'GPS 아트' : '경로 사진'}
+                    </ImageTypeText>
+                  </ImageTypeIndicator>
+                </ImageWrapper>
               ))}
             </ScrollView>
 
             {/* 이미지 인디케이터 */}
             {availableImages.length > 1 && (
-              <View style={styles.imageIndicator}>
+              <ImageIndicator>
                 {availableImages.map((_, index) => (
-                  <View
+                  <IndicatorDot
                     key={index}
-                    style={[
-                      styles.indicatorDot,
-                      currentImageIndex === index && styles.indicatorDotActive,
-                    ]}
+                    isActive={currentImageIndex === index}
                   />
                 ))}
-              </View>
+              </ImageIndicator>
             )}
-          </View>
+          </ImageContainer>
         )}
 
         {/* 통계 정보 */}
-        <View style={styles.statsContainer}>
-          <Text style={styles.statsTitle}>런닝 통계</Text>
+        <StatsContainer>
+          <StatsTitle>런닝 통계</StatsTitle>
 
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>거리</Text>
-              <Text style={styles.statValue}>
-                {formatDistance(recordDetail.distance)}
-              </Text>
-            </View>
+          <StatsGrid>
+            <StatItem>
+              <StatLabel>거리</StatLabel>
+              <StatValue>{formatDistance(recordDetail.distance)}</StatValue>
+            </StatItem>
 
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>시간</Text>
-              <Text style={styles.statValue}>
-                {formatDuration(recordDetail.duration)}
-              </Text>
-            </View>
+            <StatItem>
+              <StatLabel>시간</StatLabel>
+              <StatValue>{formatDuration(recordDetail.duration)}</StatValue>
+            </StatItem>
 
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>평균 페이스</Text>
-              <Text style={styles.statValue}>
-                {formatPace(recordDetail.pace)}
-              </Text>
-            </View>
+            <StatItem>
+              <StatLabel>평균 페이스</StatLabel>
+              <StatValue>{formatPace(recordDetail.pace)}</StatValue>
+            </StatItem>
 
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>칼로리</Text>
-              <Text style={styles.statValue}>{recordDetail.calories}kcal</Text>
-            </View>
-          </View>
-        </View>
+            <StatItem>
+              <StatLabel>칼로리</StatLabel>
+              <StatValue>{recordDetail.calories}kcal</StatValue>
+            </StatItem>
+          </StatsGrid>
+        </StatsContainer>
 
         {/* 코스 정보 */}
         {recordDetail.course && (
-          <View style={styles.courseContainer}>
-            <Text style={styles.courseTitle}>코스 정보</Text>
-            <View style={styles.courseInfo}>
-              <Text style={styles.courseName}>{recordDetail.course.title}</Text>
-            </View>
-          </View>
+          <CourseContainer>
+            <CourseTitle>코스 정보</CourseTitle>
+            <CourseInfo>
+              <CourseName>{recordDetail.course.title}</CourseName>
+            </CourseInfo>
+          </CourseContainer>
         )}
 
         {/* 런닝 정보 */}
-        <View style={styles.runInfoContainer}>
-          <Text style={styles.runInfoTitle}>런닝 정보</Text>
+        <RunInfoContainer>
+          <RunInfoTitle>런닝 정보</RunInfoTitle>
 
-          <View style={styles.runInfoItem}>
-            <Text style={styles.runInfoLabel}>시작 시간</Text>
-            <Text style={styles.runInfoValue}>
-              {formatDate(recordDetail.startAt)}
-            </Text>
-          </View>
+          <RunInfoItem>
+            <RunInfoLabel>시작 시간</RunInfoLabel>
+            <RunInfoValue>{formatDateTime(recordDetail.startAt)}</RunInfoValue>
+          </RunInfoItem>
 
-          <View style={styles.runInfoItem}>
-            <Text style={styles.runInfoLabel}>종료 시간</Text>
-            <Text style={styles.runInfoValue}>
-              {formatDate(recordDetail.endAt)}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+          <RunInfoItem>
+            <RunInfoLabel>종료 시간</RunInfoLabel>
+            <RunInfoValue>{formatDateTime(recordDetail.endAt)}</RunInfoValue>
+          </RunInfoItem>
+        </RunInfoContainer>
+      </Content>
 
       {/* 하단 홈 버튼 */}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.homeButton}
-          onPress={handleHomePress}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={[COLOR_TOKENS.primary[400], COLOR_TOKENS.primary[600]]}
-            style={styles.homeButtonGradient}
-          >
+      <BottomContainer>
+        <HomeButton onPress={handleHomePress} activeOpacity={0.8}>
+          <HomeButtonGradient
+            colors={['#1a1a1a', '#2d2d2d', '#404040']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          <HomeButtonContent>
             <Home color="#ffffff" size={24} />
-            <Text style={styles.homeButtonText}>홈으로</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <HomeButtonText>홈으로</HomeButtonText>
+          </HomeButtonContent>
+        </HomeButton>
+      </BottomContainer>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  content: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: COLOR_TOKENS.gray[600],
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 18,
-    color: COLOR_TOKENS.gray[600],
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: COLOR_TOKENS.primary[500],
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  imageContainer: {
-    height: 400,
-    position: 'relative',
-  },
-  imageWrapper: {
-    width: screenWidth,
-    height: 400,
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageLoadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLOR_TOKENS.gray[100],
-  },
-  imageErrorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLOR_TOKENS.gray[100],
-  },
-  imageErrorText: {
-    fontSize: 16,
-    color: COLOR_TOKENS.gray[500],
-  },
-  imageTypeIndicator: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  imageTypeText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  imageIndicator: {
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  indicatorDotActive: {
-    backgroundColor: '#ffffff',
-  },
-  statsContainer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-  },
-  statsTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLOR_TOKENS.gray[900],
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  statItem: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: COLOR_TOKENS.gray[50],
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: COLOR_TOKENS.gray[600],
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLOR_TOKENS.gray[900],
-  },
-  courseContainer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: COLOR_TOKENS.gray[200],
-  },
-  courseTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLOR_TOKENS.gray[900],
-    marginBottom: 12,
-  },
-  courseInfo: {
-    backgroundColor: COLOR_TOKENS.gray[50],
-    padding: 16,
-    borderRadius: 12,
-  },
-  courseName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLOR_TOKENS.gray[800],
-  },
-  runInfoContainer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: COLOR_TOKENS.gray[200],
-  },
-  runInfoTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLOR_TOKENS.gray[900],
-    marginBottom: 16,
-  },
-  runInfoItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLOR_TOKENS.gray[100],
-  },
-  runInfoLabel: {
-    fontSize: 16,
-    color: COLOR_TOKENS.gray[600],
-  },
-  runInfoValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLOR_TOKENS.gray[900],
-  },
-  bottomContainer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: COLOR_TOKENS.gray[200],
-  },
-  homeButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  homeButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 8,
-  },
-  homeButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
-  },
+// Emotion Styled Components
+const Container = styled.View<{ paddingTop: number }>(({ paddingTop }) => ({
+  flex: 1,
+  backgroundColor: '#ffffff',
+  paddingTop,
+}));
+
+const LoadingContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#ffffff',
+});
+
+const LoadingText = styled.Text({
+  marginTop: 16,
+  fontSize: 16,
+  color: COLOR_TOKENS.gray[600],
+});
+
+const ErrorContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#ffffff',
+  padding: 20,
+});
+
+const ErrorText = styled.Text({
+  fontSize: 18,
+  color: COLOR_TOKENS.gray[600],
+  textAlign: 'center',
+  marginBottom: 20,
+});
+
+const RetryButton = styled.TouchableOpacity({
+  backgroundColor: COLOR_TOKENS.primary[500],
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+});
+
+const RetryButtonText = styled.Text({
+  color: '#ffffff',
+  fontSize: 16,
+  fontWeight: '600',
+});
+
+const Content = styled.ScrollView({
+  flex: 1,
+});
+
+const ImageContainer = styled.View({
+  height: 400,
+  position: 'relative',
+});
+
+const ImageWrapper = styled.View<{ isArt: boolean }>(({ isArt }) => ({
+  width: screenWidth,
+  height: 400,
+  position: 'relative',
+  backgroundColor: isArt ? '#000000' : '#ffffff',
+}));
+
+const StyledImage = styled.Image({
+  width: '100%',
+  height: '100%',
+});
+
+const ImageLoadingContainer = styled.View({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: COLOR_TOKENS.gray[100],
+});
+
+const ImageErrorContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: COLOR_TOKENS.gray[100],
+});
+
+const ImageErrorText = styled.Text({
+  fontSize: 16,
+  color: COLOR_TOKENS.gray[500],
+});
+
+const ImageTypeIndicator = styled.View({
+  position: 'absolute',
+  top: 16,
+  right: 16,
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 16,
+});
+
+const ImageTypeText = styled.Text({
+  color: '#ffffff',
+  fontSize: 12,
+  fontWeight: '600',
+});
+
+const ImageIndicator = styled.View({
+  position: 'absolute',
+  bottom: 16,
+  left: 0,
+  right: 0,
+  flexDirection: 'row',
+  justifyContent: 'center',
+  gap: 8,
+});
+
+const IndicatorDot = styled.View<{ isActive: boolean }>(({ isActive }) => ({
+  width: 8,
+  height: 8,
+  borderRadius: 4,
+  backgroundColor: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.5)',
+}));
+
+const StatsContainer = styled.View({
+  padding: 20,
+  backgroundColor: '#ffffff',
+});
+
+const StatsTitle = styled.Text({
+  fontSize: 20,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+  marginBottom: 16,
+});
+
+const StatsGrid = styled.View({
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 16,
+});
+
+const StatItem = styled.View({
+  flex: 1,
+  minWidth: '45%',
+  backgroundColor: COLOR_TOKENS.gray[50],
+  padding: 16,
+  borderRadius: 12,
+  alignItems: 'center',
+});
+
+const StatLabel = styled.Text({
+  fontSize: 14,
+  color: COLOR_TOKENS.gray[600],
+  marginBottom: 4,
+});
+
+const StatValue = styled.Text({
+  fontSize: 18,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+});
+
+const CourseContainer = styled.View({
+  padding: 20,
+  backgroundColor: '#ffffff',
+});
+
+const CourseTitle = styled.Text({
+  fontSize: 18,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+  marginBottom: 12,
+});
+
+const CourseInfo = styled.View({
+  backgroundColor: COLOR_TOKENS.gray[50],
+  padding: 16,
+  borderRadius: 12,
+});
+
+const CourseName = styled.Text({
+  fontSize: 16,
+  fontWeight: '600',
+  color: COLOR_TOKENS.gray[800],
+});
+
+const RunInfoContainer = styled.View({
+  padding: 20,
+  backgroundColor: '#ffffff',
+});
+
+const RunInfoTitle = styled.Text({
+  fontSize: 18,
+  fontWeight: '700',
+  color: COLOR_TOKENS.gray[900],
+  marginBottom: 16,
+});
+
+const RunInfoItem = styled.View({
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingVertical: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: COLOR_TOKENS.gray[100],
+});
+
+const RunInfoLabel = styled.Text({
+  fontSize: 16,
+  color: COLOR_TOKENS.gray[600],
+});
+
+const RunInfoValue = styled.Text({
+  fontSize: 16,
+  fontWeight: '600',
+  color: COLOR_TOKENS.gray[900],
+});
+
+const BottomContainer = styled.View({
+  padding: 20,
+  backgroundColor: '#ffffff',
+});
+
+const HomeButton = styled.TouchableOpacity({
+  height: 56,
+  borderRadius: 8,
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+});
+
+const HomeButtonGradient = styled(LinearGradient)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 8,
+});
+
+const HomeButtonContent = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+  zIndex: 1,
+});
+
+const HomeButtonText = styled.Text({
+  color: '#ffffff',
+  fontSize: 16,
+  fontWeight: '600',
 });
