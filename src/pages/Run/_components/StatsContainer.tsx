@@ -10,7 +10,7 @@ import type { RunStats } from '@/utils/runStats';
 
 function StatsContainer() {
   const { routeCoordinates, isTracking } = useLocationTracking();
-  const { startTime, pausedTime, pauseStartTime } = useRunStore();
+  const { startTime, pausedTime, pauseStartTime, setRunning } = useRunStore();
 
   // 로컬 상태로 통계 관리 (전역 상태 업데이트 안함)
   const [localStats, setLocalStats] = useState<RunStats>({
@@ -66,8 +66,10 @@ function StatsContainer() {
     if (hasChanged) {
       lastStatsRef.current = newStats;
       setLocalStats(newStats);
+      // 전역 store에도 통계 업데이트
+      setRunning({ stats: newStats });
     }
-  }, [startTime]);
+  }, [startTime, setRunning]);
 
   // 초기 통계 계산
   useEffect(() => {
