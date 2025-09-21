@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Bell } from 'lucide-react-native';
 import Header from '@/components/Header';
 import FloatingImageContainer from './_components/FloatingImageContainer';
+import StarryBackground from '@/components/StarryBackground';
 
 export default function Home() {
   const handleLocationPress = () => {
@@ -20,6 +21,8 @@ export default function Home() {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
+        <StarryBackground />
+
         <Header
           isHome
           locationText="서울시 노원구 덕릉로 123"
@@ -31,9 +34,7 @@ export default function Home() {
         <FloatingImageContainer />
 
         <ScrollContainer>
-          <ContentContainer>
-            {/* 추천 경로는 바로가기 화면으로 이동됨 */}
-          </ContentContainer>
+          <ContentContainer></ContentContainer>
         </ScrollContainer>
       </GradientBackground>
     </Screen>
