@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useCommunityStore } from '@/stores/communityStore';
 
 const PATH_BY_KEY = {
-  home: '/community',
-  photo: '/community/feed/proof',
   route: '/community/feed/share',
   run: '/community/feed/mate',
+  photo: '/community/feed/proof',
+  all: '/community',
 } as const;
 
-type NavKey = keyof typeof PATH_BY_KEY;
+export type NavKey = keyof typeof PATH_BY_KEY;
 
 export default function CommunityNavigator() {
   const navigate = useNavigate();
@@ -22,71 +22,69 @@ export default function CommunityNavigator() {
   };
 
   return (
-    <Container>
-      <NavItem
-        active={active === 'home'}
-        aria-current={active === 'home' ? 'page' : undefined}
-        onClick={go('home')}
-      >
-        <i className="ri-home-4-fill" />
-        <span>홈</span>
-      </NavItem>
-
-      <NavItem
-        active={active === 'photo'}
-        aria-current={active === 'photo' ? 'page' : undefined}
-        onClick={go('photo')}
-      >
-        <i className="ri-camera-2-fill" />
-        <span>인증샷</span>
-      </NavItem>
-
-      <NavItem
+    <Container role="tablist" aria-label="커뮤니티 내비게이션">
+      <TabButton
+        role="tab"
+        aria-selected={active === 'route'}
         active={active === 'route'}
-        aria-current={active === 'route' ? 'page' : undefined}
         onClick={go('route')}
       >
-        <i className="ri-route-line" />
-        <span>경로</span>
-      </NavItem>
-
-      <NavItem
+        경로
+      </TabButton>
+      <TabButton
+        role="tab"
+        aria-selected={active === 'run'}
         active={active === 'run'}
-        aria-current={active === 'run' ? 'page' : undefined}
         onClick={go('run')}
       >
-        <i className="ri-run-fill" />
-        <span>메이트</span>
-      </NavItem>
+        메이트
+      </TabButton>
+      <TabButton
+        role="tab"
+        aria-selected={active === 'photo'}
+        active={active === 'photo'}
+        onClick={go('photo')}
+      >
+        인증샷
+      </TabButton>
+      <TabButton
+        role="tab"
+        aria-selected={active === 'all'}
+        active={active === 'all'}
+        onClick={go('all')}
+      >
+        전체보기
+      </TabButton>
     </Container>
   );
 }
 
+/** 상단 고정(헤더 바로 아래) */
 const Container = styled.nav`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: sticky;
+  top: 0; /* AppLayout 헤더가 fixed이면 필요에 따라 간격 조절 */
+  z-index: ${({ theme }) => theme.zIndex.header};
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  gap: 0;
   background: ${({ theme }) => theme.colors.surface};
-  padding: 6px 0;
-  z-index: ${({ theme }) => theme.zIndex.header};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const NavItem = styled.button<{ active?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
+const TabButton = styled.button<{ active?: boolean }>`
   ${({ theme }) => theme.typography.small};
+  height: 36px;
+  background: ${({ theme, active }) =>
+    active ? theme.colors.surfaceAlt : 'transparent'};
   color: ${({ theme, active }) =>
     active ? theme.colors.primary : theme.colors.subtext};
-  i {
-    font-size: 20px;
-    line-height: 1;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceAlt};
   }
 `;
