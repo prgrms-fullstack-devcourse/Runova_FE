@@ -45,7 +45,6 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
   // JS 스레드에서 실행될 coordinate 변환 및 업데이트 함수
   const handleCoordinateUpdate = async (x: number, y: number) => {
     if (!mapRef.current) {
-      console.warn('MapRef is not available');
       return;
     }
 
@@ -53,7 +52,6 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
       const coord = await mapRef.current.getCoordinateFromView([x, y]);
 
       if (!coord || !Array.isArray(coord) || coord.length !== 2) {
-        console.warn('Invalid coordinate received:', coord);
         return;
       }
 
@@ -70,8 +68,6 @@ export function useMapGestures(mapRef: RefObject<Mapbox.MapView | null>) {
       }
     } catch (error) {
       console.warn('Coordinate conversion error:', error);
-      console.warn('Error type:', error?.constructor?.name);
-      console.warn('Event coordinates:', x, y);
     }
   };
 

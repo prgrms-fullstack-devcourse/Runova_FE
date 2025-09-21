@@ -50,7 +50,6 @@ export function useRouteSvgExport() {
         text2: '갤러리에 경로 SVG 파일을 저장했습니다.',
       });
     } catch (error) {
-      console.error('Failed to save SVG route', error);
       Toast.show({
         type: 'error',
         text1: 'SVG 저장 실패',

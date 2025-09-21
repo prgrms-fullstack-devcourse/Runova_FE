@@ -187,7 +187,7 @@ const useRunStore = create<RunState>((set, get) => ({
 
   startRun: () => {
     const startTime = new Date();
-    console.log('🏃‍♂️ [RunStore] 새로운 런닝 시작:', startTime.toISOString());
+
     set({
       startTime,
       pausedTime: 0,
@@ -197,7 +197,7 @@ const useRunStore = create<RunState>((set, get) => ({
 
   pauseRun: () => {
     const pauseStartTime = new Date();
-    console.log('⏸️ [RunStore] 런닝 일시정지:', pauseStartTime.toISOString());
+
     set({
       pauseStartTime,
     });
@@ -208,10 +208,7 @@ const useRunStore = create<RunState>((set, get) => ({
       if (state.pauseStartTime) {
         const pauseDuration =
           (new Date().getTime() - state.pauseStartTime.getTime()) / 1000;
-        console.log('▶️ [RunStore] 런닝 재시작:', {
-          pauseDuration: `${pauseDuration.toFixed(1)}초`,
-          totalPausedTime: `${(state.pausedTime + pauseDuration).toFixed(1)}초`,
-        });
+
         return {
           pausedTime: state.pausedTime + pauseDuration,
           pauseStartTime: null,
@@ -221,7 +218,6 @@ const useRunStore = create<RunState>((set, get) => ({
     }),
 
   stopRun: () => {
-    console.log('⏹️ [RunStore] 런닝 완전 종료 - 통계 초기화됨');
     set({
       startTime: null,
       pausedTime: 0,
@@ -297,7 +293,6 @@ const useRunStore = create<RunState>((set, get) => ({
     set((state) => {
       // isTracking이 true면 일시정지 상태이므로 상태 보존
       if (state.isTracking) {
-        console.log('🔄 [RunStore] 일시정지 상태 - 런닝 상태 보존');
         return {
           ...initialUIState,
           ...initialErrorState,
@@ -319,7 +314,7 @@ const useRunStore = create<RunState>((set, get) => ({
       }
 
       // isTracking이 false면 완전 초기화
-      console.log('🔄 [RunStore] 완전 초기화 - 모든 상태 초기화됨');
+
       return {
         ...initialUIState,
         ...initialErrorState,

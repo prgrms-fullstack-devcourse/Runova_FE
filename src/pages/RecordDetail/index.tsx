@@ -68,7 +68,6 @@ export default function RecordDetail({ route, navigation }: Props) {
       const data = await getRunningRecordDetail(recordId, accessToken);
       setRecordDetail(data);
     } catch (error) {
-      console.error('런닝 기록 상세 조회 실패:', error);
       Alert.alert('오류', '런닝 기록을 불러올 수 없습니다.');
     } finally {
       setLoading(false);

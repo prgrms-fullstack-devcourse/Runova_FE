@@ -24,15 +24,7 @@ export default function RouteRenderer({
   routeScaleAnimated,
   routePanResponder,
 }: RouteRendererProps) {
-  console.log('📊 [RouteRenderer] renderRouteImage 호출:', {
-    showRoute,
-    routePathData: routePathData ? '있음' : '없음',
-    routePathDataLength: routePathData?.length,
-    routePathDataPreview: routePathData?.substring(0, 50) + '...',
-  });
-
   if (!showRoute) {
-    console.log('📊 [RouteRenderer] showRoute가 false');
     return null;
   }
 
@@ -41,13 +33,6 @@ export default function RouteRenderer({
   if (!routePathData) {
     console.log('📊 [RouteRenderer] routePathData가 없음, 테스트 경로 사용');
   }
-
-  console.log(
-    '📊 [RouteRenderer] SVG 렌더링 시작, routeColor:',
-    routeColor,
-    'finalPathData:',
-    finalPathData.substring(0, 30),
-  );
 
   return (
     <Animated.View

@@ -41,11 +41,8 @@ export default function RunDetail({ route, navigation }: Props) {
   const { hasPermission: hasCameraPermission } = useCameraPermission();
 
   const requestNativeCameraPermission = async () => {
-    console.log('📷 [RunDetail] 네이티브 카메라 권한 요청 시작');
-
     if (Platform.OS === 'android') {
       try {
-        console.log('📷 [RunDetail] Android 권한 요청 중...');
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
@@ -56,10 +53,8 @@ export default function RunDetail({ route, navigation }: Props) {
             buttonPositive: '확인',
           },
         );
-        console.log('📷 [RunDetail] Android 권한 요청 결과:', granted);
 
         if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-          console.log('📷 [RunDetail] 권한이 영구적으로 거부됨');
           Alert.alert(
             '카메라 권한 필요',
             '카메라 권한이 거부되었습니다. 설정 > 앱 > Runova > 권한에서 카메라 권한을 허용해주세요.',
@@ -68,7 +63,6 @@ export default function RunDetail({ route, navigation }: Props) {
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  console.log('📷 [RunDetail] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
               },
@@ -79,14 +73,11 @@ export default function RunDetail({ route, navigation }: Props) {
 
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (error) {
-        console.error('📷 [RunDetail] Android 카메라 권한 요청 실패:', error);
         return false;
       }
     } else {
       try {
-        console.log('📷 [RunDetail] iOS 권한 요청 중...');
         const permission = await Camera.requestCameraPermission();
-        console.log('📷 [RunDetail] iOS 권한 요청 결과:', permission);
 
         if (permission === 'denied') {
           Alert.alert(
@@ -97,7 +88,6 @@ export default function RunDetail({ route, navigation }: Props) {
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  console.log('📷 [RunDetail] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
               },
@@ -107,7 +97,6 @@ export default function RunDetail({ route, navigation }: Props) {
 
         return permission === 'granted';
       } catch (error) {
-        console.error('📷 [RunDetail] iOS 카메라 권한 요청 실패:', error);
         return false;
       }
     }
@@ -115,35 +104,15 @@ export default function RunDetail({ route, navigation }: Props) {
 
   useEffect(() => {
     const checkCameraPermission = async () => {
-      console.log(
-        '📷 [RunDetail] 카메라 권한 확인 시작, hasCameraPermission:',
-        hasCameraPermission,
-      );
-      console.log('📷 [RunDetail] Platform.OS:', Platform.OS);
-
       if (Platform.OS === 'android') {
         try {
           const currentPermission = await PermissionsAndroid.check(
             PermissionsAndroid.PERMISSIONS.CAMERA,
           );
-          console.log(
-            '📷 [RunDetail] Android 현재 카메라 권한 상태:',
-            currentPermission,
-          );
         } catch (error) {
           console.error('📷 [RunDetail] 권한 상태 확인 실패:', error);
         }
       }
-
-      if (!hasCameraPermission) {
-        console.log('📷 [RunDetail] 카메라 권한 없음, 권한 요청 시작');
-        const granted = await requestNativeCameraPermission();
-        console.log('📷 [RunDetail] 권한 요청 최종 결과:', granted);
-      } else {
-        console.log('📷 [RunDetail] 카메라 권한 이미 있음');
-      }
-
-      console.log('📷 [RunDetail] 카메라 권한 확인 완료');
       setCameraPermissionChecked(true);
     };
 
@@ -163,21 +132,15 @@ export default function RunDetail({ route, navigation }: Props) {
   };
 
   const handleCameraPress = async () => {
-    console.log('📷 [RunDetail] 인증사진 찍기 버튼 클릭');
-
     if (!cameraPermissionChecked) {
-      console.log('📷 [RunDetail] 카메라 권한 확인 중...');
       Alert.alert('카메라 권한 확인 중', '잠시만 기다려주세요.');
       return;
     }
 
     if (!hasCameraPermission) {
-      console.log('📷 [RunDetail] 카메라 권한 없음, 권한 요청 시작');
       const granted = await requestNativeCameraPermission();
-      console.log('📷 [RunDetail] 권한 요청 결과:', granted);
 
       if (!granted) {
-        console.log('📷 [RunDetail] 권한 거부됨');
         Alert.alert(
           '카메라 권한 필요',
           '인증사진 촬영을 위해 카메라 권한이 필요합니다.',
@@ -186,7 +149,6 @@ export default function RunDetail({ route, navigation }: Props) {
       }
     }
 
-    console.log('📷 [RunDetail] 카메라 모달 열기');
     setShowCamera(true);
   };
 

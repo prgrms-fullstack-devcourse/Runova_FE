@@ -120,12 +120,9 @@ export function usePhotoDecoration({
 
   // 경로 데이터 처리
   useEffect(() => {
-    console.log('📊 [usePhotoDecoration] useEffect 실행, path:', path);
     if (path && path.length > 0) {
       const pathData = convertPathToSvgData(path);
       updateState({ routePathData: pathData });
-    } else {
-      console.log('📊 [usePhotoDecoration] path 데이터가 없음, path:', path);
     }
   }, [path]);
 
@@ -174,7 +171,6 @@ export function usePhotoDecoration({
   const handleSave = async () => {
     try {
       updateState({ isProcessing: true });
-      console.log('📷 [usePhotoDecoration] 저장 버튼 클릭');
 
       if (!viewShotRef.current) {
         Alert.alert('오류', '이미지를 캡처할 수 없습니다.');
@@ -183,7 +179,6 @@ export function usePhotoDecoration({
 
       // ViewShot으로 편집된 이미지 캡처
       const uri = await viewShotRef.current!.capture!();
-      console.log('📷 [usePhotoDecoration] 이미지 캡처 완료:', uri);
 
       // 미디어 라이브러리 권한 요청
       const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -194,7 +189,6 @@ export function usePhotoDecoration({
 
       // 갤러리에 저장
       const asset = await MediaLibrary.createAssetAsync(uri);
-      console.log('📷 [usePhotoDecoration] 갤러리 저장 완료:', asset);
 
       Alert.alert('저장 완료', '꾸민 인증사진이 갤러리에 저장되었습니다.', [
         {
@@ -214,7 +208,6 @@ export function usePhotoDecoration({
         },
       ]);
     } catch (error) {
-      console.error('📷 [usePhotoDecoration] 저장 중 오류:', error);
       Alert.alert('오류', '사진 저장 중 오류가 발생했습니다.');
     } finally {
       updateState({ isProcessing: false });
@@ -237,10 +230,8 @@ export function usePhotoDecoration({
       // react-native-share 라이브러리로 바로 공유 창 띄우기
       const shareOptions = createShareOptions(uri);
       const result = await Share.open(shareOptions);
-      console.log('📤 [usePhotoDecoration] 공유 성공:', result);
     } catch (error: unknown) {
       if (error instanceof Error && error.message !== 'User did not share') {
-        console.error('📤 [usePhotoDecoration] 공유 오류:', error);
         Alert.alert('오류', '공유 중 오류가 발생했습니다.');
       }
     } finally {

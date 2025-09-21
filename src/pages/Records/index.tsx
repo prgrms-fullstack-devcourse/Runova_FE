@@ -62,13 +62,6 @@ export default function Records({ navigation }: Props) {
 
   // 초기 데이터 로드
   useEffect(() => {
-    console.log('📊 [Records] useEffect 실행:', {
-      activeRange,
-      selectedWeek,
-      selectedMonth,
-      selectedYear,
-      timeRangeParams,
-    });
     loadDashboard(timeRangeParams);
     loadRecords(timeRangeParams, true);
   }, [activeRange, selectedWeek, selectedMonth, selectedYear]);

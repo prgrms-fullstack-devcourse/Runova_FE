@@ -44,15 +44,9 @@ export function useLocationTracking() {
     const currentCoords = useRunStore.getState().routeCoordinates;
     if (currentCoords.length === 0 && location) {
       const { latitude, longitude } = location.coords;
-      console.log('📍 [LocationTracking] 위치 추적 시작 - 초기 위치 설정:', {
-        latitude,
-        longitude,
-      });
+
       setRouteCoordinates([[longitude, latitude]]);
     } else if (currentCoords.length > 0) {
-      console.log('📍 [LocationTracking] 위치 추적 재시작 - 기존 경로 유지:', {
-        coordinatesCount: currentCoords.length,
-      });
     }
 
     const newSubscriber = await Location.watchPositionAsync(
@@ -96,7 +90,6 @@ export function useLocationTracking() {
   ]);
 
   const pauseTracking = useCallback(() => {
-    console.log('⏸️ [LocationTracking] 위치 추적 일시정지');
     if (subscriber) {
       subscriber.remove();
       setSubscriber(null);
@@ -105,7 +98,6 @@ export function useLocationTracking() {
   }, [subscriber, setSubscriber, setIsTracking]);
 
   const stopTracking = useCallback(() => {
-    console.log('⏹️ [LocationTracking] 위치 추적 완전 종료 - 경로 초기화됨');
     if (subscriber) {
       subscriber.remove();
       setSubscriber(null);

@@ -26,16 +26,12 @@ export default function PhotoEdit({ route, navigation }: Props) {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
-  console.log('📷 [PhotoEdit] 받은 사진 URI:', photoUri);
-
   const handleBackPress = () => {
     navigation.goBack();
   };
 
   const saveToGallery = async () => {
     try {
-      console.log('📷 [PhotoEdit] 갤러리 저장 시작:', photoUri);
-
       // 미디어 라이브러리 권한 요청
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
@@ -43,21 +39,16 @@ export default function PhotoEdit({ route, navigation }: Props) {
         return false;
       }
 
-      console.log('📷 [PhotoEdit] 저장할 사진 URI:', photoUri);
-
       // 갤러리에 저장
       const asset = await MediaLibrary.createAssetAsync(photoUri);
-      console.log('📷 [PhotoEdit] 갤러리 저장 완료:', asset);
 
       return true;
     } catch (error) {
-      console.error('📷 [PhotoEdit] 갤러리 저장 실패:', error);
       return false;
     }
   };
 
   const handleEditPress = () => {
-    console.log('📷 [PhotoEdit] 편집하기 버튼 클릭');
     navigation.navigate('PhotoDecoration', {
       photoUri,
       recordId,
@@ -84,12 +75,10 @@ export default function PhotoEdit({ route, navigation }: Props) {
             source={{ uri: photoUri }}
             resizeMode="contain"
             onError={() => {
-              console.log('📷 [PhotoEdit] 이미지 로딩 오류');
               setImageError(true);
               setImageLoading(false);
             }}
             onLoad={() => {
-              console.log('📷 [PhotoEdit] 이미지 로딩 완료');
               setImageLoading(false);
             }}
           />

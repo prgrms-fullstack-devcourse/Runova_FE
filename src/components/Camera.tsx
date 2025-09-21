@@ -50,11 +50,8 @@ export default function CameraComponent({
   const { hasPermission: hasMicrophonePermission } = useMicrophonePermission();
 
   const requestNativeCameraPermission = async () => {
-    console.log('📷 [Camera] 네이티브 카메라 권한 요청 시작');
-
     if (Platform.OS === 'android') {
       try {
-        console.log('📷 [Camera] Android 권한 요청 중...');
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
@@ -65,10 +62,8 @@ export default function CameraComponent({
             buttonPositive: '확인',
           },
         );
-        console.log('📷 [Camera] Android 권한 요청 결과:', granted);
 
         if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-          console.log('📷 [Camera] 권한이 영구적으로 거부됨');
           Alert.alert(
             '카메라 권한 필요',
             '카메라 권한이 거부되었습니다. 설정 > 앱 > Runova > 권한에서 카메라 권한을 허용해주세요.',
@@ -77,7 +72,6 @@ export default function CameraComponent({
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  console.log('📷 [Camera] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
               },
@@ -88,14 +82,11 @@ export default function CameraComponent({
 
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (error) {
-        console.error('📷 [Camera] Android 카메라 권한 요청 실패:', error);
         return false;
       }
     } else {
       try {
-        console.log('📷 [Camera] iOS 권한 요청 중...');
         const permission = await Camera.requestCameraPermission();
-        console.log('📷 [Camera] iOS 권한 요청 결과:', permission);
 
         if (permission === 'denied') {
           Alert.alert(
@@ -106,7 +97,6 @@ export default function CameraComponent({
               {
                 text: '설정으로 이동',
                 onPress: () => {
-                  console.log('📷 [Camera] 설정 앱으로 이동');
                   Linking.openSettings();
                 },
               },
@@ -116,7 +106,6 @@ export default function CameraComponent({
 
         return permission === 'granted';
       } catch (error) {
-        console.error('📷 [Camera] iOS 카메라 권한 요청 실패:', error);
         return false;
       }
     }
@@ -124,17 +113,10 @@ export default function CameraComponent({
 
   useEffect(() => {
     const initializeCamera = async () => {
-      console.log('📷 [Camera] 카메라 초기화 시작');
-      console.log('📷 [Camera] 현재 카메라 위치:', currentCameraPosition);
-      console.log('📷 [Camera] 선택된 디바이스:', device);
-
       if (!hasCameraPermission) {
-        console.log('📷 [Camera] 카메라 권한 없음, 권한 요청 시작');
         const granted = await requestNativeCameraPermission();
-        console.log('📷 [Camera] 권한 요청 결과:', granted);
 
         if (!granted) {
-          console.log('📷 [Camera] 권한 거부됨, 카메라 닫기');
           Alert.alert('권한 필요', '카메라 권한이 필요합니다.', [
             { text: '확인', onPress: onClose },
           ]);
@@ -143,12 +125,10 @@ export default function CameraComponent({
       }
 
       if (!hasMicrophonePermission) {
-        console.log('📷 [Camera] 마이크 권한 요청 중...');
         await Camera.requestMicrophonePermission();
       }
 
       if (!device) {
-        console.log('📷 [Camera] 카메라 디바이스를 찾을 수 없음');
         Alert.alert(
           '카메라 오류',
           '카메라를 찾을 수 없습니다. 앱을 재시작해주세요.',
@@ -157,7 +137,6 @@ export default function CameraComponent({
         return;
       }
 
-      console.log('📷 [Camera] 카메라 준비 완료');
       setIsReady(true);
     };
 
@@ -172,12 +151,7 @@ export default function CameraComponent({
 
   const toggleCamera = () => {
     const newPosition = currentCameraPosition === 'back' ? 'front' : 'back';
-    console.log(
-      '📷 [Camera] 카메라 전환:',
-      currentCameraPosition,
-      '->',
-      newPosition,
-    );
+
     setCurrentCameraPosition(newPosition);
   };
 
@@ -186,21 +160,15 @@ export default function CameraComponent({
 
     try {
       setIsCapturing(true);
-      console.log('📷 [Camera] 사진 촬영 시작');
 
       const photo = await camera.current.takePhoto({
         flash: 'off',
       });
 
-      console.log('📷 [Camera] 사진 촬영 완료:', photo);
-      console.log('📷 [Camera] 사진 경로:', photo.path);
-
       const photoUri = `file://${photo.path}`;
-      console.log('📷 [Camera] 최종 사진 URI:', photoUri);
 
       onPhotoTaken(photoUri);
     } catch (error) {
-      console.error('📷 [Camera] 사진 촬영 실패:', error);
       Alert.alert('오류', '사진 촬영에 실패했습니다.');
     } finally {
       setIsCapturing(false);

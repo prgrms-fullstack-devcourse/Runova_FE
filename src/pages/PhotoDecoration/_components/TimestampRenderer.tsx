@@ -23,13 +23,7 @@ export default function TimestampRenderer({
   timestampScaleAnimated,
   timestampPanResponder,
 }: TimestampRendererProps) {
-  console.log('📊 [TimestampRenderer] renderTimestamp 호출:', {
-    showTimestamp,
-    runningStatsDate: runningStats.date,
-  });
-
   if (!showTimestamp) {
-    console.log('📊 [TimestampRenderer] showTimestamp가 false');
     return null;
   }
 

@@ -105,7 +105,7 @@ export default function Run({ route, navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       // 스크린 진입 시 항상 완전 초기화 (이전 상태 완전 제거)
-      console.log('🔄 [Run] 스크린 진입 - 모든 상태 강제 초기화');
+
       resetLocationTracking();
       resetRunState(); // isTracking이 false이므로 완전 초기화
       resetNavigation(); // 네비게이션 상태도 초기화

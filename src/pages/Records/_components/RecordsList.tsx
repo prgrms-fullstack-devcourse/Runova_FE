@@ -42,10 +42,6 @@ export default function RecordsList({
   );
 
   const handleEndReached = useCallback(() => {
-    console.log('📊 [RecordsList] handleEndReached 호출:', {
-      hasMore,
-      loading,
-    });
     if (hasMore && !loading) {
       onLoadMore();
     }
