@@ -3,6 +3,7 @@ import {
   ColorOption,
   TemplateOption,
 } from '@/types/photoDecoration.types';
+import { formatPace } from '@/utils/formatters';
 
 /**
  * path 배열을 SVG path 데이터로 변환
@@ -50,16 +51,14 @@ export function formatRunningStats(routeStats: any): RunningStats {
     ? {
         distance: routeStats.distance / 1000,
         time: routeStats.runningTime,
-        pace: routeStats.pace
-          ? `${Math.floor(routeStats.pace / 60)}:${(routeStats.pace % 60).toString().padStart(2, '0')}`
-          : '00:00',
+        pace: routeStats.pace ? formatPace(routeStats.pace) : '0\'00"',
         calories: routeStats.calories,
         date: new Date().toLocaleDateString('ko-KR'),
       }
     : {
         distance: 0,
         time: '00:00:00',
-        pace: '00:00',
+        pace: '0\'00"',
         calories: 0,
         date: new Date().toLocaleDateString('ko-KR'),
       };

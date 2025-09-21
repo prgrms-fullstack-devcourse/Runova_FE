@@ -7,7 +7,7 @@ import {
   RunningStats,
   PhotoDecorationState,
 } from '@/types/photoDecoration.types';
-import { formatNumber } from '@/utils/formatters';
+import { formatNumber, formatPace } from '@/utils/formatters';
 
 interface StatsRendererProps {
   runningStats: RunningStats;
@@ -62,7 +62,11 @@ export default function StatsRenderer({
         <StatIcon>
           <Zap size={16} color={statsColor} />
         </StatIcon>
-        <StatValue textColor={statsColor}>{runningStats.pace}</StatValue>
+        <StatValue textColor={statsColor}>
+          {typeof runningStats.pace === 'number'
+            ? formatPace(runningStats.pace)
+            : runningStats.pace}
+        </StatValue>
         <StatLabel textColor={statsColor}>페이스</StatLabel>
       </StatItem>,
     );
