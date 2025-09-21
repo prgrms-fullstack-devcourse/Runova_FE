@@ -15,7 +15,7 @@ type CommentListItemRes = {
   content: string;
   createdAt: string;
   updatedAt: string;
-  authorInfo: AuthorInfoRes; // ✅ 추가
+  authorInfo: AuthorInfoRes;
 };
 
 type CommentListRes = {
@@ -30,7 +30,7 @@ type CommentCreateRes = {
   content: string;
   createdAt: string;
   updatedAt: string;
-  authorInfo: AuthorInfoRes; // ✅ 생성 응답에서도 내려온다고 가정
+  authorInfo: AuthorInfoRes;
 };
 
 type CommentUpdateRes = {
