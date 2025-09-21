@@ -17,7 +17,7 @@ export type RootStackParamList = {
 export type TabParamList = {
   Home: Record<string, never>;
   Records: Record<string, never>;
-  RunTab: Record<string, never>;
+  Run: Record<string, never>;
   Community: Record<string, never>;
   Settings: Record<string, never>;
 };

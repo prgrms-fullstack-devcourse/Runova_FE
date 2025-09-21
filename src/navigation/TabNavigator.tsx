@@ -87,7 +87,7 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="RunTab"
+        name="Run"
         component={RunTabWithReset}
         options={({ route }) => {
           const routeName =
