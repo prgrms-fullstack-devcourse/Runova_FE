@@ -109,3 +109,22 @@ export interface CourseTopologyResponse {
   nodes: CourseTopologyNode[];
   shape: [number, number][][];
 }
+
+// 네비게이션 관련 타입들
+export type NavigationDirection = '왼쪽' | '오른쪽';
+export type NavigationScale = '회전' | '유턴';
+
+export interface NavigationInstruction {
+  direction: NavigationDirection;
+  scale: NavigationScale;
+  distance?: number;
+  type: 'turn' | 'warning';
+}
+
+export interface NavigationState {
+  currentNodeIndex: number;
+  nextNode: CourseTopologyNode | null;
+  distanceToNextNode: number;
+  isApproachingTurn: boolean;
+  instruction: NavigationInstruction | null;
+}
