@@ -1,5 +1,10 @@
 import styled from '@emotion/native';
-import { formatDistance, formatTime, formatPace } from '@/utils/formatters';
+import {
+  formatDistance,
+  formatTime,
+  formatPace,
+  formatNumber,
+} from '@/utils/formatters';
 import type { RunningDashboard } from '@/types/records.types';
 
 interface StatsDisplayProps {
@@ -29,9 +34,7 @@ export default function StatsDisplay({ dashboard }: StatsDisplayProps) {
         </StatBox>
 
         <StatBox>
-          <StatValue>
-            {Math.round(dashboard.totalCalories * 100) / 100}kcal
-          </StatValue>
+          <StatValue>{formatNumber(dashboard.totalCalories)}kcal</StatValue>
           <StatLabel>총 칼로리</StatLabel>
         </StatBox>
 

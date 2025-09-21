@@ -7,6 +7,7 @@ import {
   RunningStats,
   PhotoDecorationState,
 } from '@/types/photoDecoration.types';
+import { formatNumber } from '@/utils/formatters';
 
 interface StatsRendererProps {
   runningStats: RunningStats;
@@ -47,7 +48,9 @@ export default function StatsRenderer({
         <StatIcon>
           <Map size={16} color={statsColor} />
         </StatIcon>
-        <StatValue textColor={statsColor}>{runningStats.distance}km</StatValue>
+        <StatValue textColor={statsColor}>
+          {formatNumber(runningStats.distance)}km
+        </StatValue>
         <StatLabel textColor={statsColor}>거리</StatLabel>
       </StatItem>,
     );
@@ -71,7 +74,9 @@ export default function StatsRenderer({
         <StatIcon>
           <Zap size={16} color={statsColor} />
         </StatIcon>
-        <StatValue textColor={statsColor}>{runningStats.calories}</StatValue>
+        <StatValue textColor={statsColor}>
+          {formatNumber(runningStats.calories)}
+        </StatValue>
         <StatLabel textColor={statsColor}>칼로리</StatLabel>
       </StatItem>,
     );

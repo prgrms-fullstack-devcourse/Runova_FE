@@ -4,8 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import useRunStore from '@/store/run';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { calculateRunStats } from '@/utils/runStats';
-import { formatPace } from '@/utils/formatters';
-import type { Position } from 'geojson';
+import { formatPace, formatNumber } from '@/utils/formatters';
 import type { RunStats } from '@/utils/runStats';
 
 function StatsContainer() {
@@ -101,11 +100,11 @@ function StatsContainer() {
       </RunningTimeContainer>
       <StatsRow>
         <StatItem>
-          <StatValue>{localStats.distance}m</StatValue>
+          <StatValue>{formatNumber(localStats.distance)}m</StatValue>
           <StatLabel>거리</StatLabel>
         </StatItem>
         <StatItem>
-          <StatValue>{localStats.calories}</StatValue>
+          <StatValue>{formatNumber(localStats.calories)}</StatValue>
           <StatLabel>칼로리</StatLabel>
         </StatItem>
         <StatItem>
