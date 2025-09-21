@@ -49,7 +49,7 @@ export default function StatsRenderer({
           <Map size={16} color={statsColor} />
         </StatIcon>
         <StatValue textColor={statsColor}>
-          {formatNumber(runningStats.distance)}km
+          {formatNumber(runningStats.distance).toFixed(2)}km
         </StatValue>
         <StatLabel textColor={statsColor}>거리</StatLabel>
       </StatItem>,
@@ -75,7 +75,7 @@ export default function StatsRenderer({
           <Zap size={16} color={statsColor} />
         </StatIcon>
         <StatValue textColor={statsColor}>
-          {formatNumber(runningStats.calories)}
+          {formatNumber(runningStats.calories).toFixed(2)}
         </StatValue>
         <StatLabel textColor={statsColor}>칼로리</StatLabel>
       </StatItem>,

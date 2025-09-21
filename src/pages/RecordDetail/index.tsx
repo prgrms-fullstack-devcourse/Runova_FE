@@ -23,6 +23,7 @@ import {
   formatDistance,
   formatTime,
   formatPace,
+  formatNumber,
 } from '@/utils/formatters';
 import { COLOR_TOKENS } from '@/constants/colors';
 import type { RecordsStackParamList } from '@/navigation/RecordsStackNavigator';
@@ -99,7 +100,7 @@ export default function RecordDetail({ route, navigation }: Props) {
   const formatDuration = (duration: number): string => {
     const hours = Math.floor(duration / 3600);
     const minutes = Math.floor((duration % 3600) / 60);
-    const seconds = duration % 60;
+    const seconds = formatNumber(duration % 60);
 
     if (hours > 0) {
       return `${hours}시간 ${minutes}분 ${seconds}초`;
@@ -234,7 +235,7 @@ export default function RecordDetail({ route, navigation }: Props) {
 
             <StatItem>
               <StatLabel>칼로리</StatLabel>
-              <StatValue>{recordDetail.calories}kcal</StatValue>
+              <StatValue>{formatNumber(recordDetail.calories)}kcal</StatValue>
             </StatItem>
           </StatsGrid>
         </StatsContainer>

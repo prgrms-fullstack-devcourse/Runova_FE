@@ -18,7 +18,12 @@ import { PermissionsAndroid, Platform, Linking } from 'react-native';
 
 import Header from '@/components/Header';
 import CameraComponent from '@/components/Camera';
-import { formatDistance, formatTime, formatPace } from '@/utils/formatters';
+import {
+  formatDistance,
+  formatTime,
+  formatPace,
+  formatNumber,
+} from '@/utils/formatters';
 import { COLOR_TOKENS } from '@/constants/colors';
 import type { RunTabStackParamList } from '@/types/navigation.types';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -268,7 +273,7 @@ export default function RunDetail({ route, navigation }: Props) {
 
             <StatItem>
               <StatLabel>칼로리</StatLabel>
-              <StatValue>{stats.calories}kcal</StatValue>
+              <StatValue>{formatNumber(stats.calories)}kcal</StatValue>
             </StatItem>
           </StatsGrid>
         </StatsContainer>
