@@ -140,7 +140,7 @@ export default function RecordDetail({ route, navigation }: Props) {
   }
 
   return (
-    <Container paddingTop={insets.top}>
+    <Container>
       <Header
         leftIcon={ArrowLeft}
         rightIcon={Share2}
@@ -271,11 +271,10 @@ export default function RecordDetail({ route, navigation }: Props) {
 }
 
 // Emotion Styled Components
-const Container = styled.View<{ paddingTop: number }>(({ paddingTop }) => ({
+const Container = styled.View({
   flex: 1,
   backgroundColor: '#ffffff',
-  paddingTop,
-}));
+});
 
 const LoadingContainer = styled.View({
   flex: 1,

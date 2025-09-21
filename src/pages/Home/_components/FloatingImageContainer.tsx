@@ -114,8 +114,6 @@ export default function FloatingImageContainer() {
 
         setFloatingImages(newImages);
       } catch (error) {
-        console.error('러닝 아트를 가져오는데 실패했습니다:', error);
-
         // 인증 에러나 네트워크 에러 시 기본 이미지 사용
         const fallbackImages = [
           require('@/assets/bear.png'),
