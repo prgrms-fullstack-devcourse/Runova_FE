@@ -6,6 +6,7 @@ const PATH_BY_KEY = {
   route: '/community/feed/share',
   run: '/community/feed/mate',
   photo: '/community/feed/proof',
+  free: '/community/feed/free',
   all: '/community',
 } as const;
 
@@ -25,14 +26,6 @@ export default function CommunityNavigator() {
     <Container role="tablist" aria-label="커뮤니티 내비게이션">
       <TabButton
         role="tab"
-        aria-selected={active === 'route'}
-        active={active === 'route'}
-        onClick={go('route')}
-      >
-        경로
-      </TabButton>
-      <TabButton
-        role="tab"
         aria-selected={active === 'run'}
         active={active === 'run'}
         onClick={go('run')}
@@ -49,11 +42,19 @@ export default function CommunityNavigator() {
       </TabButton>
       <TabButton
         role="tab"
-        aria-selected={active === 'all'}
-        active={active === 'all'}
-        onClick={go('all')}
+        aria-selected={active === 'route'}
+        active={active === 'route'}
+        onClick={go('route')}
       >
-        전체보기
+        경로
+      </TabButton>
+      <TabButton
+        role="tab"
+        aria-selected={active === 'free'}
+        active={active === 'free'}
+        onClick={go('free')}
+      >
+        자유게시판
       </TabButton>
     </Container>
   );

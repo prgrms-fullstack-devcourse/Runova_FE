@@ -28,4 +28,11 @@ export interface Comment {
   authorInfo?: AuthorObj;
 }
 
-export type NavKey = 'home' | 'photo' | 'route' | 'run' | 'all';
+export type NavKey =
+  | 'home'
+  | 'photo'
+  | 'route'
+  | 'run'
+  | 'free'
+  | 'all'
+  | undefined;

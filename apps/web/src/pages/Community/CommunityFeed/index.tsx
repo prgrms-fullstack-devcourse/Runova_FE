@@ -8,6 +8,7 @@ import type { Post, Category } from '@/types/community';
 import { getPostsCursor } from '@/api/posts';
 import { useNativeBridgeStore } from '@/stores/nativeBridgeStore';
 import type { ServerPostType } from '@/api/posts';
+import { useCommunityStore } from '@/stores/communityStore';
 
 type RouteType = 'all' | 'free' | 'proof' | 'share' | 'mate' | 'my';
 
@@ -15,7 +16,7 @@ const DEFAULT_PAGE_LIMIT = 10;
 
 const TITLE_MAP: Record<RouteType, string> = {
   all: '전체',
-  free: '자유',
+  free: '자유 게시판',
   proof: '인증샷',
   share: '경로 공유',
   mate: '러닝메이트 구해요!',
@@ -44,6 +45,8 @@ export default function CommunityFeed() {
   const navigate = useNavigate();
   const { type: rawType } = useParams<{ type?: string }>();
   const [searchParams] = useSearchParams();
+
+  const setActiveNav = useCommunityStore((s) => s.setActiveNav);
 
   const routeType: RouteType =
     rawType === 'free' ||
@@ -185,8 +188,13 @@ export default function CommunityFeed() {
     return () => io.disconnect();
   }, [canLoadMore, loading, loadMore]);
 
+  const handleOnBack = useCallback(() => {
+    setActiveNav(undefined);
+    window.history.back();
+  }, [setActiveNav]);
+
   return (
-    <CommunityAppLayout title={title} onBack={() => window.history.back()}>
+    <CommunityAppLayout title={title} onBack={handleOnBack}>
       <Page>
         <List>
           {error && <ErrorText>{error}</ErrorText>}

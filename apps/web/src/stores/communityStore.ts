@@ -12,7 +12,7 @@ type Actions = {
 };
 
 export const useCommunityStore = create<ActiveState & Actions>()((set) => ({
-  activeNav: 'home',
+  activeNav: undefined,
   filter: 'ALL',
   setActiveNav: (k) => set({ activeNav: k }),
   setFilter: (c) => set({ filter: c }),
