@@ -22,7 +22,7 @@ export default function AppLayout({
   title,
   tabs,
   children,
-  topOffset = 60,
+  topOffset = 56,
   onBack,
 }: {
   title: string;
