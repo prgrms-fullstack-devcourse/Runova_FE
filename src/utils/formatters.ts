@@ -29,15 +29,17 @@ export const formatTime = (time: number): string => {
 };
 
 export const formatTimeFromMinutes = (timeInMinutes: number): string => {
-  const hours = Math.floor(timeInMinutes / 60);
-  const minutes = Math.floor(timeInMinutes % 60);
+  const totalMinutes = Math.floor(timeInMinutes);
   const seconds = Math.round((timeInMinutes % 1) * 60);
 
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
   if (hours > 0) {
-    return `${hours}시간 ${minutes}분 ${seconds}초`;
+    return `${hours}시간 ${minutes}분`;
   }
   if (minutes > 0) {
-    return `${minutes}분 ${seconds}초`;
+    return `${minutes}분`;
   }
   return `${seconds}초`;
 };
