@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Home from '@/pages/Home';
 import CommunityList from '@/pages/Community/CommunityList';
 import CommunityFeed from './pages/Community/CommunityFeed';
 import CommunityDetail from '@/pages/Community/CommunityDetail';
@@ -10,7 +11,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/community" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/community" element={<CommunityList />} />
         <Route path="/community/feed/:type" element={<CommunityFeed />} />
         <Route path="/community/:id" element={<CommunityDetail />} />
