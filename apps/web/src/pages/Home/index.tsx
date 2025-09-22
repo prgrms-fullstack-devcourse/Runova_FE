@@ -11,13 +11,11 @@ export default function Home() {
     <Wrap>
       <StarsCanvas ref={canvasRef} />
       <Glow />
-      <Card>
-        <Title>Runova</Title>
-        <Desc>
-          도시 위에 <b>GPS 아트</b>를 새기는 러닝 앱. 달려서 나만의 별자리
-          지도를 완성해 보세요.
-        </Desc>
-      </Card>
+      <Title>Runova</Title>
+      <Desc>
+        도시 위에 <b>GPS 아트</b>를 새기는 러닝 앱. 달려서 나만의 별자리 지도를
+        완성해 보세요.
+      </Desc>
       <Card>
         <Title as="h2">다운로드 링크</Title>
         <List>
