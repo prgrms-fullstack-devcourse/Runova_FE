@@ -17,6 +17,19 @@ export default function Home() {
           도시 위에 <b>GPS 아트</b>를 새기는 러닝 앱. 달려서 나만의 별자리
           지도를 완성해 보세요.
         </Desc>
+      </Card>
+      <Card>
+        <Title as="h2">다운로드 링크</Title>
+        <List>
+          <li>
+            <A href={DL_URL} rel="noopener">
+              <span>Android APK (v1.0.0)</span>
+              <span>⬇</span>
+            </A>
+          </li>
+        </List>
+      </Card>
+      <Card>
         <Features>
           <Feature>
             <FeatImg src="/images/navigate.jpg" alt="내비게이션" />
@@ -29,25 +42,17 @@ export default function Home() {
           <Feature>
             <FeatImg src="/images/track.jpg" alt="정밀 기록" />
             <H>경로 설계</H>
-            <P>원하는 모양대로 경로를 그리고, </P>
+            <P>원하는 모양대로 경로를 그리고 다른 사람들과 공유해 보세요.</P>
           </Feature>
           <Feature>
             <FeatImg src="/images/community.jpg" alt="공유" />
             <H>커뮤니티</H>
-            <P>완주 인증 사진, 그린 경로를 공유하고 소통해 보세요.</P>
+            <P>
+              완주 인증 사진, 경로 공유, 팀메이트 구하기까지, 커뮤니티에서 함께
+              나눠요.
+            </P>
           </Feature>
         </Features>
-      </Card>
-      <Card>
-        <Title as="h2">다운로드 링크</Title>
-        <List>
-          <li>
-            <A href={DL_URL} rel="noopener">
-              <span>Android APK (v1.0.0)</span>
-              <span>⬇</span>
-            </A>
-          </li>
-        </List>
       </Card>
     </Wrap>
   );
