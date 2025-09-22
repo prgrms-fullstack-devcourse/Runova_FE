@@ -1,7 +1,5 @@
 # Runova
 
-# Runova FE (Expo + Emotion + Navigation)
-
 Runova는 GPS ART 기반 런닝 어플리케이션입니다.
 
 ### 배포 링크
