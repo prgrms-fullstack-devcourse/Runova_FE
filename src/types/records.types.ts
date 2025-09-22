@@ -4,6 +4,22 @@ export interface RunningRecord {
   imageUrl: string;
 }
 
+export interface RunningRecordDetail {
+  id: number;
+  artUrl: string;
+  imageUrl: string;
+  distance: number;
+  startAt: string;
+  endAt: string;
+  duration: number;
+  pace: number;
+  calories: number;
+  course?: {
+    id: number;
+    title: string;
+  };
+}
+
 export interface RunningRecordsResponse {
   results: RunningRecord[];
   nextCursor: {

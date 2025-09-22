@@ -25,14 +25,7 @@ export function useRunningRecords() {
     async (params: RunningRecordsRequest, reset = false) => {
       if (!accessToken) return;
 
-      console.log('📊 [useRunningRecords] loadRecords 호출:', {
-        params,
-        reset,
-        loading,
-      });
-
       if (loading) {
-        console.log('📊 [useRunningRecords] 이미 로딩 중이므로 스킵');
         return;
       }
 
@@ -50,10 +43,7 @@ export function useRunningRecords() {
           requestParams.cursor = params.cursor;
         }
 
-        console.log('📊 [useRunningRecords] API 요청 파라미터:', requestParams);
         const response = await searchRunningRecords(requestParams, accessToken);
-
-        console.log('📊 [useRunningRecords] API 응답:', response);
 
         if (reset) {
           setRecords(response.results);
@@ -66,13 +56,6 @@ export function useRunningRecords() {
         const hasMoreData =
           response.nextCursor && response.nextCursor.id !== lastResultId;
 
-        console.log('📊 [useRunningRecords] 데이터 종료 조건 확인:', {
-          lastResultId,
-          nextCursor: response.nextCursor,
-          hasMoreData,
-          resultsLength: response.results.length,
-        });
-
         if (hasMoreData) {
           setCursor(response.nextCursor);
           setHasMore(true);
@@ -81,7 +64,6 @@ export function useRunningRecords() {
           setHasMore(false);
         }
       } catch (error: unknown) {
-        console.error('📊 [useRunningRecords] API 오류:', error);
         let errorMessage = '런닝 기록을 불러오는데 실패했습니다.';
 
         if (error && typeof error === 'object' && 'response' in error) {
@@ -110,12 +92,6 @@ export function useRunningRecords() {
 
   const handleLoadMore = useCallback(() => {
     if (hasMore && !loading && !error && cursor) {
-      console.log('📊 [useRunningRecords] handleLoadMore 호출:', {
-        hasMore,
-        loading,
-        error,
-        cursor,
-      });
       loadRecords({ cursor }, false);
     }
   }, [hasMore, loading, error, cursor, loadRecords]);
@@ -147,13 +123,7 @@ export function useRunningDashboard() {
     async (params: RunningDashboardRequest) => {
       if (!accessToken) return;
 
-      console.log('📊 [useRunningDashboard] loadDashboard 호출:', {
-        params,
-        loading,
-      });
-
       if (loading) {
-        console.log('📊 [useRunningDashboard] 이미 로딩 중이므로 스킵');
         return;
       }
 
@@ -162,10 +132,9 @@ export function useRunningDashboard() {
 
       try {
         const response = await getRunningDashboard(params, accessToken);
-        console.log('📊 [useRunningDashboard] API 응답:', response);
+
         setDashboard(response);
       } catch (error: unknown) {
-        console.error('📊 [useRunningDashboard] API 오류:', error);
         let errorMessage = '런닝 통계를 불러오는데 실패했습니다.';
 
         if (error && typeof error === 'object' && 'response' in error) {

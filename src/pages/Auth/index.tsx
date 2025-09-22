@@ -36,7 +36,7 @@ export default function Auth() {
       setAuth(accessToken, user);
 
       // 로그인 성공 후 위치 미리 받아오기
-      console.log('📍 로그인 성공! 위치 미리 받아오기 시작...');
+
       refreshLocation();
 
       // navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });

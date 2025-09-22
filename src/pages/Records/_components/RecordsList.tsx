@@ -42,10 +42,6 @@ export default function RecordsList({
   );
 
   const handleEndReached = useCallback(() => {
-    console.log('📊 [RecordsList] handleEndReached 호출:', {
-      hasMore,
-      loading,
-    });
     if (hasMore && !loading) {
       onLoadMore();
     }
@@ -122,6 +118,7 @@ const RecordItem = styled(TouchableOpacity)({
   borderRadius: 12,
   overflow: 'hidden',
   marginBottom: 120,
+  backgroundColor: '#000000',
 });
 
 const RecordImage = styled.Image({

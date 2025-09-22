@@ -31,17 +31,12 @@ export default function Header({
   if (isHome) {
     return (
       <HeaderContainer isHome={true} safeAreaTop={insets.top}>
-        <LeftSection>
-          <LocationContainer onPress={onLocationPress}>
-            <MapPin color="#ffffff" size={16} />
-            <LocationText>{locationText}</LocationText>
-          </LocationContainer>
-        </LeftSection>
-        <RightSection>
-          <IconButton onPress={onRightPress}>
-            <Bell color="#ffffff" size={20} />
-          </IconButton>
-        </RightSection>
+        <LocationContainer onPress={onLocationPress}>
+          <MapPin color="#ffffff" size={16} />
+          <LocationText numberOfLines={1} ellipsizeMode="tail">
+            {locationText}
+          </LocationText>
+        </LocationContainer>
       </HeaderContainer>
     );
   }
@@ -74,7 +69,7 @@ const HeaderContainer = styled.View<{ isHome: boolean; safeAreaTop: number }>(
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: safeAreaTop,
+    paddingTop: isHome ? safeAreaTop + 8 : safeAreaTop,
     paddingBottom: 12,
     paddingHorizontal: 16,
     backgroundColor: 'transparent',
@@ -102,12 +97,14 @@ const RightSection = styled.View({
 const LocationContainer = styled.TouchableOpacity({
   flexDirection: 'row',
   alignItems: 'center',
+  flex: 1,
 });
 
 const LocationText = styled.Text({
   color: '#ffffff',
   fontSize: 14,
   marginLeft: 4,
+  flex: 1,
 });
 
 const Title = styled.Text({

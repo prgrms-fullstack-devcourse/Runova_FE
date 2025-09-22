@@ -23,7 +23,12 @@ import { useImageLoading } from '@/hooks/useImageLoading';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useCourseData } from '@/hooks/useCourseData';
 import { useShare } from '@/hooks/useShare';
-import { formatDate, formatDistance, formatTime } from '@/utils/formatters';
+import {
+  formatDate,
+  formatDistance,
+  formatTime,
+  formatTimeFromMinutes,
+} from '@/utils/formatters';
 import type { RouteStackParamList } from '@/navigation/RouteStackNavigator';
 import type { TabParamList } from '@/types/navigation.types';
 import type {
@@ -201,7 +206,9 @@ export default function Detail({ route, navigation }: Props) {
           {courseData && 'time' in courseData ? (
             <InfoRow>
               <InfoLabel>예상 시간</InfoLabel>
-              <InfoValue>{formatTime((courseData as any).time)}</InfoValue>
+              <InfoValue>
+                {formatTimeFromMinutes((courseData as any).time)}
+              </InfoValue>
             </InfoRow>
           ) : courseData &&
             'duration' in courseData &&

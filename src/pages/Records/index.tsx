@@ -2,6 +2,7 @@ import styled from '@emotion/native';
 import { FileText } from 'lucide-react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { ScrollView } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Header from '@/components/Header';
 import TimeRangeSelector from './_components/TimeRangeSelector';
 import StatsDisplay from './_components/StatsDisplay';
@@ -13,9 +14,12 @@ import {
   getTimeRangeParams,
   getTimeRangeDisplayText,
 } from '@/hooks/api/useRecordsApi';
-import type { TimeRange } from '@/types/records.types';
+import type { TimeRange, RunningRecord } from '@/types/records.types';
+import type { RecordsStackParamList } from '@/navigation/RecordsStackNavigator';
 
-export default function Records() {
+type Props = NativeStackScreenProps<RecordsStackParamList, 'RecordsMain'>;
+
+export default function Records({ navigation }: Props) {
   const [activeRange, setActiveRange] = useState<TimeRange>('month');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
@@ -58,13 +62,6 @@ export default function Records() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    console.log('📊 [Records] useEffect 실행:', {
-      activeRange,
-      selectedWeek,
-      selectedMonth,
-      selectedYear,
-      timeRangeParams,
-    });
     loadDashboard(timeRangeParams);
     loadRecords(timeRangeParams, true);
   }, [activeRange, selectedWeek, selectedMonth, selectedYear]);
@@ -79,10 +76,12 @@ export default function Records() {
     setShowDropdown(!showDropdown);
   }, [showDropdown]);
 
-  const handleRecordPress = useCallback((record: any) => {
-    // TODO: 기록 상세 페이지로 이동
-    console.log('Record pressed:', record);
-  }, []);
+  const handleRecordPress = useCallback(
+    (record: RunningRecord) => {
+      navigation.navigate('RecordDetail', { recordId: record.id });
+    },
+    [navigation],
+  );
 
   const handleDetailSelection = useCallback(
     (value: number) => {

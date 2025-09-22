@@ -87,18 +87,6 @@ export function validateLocationOnCourse(
     // tolerance를 고려한 최종 판정
     const isOnCourse = isInside || distanceFromCourse <= tolerance;
 
-    // 디버깅 로그
-    console.log('🔍 코스 검증 결과:', {
-      currentLocation: [
-        currentLocation[0].toFixed(6),
-        currentLocation[1].toFixed(6),
-      ],
-      isInside,
-      distanceFromCourse: distanceFromCourse.toFixed(2) + 'm',
-      tolerance: tolerance + 'm',
-      finalResult: isOnCourse ? '경로 내부' : '경로 외부',
-    });
-
     const result: CourseValidationResult = {
       isOnCourse,
       distanceFromCourse,
@@ -107,7 +95,6 @@ export function validateLocationOnCourse(
 
     return result;
   } catch (error) {
-    console.error('코스 검증 중 오류 발생:', error);
     return {
       isOnCourse: false,
       distanceFromCourse: Infinity,

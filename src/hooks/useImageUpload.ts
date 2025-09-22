@@ -48,8 +48,6 @@ export function useImageUpload() {
       presignData.key,
     );
 
-    console.log('📤 [useImageUpload] publicImageUrl:', publicImageUrl);
-
     return publicImageUrl;
   };
 

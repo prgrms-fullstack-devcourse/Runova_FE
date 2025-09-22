@@ -11,10 +11,12 @@ import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useRunModals } from '@/hooks/useRunModals';
 import { useCourseTopologyApi } from '@/hooks/api/useCourseTopologyApi';
 import { useCourseValidation } from '@/hooks/useCourseValidation';
+import { useNavigation } from '@/hooks/useNavigation';
 import useRunStore from '@/store/run';
 import RunMap from './_components/RunMap';
 import StatsContainer from './_components/StatsContainer';
 import ControlContainer from './_components/ControlContainer';
+import NavigationOverlay from './_components/NavigationOverlay';
 import Modal from '@/components/Modal';
 import Mapbox from '@rnmapbox/maps';
 
@@ -22,7 +24,17 @@ type Props = NativeStackScreenProps<any, 'Run'>;
 
 export default function Run({ route, navigation }: Props) {
   // 전역 Store에서 현재 코스 데이터 가져오기
-  const { currentCourseId, currentCourseData } = useRunStore();
+  const {
+    currentCourseId,
+    currentCourseData,
+    courseTopology,
+    loading,
+    savingRecord,
+    topologyError,
+    saveError,
+    resetRunState,
+    startTime,
+  } = useRunStore();
   const courseId = currentCourseId || route.params?.courseId;
 
   const {
@@ -39,15 +51,6 @@ export default function Run({ route, navigation }: Props) {
   const cameraRef = useRef<Mapbox.Camera>(null!);
   const mapRef = useRef<Mapbox.MapView>(null);
 
-  const {
-    loading,
-    savingRecord,
-    topologyError,
-    saveError,
-    resetRunState,
-    startTime,
-  } = useRunStore();
-
   // useRunStats는 StatsContainer에서 처리
 
   const { loadCourseTopology } = useCourseTopologyApi(courseId);
@@ -63,11 +66,24 @@ export default function Run({ route, navigation }: Props) {
   } = useCourseValidation({
     courseId,
     validationOptions: {
-      tolerance: 5, // 5미터 허용 오차 (매우 엄격하게)
+      tolerance: 10, // 5미터 허용 오차 (매우 엄격하게)
       enableDistanceCalculation: true,
     },
     enableRealTimeValidation: true, // 실시간 검증 활성화
     validationInterval: 1000, // 1초마다 검증
+  });
+
+  // 네비게이션 훅 - courseId가 있고 topology 데이터가 있을 때만 활성화
+  const {
+    navigationState,
+    navigationMessage,
+    shouldShowNavigation,
+    resetNavigation,
+  } = useNavigation({
+    nodes: courseTopology?.nodes || [],
+    routeCoordinates,
+    isTracking,
+    enabled: !!(courseId && courseTopology),
   });
 
   const {
@@ -88,17 +104,23 @@ export default function Run({ route, navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      // 런닝이 시작되지 않은 상태에서만 초기화
-      const { startTime } = useRunStore.getState();
-      if (!startTime) {
-        resetLocationTracking();
-        resetRunState();
-      }
+      // 스크린 진입 시 항상 완전 초기화 (이전 상태 완전 제거)
+
+      resetLocationTracking();
+      resetRunState(); // isTracking이 false이므로 완전 초기화
+      resetNavigation(); // 네비게이션 상태도 초기화
+
       // courseId가 있을 때만 경로 데이터를 로드
       if (courseId) {
         loadCourseTopology();
       }
-    }, [resetLocationTracking, resetRunState, courseId, loadCourseTopology]),
+    }, [
+      resetLocationTracking,
+      resetRunState,
+      resetNavigation,
+      courseId,
+      loadCourseTopology,
+    ]),
   );
 
   // 위치가 로드되지 않았을 때 자동으로 새로고침
@@ -195,6 +217,14 @@ export default function Run({ route, navigation }: Props) {
                   <DeviationText>{deviationMessage}</DeviationText>
                 </DeviationAlert>
               </DeviationOverlay>
+            )}
+            {/* 네비게이션 안내 - courseId가 있고 이탈하지 않았을 때만 */}
+            {courseId && !isDeviating && (
+              <NavigationOverlay
+                visible={shouldShowNavigation}
+                message={navigationMessage || ''}
+                instruction={navigationState.instruction}
+              />
             )}
           </>
         ) : (

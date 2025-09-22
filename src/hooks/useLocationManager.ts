@@ -17,10 +17,6 @@ export function useLocationManager() {
         initialLocation.coords.longitude,
         initialLocation.coords.latitude,
       ];
-      console.log(
-        '📍 useLocationManager: 위치 업데이트됨',
-        currentUserLocation.current,
-      );
     }
   }, [initialLocation]);
 

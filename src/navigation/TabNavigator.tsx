@@ -1,19 +1,22 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View } from 'react-native';
 import { Star, FileText, Play, Laugh, Settings } from 'lucide-react-native';
+import { useCallback } from 'react';
 
 import WebCommunity from '@/pages/WebCommunity';
 import Home from '@/pages/Home';
-import Records from '@/pages/Records';
+import RecordsStackNavigator from '@/navigation/RecordsStackNavigator';
 import RunTabNavigator from '@/navigation/RunTabNavigator';
 import Run from '@/pages/Run';
 
 import type { TabParamList } from '@/types/navigation.types';
 import WebMyPage from '@/pages/WebMyPage';
 
-// RunTab 전용 컴포넌트
 function RunTabWithReset() {
   return <RunTabNavigator />;
 }
@@ -68,15 +71,23 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Records"
-        component={Records}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FileText color={color} size={size} />
-          ),
+        component={RecordsStackNavigator}
+        options={({ route }) => {
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? 'RecordsMain';
+          return {
+            tabBarIcon: ({ color, size }) => (
+              <FileText color={color} size={size} />
+            ),
+            tabBarStyle: {
+              ...baseTabBarStyle,
+              display: routeName === 'RecordDetail' ? 'none' : 'flex',
+            },
+          };
         }}
       />
       <Tab.Screen
-        name="RunTab"
+        name="Run"
         component={RunTabWithReset}
         options={({ route }) => {
           const routeName =
@@ -89,7 +100,10 @@ export default function TabNavigator() {
                 routeName === 'Run' ||
                 routeName === 'Draw' ||
                 routeName === 'RouteSave' ||
-                routeName === 'Detail'
+                routeName === 'Detail' ||
+                routeName === 'RunDetail' ||
+                routeName === 'PhotoEdit' ||
+                routeName === 'PhotoDecoration'
                   ? 'none'
                   : 'flex',
             },
