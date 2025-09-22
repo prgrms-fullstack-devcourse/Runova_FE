@@ -20,7 +20,7 @@ export default function Home() {
         <Features>
           <Feature>
             <FeatImg src="/images/navigate.jpg" alt="내비게이션" />
-            <H>정밀한 경로 제공</H>
+            <H>경로 안내 제공</H>
             <P>실시간 GPS 트래킹을 기반으로 경로 트래킹과 안내를 제공합니다.</P>
           </Feature>
           <Feature>
