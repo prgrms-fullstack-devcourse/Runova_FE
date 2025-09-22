@@ -14,19 +14,22 @@ export default function Home() {
       <Card>
         <Title>Runova</Title>
         <Desc>
-          도시 위에 <b>GPS 아트</b>를 그리는 러닝 앱. 달릴수록 나만의 지도가
-          완성됩니다.
+          도시 위에 <b>GPS 아트</b>를 새기는 러닝 앱. 달려서 나만의 별자리
+          지도를 완성해 보세요.
         </Desc>
         <Features>
           <Feature>
             <FeatImg src="/images/navigate.jpg" alt="내비게이션" />
             <H>경로 안내 제공</H>
-            <P>실시간 GPS 트래킹을 기반으로 경로 트래킹과 안내를 제공합니다.</P>
+            <P>
+              실시간 경로 트래킹과 경로 안내를 통해, 나만의 GPS 아트를 따라
+              달려보세요.
+            </P>
           </Feature>
           <Feature>
             <FeatImg src="/images/track.jpg" alt="정밀 기록" />
-            <H>경로 설계 & 미리보기</H>
-            <P>목표 모양을 먼저 그려두고, 실제 러닝으로 재현할 수 있어요.</P>
+            <H>경로 설계</H>
+            <P>원하는 모양대로 경로를 그리고, </P>
           </Feature>
           <Feature>
             <FeatImg src="/images/community.jpg" alt="공유" />
@@ -36,12 +39,14 @@ export default function Home() {
         </Features>
       </Card>
       <Card>
-        <Title as="h2">Download</Title>
+        <Title as="h2">다운로드 링크</Title>
         <List>
-          <A href={DL_URL} rel="noopener">
-            <span>📱 Android APK (v1.0.0)</span>
-            <span>⬇</span>
-          </A>
+          <li>
+            <A href={DL_URL} rel="noopener">
+              <span>Android APK (v1.0.0)</span>
+              <span>⬇</span>
+            </A>
+          </li>
         </List>
       </Card>
     </Wrap>
@@ -86,6 +91,10 @@ const Glow = styled.div`
 
 const Card = styled.section`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   width: min(760px, 92vw);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 20px;
