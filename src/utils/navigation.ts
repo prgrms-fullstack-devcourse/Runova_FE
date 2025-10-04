@@ -10,6 +10,7 @@ const STRAIGHT_THRESHOLD_DEGREE = 10;
 
 // 회전 안내를 위한 임계값 (미터)
 const TURN_WARNING_DISTANCE = 5;
+const EARTH_RADIUS_IN_METERS = 6371e3;
 
 type RotationInfo = {
   direction: NavigationDirection;
@@ -40,7 +41,6 @@ export function makeTurnInstruction(bearing: number): string {
  */
 export function makeWarnInstruction(distance: number, bearing: number): string {
   const { direction, scale } = makeRotationInfo(bearing);
-
   return `경로에서 벗어났습니다. ${direction}으로 ${scale} 후 ${distance}m 이동해주세요!`;
 }
 
@@ -51,18 +51,20 @@ export function calculateDistance(
   coord1: [number, number],
   coord2: [number, number],
 ): number {
-  const R = 6371e3; // 지구 반지름 (미터)
-  const φ1 = (coord1[1] * Math.PI) / 180;
-  const φ2 = (coord2[1] * Math.PI) / 180;
-  const Δφ = ((coord2[1] - coord1[1]) * Math.PI) / 180;
-  const Δλ = ((coord2[0] - coord1[0]) * Math.PI) / 180;
+  const lat1Rad = (coord1[1] * Math.PI) / 180;
+  const lat2Rad = (coord2[1] * Math.PI) / 180;
+  const deltaLatRad = ((coord2[1] - coord1[1]) * Math.PI) / 180;
+  const deltaLonRad = ((coord2[0] - coord1[0]) * Math.PI) / 180;
 
   const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
+    Math.cos(lat1Rad) *
+      Math.cos(lat2Rad) *
+      Math.sin(deltaLonRad / 2) *
+      Math.sin(deltaLonRad / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  return R * c;
+  return EARTH_RADIUS_IN_METERS * c;
 }
 
 /**
@@ -72,17 +74,18 @@ export function calculateBearing(
   coord1: [number, number],
   coord2: [number, number],
 ): number {
-  const φ1 = (coord1[1] * Math.PI) / 180;
-  const φ2 = (coord2[1] * Math.PI) / 180;
-  const Δλ = ((coord2[0] - coord1[0]) * Math.PI) / 180;
+  const lat1Rad = (coord1[1] * Math.PI) / 180;
+  const lat2Rad = (coord2[1] * Math.PI) / 180;
+  const deltaLonRad = ((coord2[0] - coord1[0]) * Math.PI) / 180;
 
-  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const y = Math.sin(deltaLonRad) * Math.cos(lat2Rad);
   const x =
-    Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+    Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLonRad);
 
-  const θ = Math.atan2(y, x);
+  const bearingRad = Math.atan2(y, x);
 
-  return ((θ * 180) / Math.PI + 360) % 360;
+  return ((bearingRad * 180) / Math.PI + 360) % 360;
 }
 
 /**
