@@ -3,7 +3,8 @@
 Runova는 GPS ART 기반 런닝 어플리케이션입니다.
 
 ### 배포 링크
-Runova는 React Native 기반으로 개발되었으며, 하단 링크에서 .apk 파일을 설치하여 실행할 수 있습니다. 
+
+Runova는 React Native 기반으로 개발되었으며, 하단 링크에서 .apk 파일을 설치하여 실행할 수 있습니다.
 https://runova-web.vercel.app/
 
 ## 🎯 서비스 개요
@@ -11,6 +12,7 @@ https://runova-web.vercel.app/
 Runova는 GPS Art를 활용한 혁신적인 런닝 앱입니다. 사용자가 손가락으로 그린 경로를 실제 도로에 맞게 보정하고, 그 경로를 따라 달리며 GPS Art를 완성할 수 있습니다.
 
 ### 주요 기능
+
 - **경로 그리기**: 손가락으로 맵에 경로를 그려 GPS Art 설계
 - **맵 매칭**: Mapbox API를 활용한 실시간 경로 보정
 - **실시간 런닝**: 경로 이탈 감지 및 네비게이션 안내
@@ -20,6 +22,7 @@ Runova는 GPS Art를 활용한 혁신적인 런닝 앱입니다. 사용자가 �
 ## 🏗️ 기술 스택
 
 ### Frontend
+
 - **React Native** + **Expo**: 크로스 플랫폼 모바일 앱 개발
 - **TypeScript**: 타입 안전성 보장
 - **Emotion**: CSS-in-JS 스타일링
@@ -28,34 +31,45 @@ Runova는 GPS Art를 활용한 혁신적인 런닝 앱입니다. 사용자가 �
 - **React Query**: 서버 상태 관리
 
 ### 지도 및 위치 서비스
+
 - **Mapbox**: 지도 렌더링 및 맵 매칭
 - **@turf/turf**: 지리공간 데이터 처리
 - **Expo Location**: GPS 위치 추적
 
 ### 백엔드 연동
+
 - **NestJS**: RESTful API
 - **Valkey**: 캐싱
 - **AWS**: 클라우드 인프라
 
+## 팀원
+
+| 역할 | 이름   | 담당 영역                            |
+| ---- | ------ | ------------------------------------ |
+| FE   | 황다경 | React Native 지도 기능 개발          |
+| FE   | 정기영 | 웹뷰 개발, 커뮤니티 기능             |
+| BE   | 원호석 | 지도 관련 API, 이미지 변환 로직 구현 |
+| BE   | 이정찬 | 인프라, 구글 로그인, 커뮤니티 API    |
 
 ## 🚀 핵심 기능 구현
+
 ### 주요 화면
 
-| 화면          | 설명                                                                                | 이미지                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **Home**      | 별자리 컨셉의 메인 화면<br/>사용자가 달린 경로가 별자리로 변환되어 우주 배경에 표시 | ![Home Screen](https://github.com/user-attachments/assets/79746eaf-6067-4918-8f32-f67cf21429cf) |
-| **Draw**      | 경로 그리기 및 맵 매칭<br/>손가락으로 맵에 경로를 그려 GPS Art 설계                 | ![Draw Screen](https://github.com/user-attachments/assets/f1c8fb29-0bdc-4cad-8adf-972c2001ce52)    |
-| **Run**       | 실시간 런닝 및 네비게이션<br/>경로 이탈 감지 및 TTS 음성 안내                       | ![Run Screen](https://github.com/user-attachments/assets/2439dcbd-cbe4-490b-8a95-9dc53d1832d7)   |
-| **Records**   | 런닝 기록 조회<br/>달린 경로와 통계를 별자리 이미지로 확인                          | ![Records Screen](https://github.com/user-attachments/assets/63b7b41c-ee4b-4589-8e72-ed4d3c364e36)     |
+| 화면          | 설명                                                                                | 이미지                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Home**      | 별자리 컨셉의 메인 화면<br/>사용자가 달린 경로가 별자리로 변환되어 우주 배경에 표시 | ![Home Screen](https://github.com/user-attachments/assets/79746eaf-6067-4918-8f32-f67cf21429cf)      |
+| **Draw**      | 경로 그리기 및 맵 매칭<br/>손가락으로 맵에 경로를 그려 GPS Art 설계                 | ![Draw Screen](https://github.com/user-attachments/assets/f1c8fb29-0bdc-4cad-8adf-972c2001ce52)      |
+| **Run**       | 실시간 런닝 및 네비게이션<br/>경로 이탈 감지 및 TTS 음성 안내                       | ![Run Screen](https://github.com/user-attachments/assets/2439dcbd-cbe4-490b-8a95-9dc53d1832d7)       |
+| **Records**   | 런닝 기록 조회<br/>달린 경로와 통계를 별자리 이미지로 확인                          | ![Records Screen](https://github.com/user-attachments/assets/63b7b41c-ee4b-4589-8e72-ed4d3c364e36)   |
 | **Community** | GPS Art 공유 커뮤니티 (웹뷰)<br/>경로 공유, 인증샷, 런닝메이트 찾기                 | ![Community Screen](https://github.com/user-attachments/assets/701a163e-0222-4eff-abe0-110103e4246d) |
-| **Photo**    | 인증 사진 촬영, 꾸미기, SNS 공유              | ![MyPage Screen](https://github.com/user-attachments/assets/4b60a8ed-b9bf-4170-a3db-c9ed0c7c63e4)       |
-
+| **Photo**     | 인증 사진 촬영, 꾸미기, SNS 공유                                                    | ![MyPage Screen](https://github.com/user-attachments/assets/4b60a8ed-b9bf-4170-a3db-c9ed0c7c63e4)    |
 
 ### 1. 경로 그리기 - 맵 매칭
 
 사용자가 손가락으로 그린 경로를 실제 도로에 맞게 보정하는 핵심 기능입니다.
 
 #### 구현 방식
+
 ```typescript
 // src/hooks/useMapGestures.ts
 const panGesture = Gesture.Pan()
@@ -78,6 +92,7 @@ const panGesture = Gesture.Pan()
 **설명**: 사용자가 손가락으로 그리는 동안 실시간으로 좌표를 수집하고, 그리기가 끝나면 자동으로 맵 매칭을 실행합니다.
 
 #### Mapbox Map Matching API 호출
+
 ```typescript
 // src/lib/mapMatching.ts
 export async function getMatchedRoute(
@@ -120,6 +135,7 @@ export async function getMatchedRoute(
 실시간으로 사용자의 위치가 설정된 경로에서 벗어났는지 감지하고 처리합니다.
 
 #### 핵심 검증 로직
+
 ```typescript
 // src/utils/courseValidation.ts
 export function validateLocationOnCourse(
@@ -182,6 +198,7 @@ export function validateLocationOnCourse(
 **설명**: Turf.js의 `booleanPointInPolygon`과 `nearestPointOnLine` 함수를 사용하여 사용자 위치가 코스 내부에 있는지, 아니면 코스로부터 얼마나 떨어져 있는지 정확히 계산합니다.
 
 #### 이탈 감지 및 심각도 분류
+
 ```typescript
 export function detectCourseDeviation(
   currentLocation: Position,
@@ -232,23 +249,28 @@ export function detectCourseDeviation(
 실시간으로 회전 안내와 경로 이탈 경고를 제공하는 네비게이션 시스템입니다.
 
 #### 베어링 계산 및 회전 방향 결정
+
 ```typescript
 // src/utils/navigation.ts
-export function calculateBearing(
+
+export function calculateDistance(
   coord1: [number, number],
   coord2: [number, number],
 ): number {
-  const φ1 = (coord1[1] * Math.PI) / 180;
-  const φ2 = (coord2[1] * Math.PI) / 180;
-  const Δλ = ((coord2[0] - coord1[0]) * Math.PI) / 180;
+  const lat1Rad = (coord1[1] * Math.PI) / 180;
+  const lat2Rad = (coord2[1] * Math.PI) / 180;
+  const deltaLatRad = ((coord2[1] - coord1[1]) * Math.PI) / 180;
+  const deltaLonRad = ((coord2[0] - coord1[0]) * Math.PI) / 180;
 
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x =
-    Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  const a =
+    Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
+    Math.cos(lat1Rad) *
+      Math.cos(lat2Rad) *
+      Math.sin(deltaLonRad / 2) *
+      Math.sin(deltaLonRad / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  const θ = Math.atan2(y, x);
-
-  return ((θ * 180) / Math.PI + 360) % 360;
+  return EARTH_RADIUS_IN_METERS * c;
 }
 
 function makeRotationInfo(bearing: number): RotationInfo {
@@ -262,6 +284,7 @@ function makeRotationInfo(bearing: number): RotationInfo {
 **설명**: 두 좌표 간의 베어링(방위각)을 계산하여 회전 방향과 각도를 결정합니다. 하버사인 공식을 사용한 정확한 지리적 계산을 수행합니다.
 
 #### 실시간 네비게이션 검증
+
 ```typescript
 // src/hooks/useNavigation.ts
 const validateNavigation = useCallback(() => {
@@ -328,6 +351,7 @@ const validateNavigation = useCallback(() => {
 ## 📱 앱 구조
 
 ### 네이티브 앱 + 웹뷰 하이브리드 구조
+
 ```
 src/
 ├── components/          # 공통 컴포넌트
@@ -351,11 +375,13 @@ apps/web/               # 웹뷰용 React 앱
 ## 🔧 개발 환경 설정
 
 ### 필수 요구사항
+
 - Node.js
 - Expo CLI
 - Android Studio (Android 개발용)
 
 ### 설치 및 실행
+
 ```bash
 # 의존성 설치
 npm install
@@ -371,21 +397,25 @@ npm run ios
 ```
 
 ### 환경 변수 설정
+
 `.env.example` 참고
 
 ## 🎨 주요 기술적 특징
 
 ### 1. 성능 최적화
+
 - **좌표 샘플링**: 맵 매칭 API 호출 시 좌표 수를 100개로 제한
 - **실시간 업데이트 최적화**: `requestAnimationFrame`을 활용한 부드러운 UI 업데이트
 - **메모리 관리**: 좌표 배열의 불변성 보장 및 가비지 컬렉션 최적화
 
 ### 2. 타입 안전성
+
 - **TypeScript**: 모든 코드에 엄격한 타입 검사 적용
 - **GeoJSON 타입**: 지리적 데이터의 정확한 타입 정의
 - **API 응답 타입**: 서버 응답에 대한 완전한 타입 보장
 
 ### 3. 사용자 경험
+
 - **실시간 피드백**: 그리기 중 즉시 시각적 피드백 제공
 - **음성 안내**: TTS를 활용한 핸즈프리 네비게이션
 - **오류 처리**: 사용자 친화적인 오류 메시지 및 복구 방안 제시
@@ -393,17 +423,20 @@ npm run ios
 ## 🚀 배포 및 운영
 
 ### 빌드 프로세스
+
 1. **개발 빌드**: `expo build:android` 또는 `expo build:ios`
 2. **프로덕션 빌드**: EAS Build를 통한 자동화된 빌드
 
 ## 📈 향후 계획
 
 ### 단기 계획
+
 - [ ] 경로 공유 기능 개선
 - [ ] 런닝 통계 시각화 강화
 - [ ] 소셜 기능 확장
 - [ ] 코드 리팩토링
 
 ### 장기 계획
+
 - [ ] AI 기반 경로 추천
 - [ ] AR을 활용한 실시간 네비게이션
